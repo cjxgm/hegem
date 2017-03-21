@@ -1,8 +1,12 @@
-#if __cplusplus < 201402L
-#   error "You need a bare minimum of C++14 support."
+#if __cplusplus <= 201402L
+#   error "You need a bare minimum of C++17/C++1z support."
 #endif
 
 #ifndef __has_include
 #   error "Your compiler is too old. __has_include is required."
+#endif
+
+#if __cpp_nested_namespace_definitions < 201411
+#   error "Your compiler is too old. Nested namespace from C++17 is required."
 #endif
 
