@@ -1,0 +1,8 @@
+#if __cplusplus < 201402L
+#   error "You need a bare minimum of C++14 support."
+#endif
+
+#ifndef __has_include
+#   error "Your compiler is too old. __has_include is required."
+#endif
+
