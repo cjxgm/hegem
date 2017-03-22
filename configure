@@ -31,6 +31,14 @@ my $build__output_bin = "build";
 my $build__main_impl = "main.cc";
 
 my $makefile__show_commands = 1;
+my @makefile__commands__test = (
+    {
+        name => '$(BIN)',
+        commands => [
+            '$(BIN)',
+        ],
+    },
+);
 ########### end default configuration ############
 
 #############################
@@ -459,6 +467,8 @@ sub makefile__write
     my $loader_cmd = &path__array__join(
         "$command_prefix\$(LD)",
         "-o", "'\$\@'", "\$(OBJECTS)", "\$(LDFLAGS)");
+    my $build = &path__array__join($build_dir);
+    my $bin = '$(BUILD)/' . &path__array__join($build__output_bin);
 
     my @objects;
     my @rules;
@@ -468,48 +478,49 @@ sub makefile__write
         my $info = $file_infos{$impl};
         my $deps = $info->{dependencies};
         my $obj = &path__object_from_impl($impl);
-        my $target = "$build_dir/$obj";
+        my $target = "\$(BUILD)/$obj";
 
         push @objects, $target;
         push @rules, join "\n\t", (
-            &path__array__join($target) . ": " . &path__array__join($impl, @$deps) . " | " . &path__array__join("$build_dir/"),
+            &path__array__join($target) . ": " . &path__array__join($impl, @$deps) . ' | $(BUILD)/',
             $progress->("compiling", $impl),
             $compiler_cmd,
         );
     }
 
-    my $build_target = "$build_dir/$build__output_bin";
     unshift @rules, join "\n\t", (
-        &path__array__join($build_target) . ": " . &path__array__join("\$(OBJECTS)") . " | " . &path__array__join("$build_dir/"),
+        '$(BIN): ' . &path__array__join("\$(OBJECTS)") . ' | $(BUILD)/',
         $progress->("loading", $build__output_bin),
         $loader_cmd,
     );
 
     my @build_dirs = (
-        $build_dir,
-        map { "$build_dir/$_" } sort keys %known_dirs,
+        '$(BUILD)',
+        (map { "\$(BUILD)/$_" } sort keys %known_dirs),
     );
     unshift @rules, join "\n\t", (
-        &path__array__join("$build_dir/") . ":",
-        map {(
+        &path__array__join('$(BUILD)/') . ":",
+        (map {(
             $progress->("making directory", $_),
             &path__array__join("${command_prefix}mkdir", '-p', $_),
-        )} @build_dirs,
+        )} @build_dirs),
     );
 
     push @phonies, ".PHONY: all clean test reconf rebuild";
     push @phonies, join "\n\t", (
-        "all: " . &path__array__join($build_target),
+        'all: $(BIN)',
     );
     push @phonies, join "\n\t", (
         "clean:",
-        $progress->("removing", $build_dir),
-        &path__array__join("${command_prefix}rm", '-rf', "$build_dir/"),
+        $progress->("removing", '$(BUILD)'),
+        &path__array__join("${command_prefix}rm", '-rf', '$(BUILD)/'),
     );
     push @phonies, join "\n\t", (
         "test: all",
-        $progress->("running", $build_target),
-        &path__array__join("$command_prefix$build_target"),
+        (map {(
+            $progress->("running", $_->{name}),
+            map { "$command_prefix$_" } @{$_->{commands}},
+        )} @makefile__commands__test),
     );
     push @phonies, join "\n\t", (
         "reconf:",
@@ -538,6 +549,8 @@ LD = $loader__bin
 CCFLAGS = $compiler_flags
 LDFLAGS = $loader_flags
 OBJECTS = $objects
+BUILD = $build
+BIN = $bin
 
 # phonies
 $phonies
