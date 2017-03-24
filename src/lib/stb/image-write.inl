@@ -1,0 +1,12 @@
+#pragma once
+
+#define STB_IMAGE_WRITE_STATIC
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_WRITE_NO_STDIO
+
+#include <stb_image_write.h>
+
+#undef STBI_WRITE_NO_STDIO
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
+#undef STB_IMAGE_WRITE_STATIC
+
