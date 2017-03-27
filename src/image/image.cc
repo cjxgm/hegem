@@ -3,9 +3,9 @@
 #include <fstream>
 #include <cassert>
 
-#include "lib/stb/image-write.inl"
+#include "../lib/stb/image-write.inl"
 
-namespace ifs::image_impl
+namespace rt::image::image_impl
 {
     template struct image<linear_rgb>;
     template struct image<srgb>;

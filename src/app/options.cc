@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace ifs
+namespace rt::app
 {
     namespace
     {

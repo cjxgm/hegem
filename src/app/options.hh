@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 #include <utility>
-#include "lib/cxxopts.hh"
+#include "../lib/cxxopts.hh"
 
-namespace ifs
+namespace rt::app
 {
     struct options
     {

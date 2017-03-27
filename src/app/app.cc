@@ -1,10 +1,12 @@
 #include "app.hh"
-#include "image.hh"
+#include "../image/image.hh"
 
-namespace ifs::app
+namespace rt::app
 {
     void run(options const& opts)
     {
+        using image::image_rgb;
+
         if (!opts.output_path.empty()) {
             image_rgb composite{{opts.width, opts.height}, {0.1, 0.4, 0.8}};
             write(to_srgb(composite), opts.output_path);

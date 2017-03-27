@@ -1,13 +1,11 @@
 #include "lib/sanity-check.hh"
-#include "app.hh"
-#include "options.hh"
+#include "app/app.hh"
 #include <iostream>
 #include <stdexcept>
 
 int main(int argc, char const* argv[]) try
 {
-    ifs::options opts{argc, argv};
-    ifs::app::run(opts);
+    rt::app::run({argc, argv});
 }
 catch (std::runtime_error const& ex)
 {

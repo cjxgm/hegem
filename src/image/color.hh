@@ -1,11 +1,11 @@
 #pragma once
-#include "lib/gsl/string-span.hh"
+#include "../lib/gsl/string-span.hh"
 
 #define WANT_VEC3
-#include "lib/glm.hh"
+#include "../lib/glm.hh"
 #undef WANT_VEC3
 
-namespace ifs
+namespace rt::image
 {
     namespace color
     {

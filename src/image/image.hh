@@ -1,13 +1,13 @@
 #pragma once
-#include "lib/gsl/string-span.hh"
+#include "../lib/gsl/string-span.hh"
 #include "color.hh"
 #include <vector>
 
 #define WANT_VEC2
-#include "lib/glm.hh"
+#include "../lib/glm.hh"
 #undef WANT_VEC2
 
-namespace ifs
+namespace rt::image
 {
     namespace image_impl
     {

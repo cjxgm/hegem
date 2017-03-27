@@ -5,11 +5,11 @@
 
 #define WANT_COMMON_OP
 #define WANT_EXP_OP
-#include "lib/glm.hh"
+#include "../lib/glm.hh"
 #undef WANT_EXP_OP
 #undef WANT_COMMON_OP
 
-namespace ifs::color
+namespace rt::image::color
 {
     srgb to_srgb(linear_rgb const& src)
     {
