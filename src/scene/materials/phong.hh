@@ -1,0 +1,13 @@
+#pragma once
+#include "../../image/color.hh"
+
+namespace rt::scene::materials
+{
+    struct phong
+    {
+        using color_type = image::color::linear_rgb;
+
+        const color_type diffuse;
+    };
+}
+

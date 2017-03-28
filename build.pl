@@ -8,6 +8,7 @@ use utf8;
     'stb',                      # single header libraries for game-dev
     'cxxopts/include',          # command-line argument parser
     'variant/include',          # variant and optional
+    'observer-ptr/include',     # observer_ptr<T>
 );
 @library__pkg_config = qw{
 };

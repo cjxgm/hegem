@@ -1,11 +1,14 @@
 #include "app.hh"
 #include "../image/image.hh"
+#include "../scene/parser.hh"
 
 namespace rt::app
 {
     void run(options const& opts)
     {
         using image::image_rgb;
+
+        auto s = scene::from_path(opts.input_path);
 
         if (!opts.output_path.empty()) {
             image_rgb composite{{opts.width, opts.height}, {0.1, 0.4, 0.8}};
