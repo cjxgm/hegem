@@ -1,53 +1,62 @@
 
-OrthographicCamera {
-    center 0 0 10 
+orthographic-camera {
+    center 0 0 10
     direction 0 0 -1
     up 0 1 0
     size 5
 }
 
-Background { color 0.1 0.1 0.1 }
+background { color 0.1 0.1 0.1 }
 
-Materials {
-    numMaterials 3
-    PhongMaterial {
-	diffuseColor 1 0 0 
+materials {
+    phong-material {
+        diffuse-color 1 0 0
     }
-    PhongMaterial {
-	diffuseColor 0 1 0 
+    phong-material {
+        diffuse-color 0 1 0
     }
-    PhongMaterial {
-	diffuseColor 0 0 1
+    phong-material {
+        diffuse-color 0 0 1
     }
 }
 
-Group {
-    numObjects 5
-
-    MaterialIndex 0
-    Sphere {
-	center 0 0 0 
-        radius 1 
+group {
+    object {
+        material-id 0
+        sphere {
+            center 0 0 0
+            radius 1
+        }
     }
 
-    MaterialIndex 1
-    Sphere {
-	center 1 1 1 
-        radius 0.75
+    object {
+        material-id 1
+        sphere {
+            center 1 1 1
+            radius 0.75
+        }
     }
-    Sphere {
-	center -1 -1 1 
-        radius 0.75
+    object {
+        material-id 1
+        sphere {
+            center -1 -1 1
+            radius 0.75
+        }
     }
 
-    MaterialIndex 2
-    Sphere {
-	center -1 1 -1 
-        radius 0.75
+    object {
+        material-id 2
+        sphere {
+            center -1 1 -1
+            radius 0.75
+        }
     }
-    Sphere {
-	center 1 -1 -1 
-        radius 0.75 
+    object {
+        material-id 2
+        sphere {
+            center 1 -1 -1
+            radius 0.75
+        }
     }
 }
 
