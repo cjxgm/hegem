@@ -359,6 +359,20 @@ sub path__extract_dir
     }
 }
 
+sub path__parent_dir
+{
+    my ($path) = @_;
+    return $path if $path eq '/' || $path eq '';
+    die "Non-existent directory: $path\n" unless -d $path;
+
+    for ($path) {
+        die "Invalid directory path: $_\n" if m{/$};
+        s{/[^/]+$}{} or return '';
+        return '/' if $_ eq '';
+        return $_;
+    }
+}
+
 sub path__array__split
 {
     local $_ = $_[0];
@@ -474,6 +488,25 @@ sub makefile__write
     my @rules;
     my @phonies;
 
+    for my $dir (sort keys %known_dirs) {
+        while (1) {
+            $dir = &path__parent_dir($dir);
+            last if $dir eq '' || $dir eq '/';
+            last if exists $known_dirs{$dir};
+            $known_dirs{$dir} = undef;
+        }
+    }
+    for my $dir ('', sort keys %known_dirs) {
+        my $parent = &path__parent_dir($dir);
+        $parent = ' | $(BUILD)/' . &path__array__join($parent) if $dir ne '';
+        my $target = '$(BUILD)/' . &path__array__join($dir);
+        push @rules, join "\n\t", (
+            $target . ":" . $parent,
+            $progress->("making directory", $target),
+            "${command_prefix}mkdir -p $target",
+        );
+    }
+
     for my $impl (sort keys %known_impls) {
         my $info = $file_infos{$impl};
         my $deps = $info->{dependencies};
@@ -482,28 +515,16 @@ sub makefile__write
 
         push @objects, $target;
         push @rules, join "\n\t", (
-            &path__array__join($target) . ": " . &path__array__join($impl, @$deps) . ' | $(BUILD)/',
+            &path__array__join($target) . ": " . &path__array__join($impl, @$deps) . ' | $(BUILD)/' . &path__array__join(&path__extract_dir($impl)),
             $progress->("compiling", $impl),
             $compiler_cmd,
         );
     }
 
-    unshift @rules, join "\n\t", (
+    push @rules, join "\n\t", (
         '$(BIN): ' . &path__array__join("\$(OBJECTS)") . ' | $(BUILD)/',
         $progress->("loading", $build__output_bin),
         $loader_cmd,
-    );
-
-    my @build_dirs = (
-        '$(BUILD)',
-        (map { "\$(BUILD)/$_" } sort keys %known_dirs),
-    );
-    unshift @rules, join "\n\t", (
-        &path__array__join('$(BUILD)/') . ":",
-        (map {(
-            $progress->("making directory", $_),
-            &path__array__join("${command_prefix}mkdir", '-p', $_),
-        )} @build_dirs),
     );
 
     push @phonies, ".PHONY: all clean test reconf rebuild";
@@ -557,6 +578,7 @@ $phonies
 
 # build rules
 $rules
+
 END
 }
 
