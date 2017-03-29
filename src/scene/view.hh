@@ -15,16 +15,19 @@ namespace rt::scene
         using dimension_type = glm::ivec2;
 
         view_type(dimension_type size, camera_type camera)
-            : size{std::move(size)}
-            , camera{std::move(camera)}
+            : size_{std::move(size)}
+            , camera_{std::move(camera)}
         {}
 
         glm::mat4 transformation() const;
+        glm::mat3 camera_rotation() const;
 
-        const dimension_type size;
+        auto& size() const { return size_; }
+        auto& camera() const { return camera_; }
 
     private:
-        camera_type camera;
+        dimension_type size_;
+        camera_type camera_;
     };
 }
 

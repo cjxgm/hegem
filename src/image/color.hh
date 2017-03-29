@@ -15,6 +15,9 @@ namespace rt::image
         srgb to_srgb(linear_rgb const& src);
         srgb to_srgb(gsl::cstring_span<> hex_rrggbb);
         linear_rgb to_linear_rgb(srgb const& src);
+        linear_rgb tonemap(linear_rgb const& src, linear_rgb const& black, linear_rgb const& white);
+        linear_rgb gamma_to_internal(linear_rgb const& src);
+        linear_rgb gamma_to_display(linear_rgb const& src);
     }
 }
 

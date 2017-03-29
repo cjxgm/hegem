@@ -2,6 +2,8 @@
 #include "../lib/gsl/string-span.hh"
 #include "color.hh"
 #include <vector>
+#include <utility>
+#include <type_traits>
 
 #define WANT_VEC2
 #include "../lib/glm.hh"
@@ -19,20 +21,33 @@ namespace rt::image
             using color_type = T;
             using position_type = glm::ivec2;
             using dimension_type = glm::ivec2;
+            using copyable_color_type = T;
 
-            image(dimension_type size, color_type fill={})
+            template <class Color, class = std::enable_if_t<std::is_copy_assignable<Color>::value>>
+            image(
+                    dimension_type size,
+                    Color&& fill)
                 : size_{size}
-                , pixels(size.x*size.y, fill)
+                , pixels(size.x * size.y, fill)
             {}
+
+            image(dimension_type size)
+                : size_{size}
+                , pixels{}
+            {
+                auto count = size.x*size.y;
+                for (int i=0; i < count; i++)
+                    pixels.emplace_back();
+            }
 
             void put_repeat(position_type const& pos, color_type color)
             {
-                put_bounded(wrap_around(pos), color);
+                put_bounded(wrap_around(pos), std::move(color));
             }
 
             void put_clamp(position_type const& pos, color_type color)
             {
-                if (in_bounds(pos)) put_bounded(pos, color);
+                if (in_bounds(pos)) put_bounded(pos, std::move(color));
             }
 
             auto& size() const { return size_; }
@@ -40,6 +55,10 @@ namespace rt::image
             friend image<srgb> to_srgb(image<linear_rgb> const& src);
             friend void write(image<srgb> const& src, gsl::cstring_span<> output_path);
             friend image<linear_rgb> half(image<linear_rgb> const& src);
+            friend image<linear_rgb> tonemap(
+                    image<linear_rgb> const& src,
+                    linear_rgb const& black,
+                    linear_rgb const& white);
 
             #include "../utils/const-helper.macro.hh"
             CONST_HELPER(
@@ -54,6 +73,21 @@ namespace rt::image
                     }
                 }
             )
+
+            CONST_HELPER(
+                auto& get(position_type const& pos) CONST
+                {
+                    auto i = index_from_bounded_pos(wrap_around(pos));
+                    return pixels[i];
+                }
+            )
+
+            CONST_HELPER(
+                auto& operator [] (position_type const& pos) CONST
+                {
+                    return get(pos);
+                }
+            )
             #include "../utils/const-helper.undef.hh"
 
         private:
@@ -63,7 +97,7 @@ namespace rt::image
             void put_bounded(position_type const& pos, color_type color)
             {
                 // assert(in_bounds(pos));
-                pixels[index_from_bounded_pos(pos)] = color;
+                pixels[index_from_bounded_pos(pos)] = std::move(color);
             }
 
             auto index_from_bounded_pos(position_type const& pos) const

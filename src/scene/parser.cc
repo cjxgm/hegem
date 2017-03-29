@@ -207,10 +207,11 @@ namespace rt::scene
         auto node = expect<node_type>("root node", ist);
 
         mats.emplace_back(materials::solid_color{bg.color});
+        auto env_id = mats.size() - 1;
         return {
             std::move(mats),
             { view_type{{}, cam} },
-            mats.size() - 1,
+            env_id,
             node,
         };
     }

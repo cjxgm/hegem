@@ -16,7 +16,7 @@ namespace rt::image::image_impl
         std::transform(
                 begin(src.pixels), end(src.pixels),
                 begin(dst.pixels),
-                [] (auto& linear_rgb) { return color::to_srgb(linear_rgb); });
+                [] (auto& linear) { return color::to_srgb(linear); });
         return dst;
     }
 
@@ -49,6 +49,19 @@ namespace rt::image::image_impl
         src.each([&] (auto& pixel, auto pos) {
             int i = dst.index_from_bounded_pos(pos / position_type{2});
             dst.pixels[i] += pixel / linear_rgb{4};
+        });
+
+        return dst;
+    }
+
+    image<linear_rgb> tonemap(
+            image<linear_rgb> const& src,
+            linear_rgb const& black, linear_rgb const& white)
+    {
+        image<linear_rgb> dst{src.size()};
+
+        dst.each([&] (auto& pixel, auto pos) {
+            pixel = color::tonemap(src[pos], black, white);
         });
 
         return dst;
