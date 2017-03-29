@@ -41,6 +41,21 @@ namespace rt::image
             friend void write(image<srgb> const& src, gsl::cstring_span<> output_path);
             friend image<linear_rgb> half(image<linear_rgb> const& src);
 
+            #include "../utils/const-helper.macro.hh"
+            CONST_HELPER(
+                template <class F>
+                void each(F&& f) CONST
+                {
+                    auto w = size_.x;
+                    int i = 0;
+                    for (auto& pixel: pixels) {
+                        f(pixel, position_type{i % w, i / w});
+                        i++;
+                    }
+                }
+            )
+            #include "../utils/const-helper.undef.hh"
+
         private:
             dimension_type size_;
             std::vector<color_type> pixels;

@@ -46,13 +46,10 @@ namespace rt::image::image_impl
 
         image<linear_rgb> dst{size / dimension_type{2}};
 
-        int idx = 0;
-        for (auto& pixel: src.pixels) {
-            auto pos = position_type{idx % size.x, idx / size.x};
+        src.each([&] (auto& pixel, auto pos) {
             int i = dst.index_from_bounded_pos(pos / position_type{2});
             dst.pixels[i] += pixel / linear_rgb{4};
-            idx++;
-        }
+        });
 
         return dst;
     }
