@@ -16,7 +16,7 @@ use utf8;
 $compiler__flags__standard = "c++1z";
 $build__output_bin = "raytracer";
 
-my $size = [200, 200];
+my $size = [16*60, 9*60];
 my @inputs = (
     # [ input-name, size, depth-range ]
     #   size = [width, height]
@@ -35,12 +35,13 @@ my @inputs = (
         my ($width, $height) = @$size;
         my ($depth_min, $depth_max) = @$depth_range;
 
-        my $diffuse_output = "\$(BUILD)/output-$name-${width}x$height-diffuse.png";
+        my $output = "\$(BUILD)/output-$name-${width}x$height.png";
+        my $normal_output = "\$(BUILD)/output-$name-${width}x$height-normal.png";
         my $depth_output = "\$(BUILD)/output-$name-${width}x$height-depth.png";
         {
             name => $name,
             commands => [
-                "\$(BIN) --input support/inputs/$name.txt --width $width --height $height --diffuse $diffuse_output --depth $depth_output --depth-min $depth_min --depth-max $depth_max",
+                "\$(BIN) --input support/inputs/$name.txt --width $width --height $height --output $output --normal $normal_output --depth $depth_output --depth-min $depth_min --depth-max $depth_max",
             ],
         }
     } @inputs),
@@ -51,9 +52,10 @@ my @inputs = (
                 my ($name, $size, $depth_range) = @$_;
                 my ($width, $height) = @$size;
 
-                my $diffuse_output = "\$(BUILD)/output-$name-${width}x$height-diffuse.png";
+                my $output = "\$(BUILD)/output-$name-${width}x$height.png";
+                my $normal_output = "\$(BUILD)/output-$name-${width}x$height-normal.png";
                 my $depth_output = "\$(BUILD)/output-$name-${width}x$height-depth.png";
-                ($diffuse_output, $depth_output)
+                ($output, $normal_output, $depth_output)
             } @inputs),
         ],
     },

@@ -43,7 +43,7 @@
 BEGIN_OPTIONS
 OPTION(std::string, input_path         , ABBR(i), input        , "input filename"                  , NO_DEFAULT            , CHECK_EMPTY)   MORE_OPTIONS
 OPTION(std::string, output_path        , ABBR(o), output       , "shaded composite output png filename",NO_DEFAULT         , NO_CHECK)      MORE_OPTIONS
-OPTION(std::string, diffuse_path       , NO_ABBR, diffuse      , "diffuse map output png filename" , NO_DEFAULT            , NO_CHECK)      MORE_OPTIONS
+OPTION(std::string, normal_path        , NO_ABBR, normal       , "normal map output png filename"  , NO_DEFAULT            , NO_CHECK)      MORE_OPTIONS
 OPTION(std::string, depth_path         , NO_ABBR, depth        , "depth map output png filename"   , NO_DEFAULT            , NO_CHECK)      MORE_OPTIONS
 OPTION(float      , depth_min          , NO_ABBR, depth-min    , "minimum depth value to output"   , DEFAULT("-1")         , NO_CHECK)      MORE_OPTIONS
 OPTION(float      , depth_max          , NO_ABBR, depth-max    , "maximum depth value to output"   , DEFAULT("1")          , NO_CHECK)      MORE_OPTIONS
