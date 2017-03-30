@@ -8,10 +8,10 @@ namespace rt::scene::materials
     {
         using color_type = image::color::linear_rgb;
 
-        const color_type albedo_color;
-        const color_type reflection_color;
-        const float ior;
-        const float glossiness;
+        color_type albedo_color;
+        color_type reflection_color;
+        float ior;
+        float glossiness;
     };
 }
 

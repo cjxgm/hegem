@@ -7,7 +7,7 @@ namespace rt::scene::materials
     {
         using color_type = image::color::linear_rgb;
 
-        const color_type diffuse;
+        color_type diffuse;
     };
 }
 

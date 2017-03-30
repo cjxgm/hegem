@@ -6,8 +6,8 @@ namespace rt::scene::nodes
 {
     struct object
     {
-        const material_id_type material_id;
-        const geometry_type geometry;
+        material_id_type material_id;
+        geometry_type geometry;
     };
 }
 

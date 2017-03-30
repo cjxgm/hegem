@@ -15,16 +15,16 @@ namespace rt::raytracer
 
         struct geometry
         {
-            const ray_type ray;
-            const float ray_extent;
-            const point_type hit_point;
-            const direction_type normal;
+            ray_type ray;
+            float ray_extent;
+            point_type hit_point;
+            direction_type normal;
         };
 
         struct object
         {
-            const material_id_type material_id;
-            const geometry geom;
+            material_id_type material_id;
+            geometry geom;
         };
 
         struct missed {};

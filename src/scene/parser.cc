@@ -56,7 +56,7 @@ namespace rt::scene
 
         struct background
         {
-            const glm::vec3 color;
+            glm::vec3 color;
         };
 
         template <>

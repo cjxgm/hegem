@@ -9,13 +9,13 @@ namespace rt::scene
     {
         struct sphere
         {
-            const glm::vec3 center;
-            const float radius;
+            glm::vec3 center;
+            float radius;
         };
 
         struct line_segment
         {
-            const std::array<glm::vec3, 2> points;
+            std::array<glm::vec3, 2> points;
         };
 
         struct mesh

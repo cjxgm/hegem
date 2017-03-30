@@ -7,11 +7,7 @@ namespace rt::scene::materials
     {
         using color_type = image::color::linear_rgb;
 
-        solid_color(color_type color)
-            : color{color}
-        {}
-
-        const color_type color;
+        color_type color;
     };
 }
 
