@@ -1,14 +1,9 @@
 #pragma once
+#include "../lib/glm/vec3.hh"
+#include "../lib/glm/mat3.hh"
+#include "../lib/glm/mat4.hh"
 #include "../lib/mapbox/variant.hh"
 #include "../math/unit.hh"
-
-#define WANT_VEC3
-#define WANT_MAT3
-#define WANT_MAT4
-#include "../lib/glm.hh"
-#undef WANT_MAT4
-#undef WANT_MAT3
-#undef WANT_VEC3
 
 namespace rt::scene
 {

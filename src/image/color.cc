@@ -1,13 +1,9 @@
+#include "../lib/glm/op/common.hh"
+#include "../lib/glm/op/exp.hh"
 #include "color.hh"
 #include <string>
 #include <stdexcept>
 #include <cassert>
-
-#define WANT_COMMON_OP
-#define WANT_EXP_OP
-#include "../lib/glm.hh"
-#undef WANT_EXP_OP
-#undef WANT_COMMON_OP
 
 namespace rt::image::color
 {

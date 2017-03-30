@@ -1,9 +1,6 @@
+#include "../lib/glm/vec4.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
-
-#define WANT_VEC4
-#include "../lib/glm.hh"
-#undef WANT_VEC4
 
 namespace rt::raytracer
 {

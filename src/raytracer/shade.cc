@@ -1,13 +1,9 @@
-#include "shade.hh"
+#include "../lib/glm/vec3.hh"
+#include "../lib/glm/mat3.hh"
 #include "../math/unit.hh"
 #include "../image/color.hh"
+#include "shade.hh"
 #include <limits>
-
-#define WANT_VEC3
-#define WANT_MAT3
-#include "../lib/glm.hh"
-#undef WANT_MAT3
-#undef WANT_VEC3
 
 namespace rt::raytracer::shading_details
 {

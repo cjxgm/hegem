@@ -1,13 +1,10 @@
 #pragma once
+#include "../lib/glm/vec2.hh"
 #include "../lib/gsl/string-span.hh"
 #include "color.hh"
 #include <vector>
 #include <utility>
 #include <type_traits>
-
-#define WANT_VEC2
-#include "../lib/glm.hh"
-#undef WANT_VEC2
 
 namespace rt::image
 {

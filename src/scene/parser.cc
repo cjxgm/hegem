@@ -1,3 +1,4 @@
+#include "../lib/glm/vec3.hh"
 #include "parser.hh"
 #include "camera.hh"
 #include "view.hh"
@@ -7,10 +8,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-
-#define WANT_VEC3
-#include "../lib/glm.hh"
-#undef WANT_VEC3
 
 namespace rt::scene
 {

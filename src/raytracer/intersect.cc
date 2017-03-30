@@ -1,10 +1,7 @@
+#include "../lib/glm/op/intersect.hh"
 #include "../scene/geometry.hh"
 #include "intersect.hh"
 #include <numeric>
-
-#define WANT_INTERSECT_OP
-#include "../lib/glm.hh"
-#undef WANT_INTERSECT_OP
 
 namespace rt::raytracer
 {

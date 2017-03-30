@@ -1,12 +1,8 @@
 #pragma once
+#include "../lib/glm/vec2.hh"
+#include "../lib/glm/mat4.hh"
 #include "camera.hh"
 #include <utility>
-
-#define WANT_VEC2
-#define WANT_MAT4
-#include "../lib/glm.hh"
-#undef WANT_MAT4
-#undef WANT_VEC2
 
 namespace rt::scene
 {

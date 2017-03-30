@@ -1,12 +1,9 @@
 #pragma once
-// unit vector
-
-#define WANT_GEOM_OP
-#include "../lib/glm.hh"
-#undef WANT_GEOM_OP
+#include "../lib/glm/op/geom.hh"
 
 namespace rt::math
 {
+    // unit vector
     template <class T>
     struct unit
     {

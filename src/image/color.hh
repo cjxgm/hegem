@@ -1,9 +1,6 @@
 #pragma once
+#include "../lib/glm/vec3.hh"
 #include "../lib/gsl/string-span.hh"
-
-#define WANT_VEC3
-#include "../lib/glm.hh"
-#undef WANT_VEC3
 
 namespace rt::image
 {

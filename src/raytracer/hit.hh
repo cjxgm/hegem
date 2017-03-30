@@ -1,12 +1,9 @@
 #pragma once
+#include "../lib/glm/vec3.hh"
 #include "../lib/mapbox/variant.hh"
 #include "../scene/material.hh"
 #include "../math/unit.hh"
 #include "ray.hh"
-
-#define WANT_VEC3
-#include "../lib/glm.hh"
-#undef WANT_VEC3
 
 namespace rt::raytracer
 {

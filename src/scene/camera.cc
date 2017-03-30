@@ -1,10 +1,6 @@
+#include "../lib/glm/vec4.hh"
+#include "../lib/glm/op/geom.hh"
 #include "camera.hh"
-
-#define WANT_VEC4
-#define WANT_GEOM_OP
-#include "../lib/glm.hh"
-#undef WANT_GEOM_OP
-#undef WANT_VEC4
 
 namespace rt::scene::cameras
 {
