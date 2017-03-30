@@ -27,7 +27,10 @@ namespace rt::raytracer
             geometry geom;
         };
 
-        struct missed {};
+        struct missed
+        {
+            ray_type ray;
+        };
 
         using geometry_hit_type = mapbox::util::variant<
             geometry,

@@ -1,6 +1,5 @@
 #pragma once
 #include "../image/image.hh"
-#include "../utils/constraints.hh"
 #include "hit.hh"
 #include <vector>
 
@@ -17,8 +16,9 @@ namespace rt::raytracer
     //   - 3rd bounce is `*next(hits.rbegin(), 3)`
     //   - ⋮
     //   - last bounce is `*hits.begin()` i.e. `hits.front()`
-    struct path_type: utils::only_movable
+    struct path_type
     {
+        hits::missed miss;
         std::vector<hits::object> hits;
     };
 

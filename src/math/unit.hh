@@ -11,6 +11,7 @@ namespace rt::math
         using const_pointer = value_type const*;
         using const_reference = value_type const&;
 
+        unit() = default;
         unit(value_type value) : value{normalize(value)} {}
 
         auto& get() const { return value; }

@@ -27,7 +27,7 @@ namespace rt::raytracer
                         normal,
                     };
                 } else {
-                    return hits::missed{};
+                    return hits::missed{ray};
                 }
             }
 
@@ -35,13 +35,13 @@ namespace rt::raytracer
             {
                 // Raytracer DOES NOT render lines.
                 // So this is always missed.
-                return hits::missed{};
+                return hits::missed{ray};
             }
 
             geometry_hit_type intersect_geometry(ray_type const& ray, geometrys::mesh const& geom)
             {
                 // TODO
-                return hits::missed{};
+                return hits::missed{ray};
             }
         }
 
@@ -63,7 +63,7 @@ namespace rt::raytracer
             {
                 return std::accumulate(
                         begin(node.nodes), end(node.nodes),
-                        object_hit_type{hits::missed{}},
+                        object_hit_type{hits::missed{ray}},
                         [&] (auto hit, auto& node) {
                             return extent_lesser_one(hit, intersect(node, ray));
                         });

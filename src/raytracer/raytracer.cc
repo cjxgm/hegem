@@ -6,12 +6,12 @@ namespace rt::raytracer
 {
     path_type raytrace(scene::scene_type const& scene, ray_type const& ray, int remaining_bounce_count)
     {
+        if (remaining_bounce_count < 0) return path_type{hits::missed{ray}, {}};
+
         return intersect(scene.root, ray).match(
-            [] (hits::missed) { return path_type{}; },
+            [&] (hits::missed m) { return path_type{m, {}}; },
             [&] (hits::object hit) {
-                auto path = remaining_bounce_count > 0
-                        ? raytrace(scene, /* TODO: reflected lobe-sampled */ ray, remaining_bounce_count-1)
-                        : path_type{};
+                auto path = raytrace(scene, /* TODO: reflected lobe-sampled */ ray, remaining_bounce_count-1);
                 path.hits.emplace_back(hit);
                 return path;
             }
