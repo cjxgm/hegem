@@ -208,6 +208,7 @@ namespace rt::scene
         return {
             std::move(mats),
             { view_type{{}, cam} },
+            {},     // TODO: parse lamps
             env_id,
             node,
         };
