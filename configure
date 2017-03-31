@@ -236,7 +236,7 @@ sub deps__impl_headers_outdated
     my ($impl_path) = @_;
     my $info = $file_infos{$impl_path};
     my $deps = $info->{dependencies};
-    my $outdated = grep { &deps__file_outdated($_) } @$deps;
+    my $outdated = grep { !-e $_ || &deps__file_outdated($_) } @$deps;
     $outdated;
 }
 
