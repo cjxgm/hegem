@@ -124,7 +124,7 @@ namespace rt::raytracer::shading_details
             auto& hits = buf[pos].hits;
             if (hits.empty()) return;
             auto& hit = hits.back();
-            auto depth = hit.geom.ray_extent * dot(*hit.geom.ray.dir, *forward);
+            auto depth = hit.shape_info.ray_extent * dot(*hit.shape_info.ray.dir, *forward);
             pixel = linear_rgb{depth};
         });
 
@@ -141,7 +141,7 @@ namespace rt::raytracer::shading_details
             auto& hits = buf[pos].hits;
             if (hits.empty()) return;
             auto& hit = hits.back();
-            direction_type view_normal = inv_camera_rot * *hit.geom.normal;
+            direction_type view_normal = inv_camera_rot * *hit.shape_info.normal;
             pixel = *view_normal * 0.5f + 0.5f;
         });
 

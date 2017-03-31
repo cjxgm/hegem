@@ -13,7 +13,7 @@ namespace rt::raytracer
         using direction_type = math::unit<glm::vec3>;
         using scene::material_id_type;
 
-        struct geometry
+        struct shape
         {
             ray_type ray;
             float ray_extent;
@@ -24,7 +24,7 @@ namespace rt::raytracer
         struct object
         {
             material_id_type material_id;
-            geometry geom;
+            shape shape_info;
         };
 
         struct missed
@@ -32,8 +32,8 @@ namespace rt::raytracer
             ray_type ray;
         };
 
-        using geometry_hit_type = mapbox::util::variant<
-            geometry,
+        using shape_hit_type = mapbox::util::variant<
+            shape,
             missed
         >;
 
@@ -50,7 +50,7 @@ namespace rt::raytracer
         object_hit_type extent_lesser_one(object_hit_type a, object_hit_type b);
     }
 
-    using hits::geometry_hit_type;
+    using hits::shape_hit_type;
     using hits::object_hit_type;
 }
 

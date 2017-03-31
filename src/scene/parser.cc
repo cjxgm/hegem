@@ -3,7 +3,7 @@
 #include "camera.hh"
 #include "view.hh"
 #include "material.hh"
-#include "geometry.hh"
+#include "shape.hh"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -126,10 +126,10 @@ namespace rt::scene
         }
 
         template <>
-        geometrys::sphere expect<geometrys::sphere>(std::string const& name, std::istream & ist)
+        shapes::sphere expect<shapes::sphere>(std::string const& name, std::istream & ist)
         {
             expect(ist, "{");
-            geometrys::sphere geo{
+            shapes::sphere geo{
                 (expect(ist, "center"), expect<glm::vec3>(name + ": center", ist)),
                 (expect(ist, "radius"), expect<float>(name + ": radius", ist)),
             };
@@ -138,15 +138,15 @@ namespace rt::scene
         }
 
         template <>
-        geometry_type expect<geometry_type>(std::string const& name, std::istream & ist)
+        shape_type expect<shape_type>(std::string const& name, std::istream & ist)
         {
-            auto kind = expect<std::string>(name + ": geometry kind", ist);
+            auto kind = expect<std::string>(name + ": shape kind", ist);
 
             if (kind == "sphere") {
-                return expect<geometrys::sphere>(name + ": sphere", ist);
+                return expect<shapes::sphere>(name + ": sphere", ist);
             }
 
-            throw std::runtime_error{"Unknown geometry kind: " + kind};
+            throw std::runtime_error{"Unknown shape kind: " + kind};
         }
 
         template <>
@@ -155,7 +155,7 @@ namespace rt::scene
             expect(ist, "{");
             nodes::object node{
                 (expect(ist, "material-id"), expect<material_id_type>(name + ": material identity", ist)),
-                expect<geometry_type>(name + ": geometry", ist),
+                expect<shape_type>(name + ": shape", ist),
             };
             expect(ist, "}");
             return node;

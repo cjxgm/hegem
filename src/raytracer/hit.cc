@@ -10,7 +10,7 @@ namespace rt::raytracer::hits
                     return b.match(
                             [] (missed) { return true; },
                             [&] (object const& b) {
-                                return (a.geom.ray_extent < b.geom.ray_extent);
+                                return (a.shape_info.ray_extent < b.shape_info.ray_extent);
                             });
                 });
     }

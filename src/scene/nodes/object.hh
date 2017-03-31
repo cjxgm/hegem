@@ -1,5 +1,5 @@
 #pragma once
-#include "../geometry.hh"
+#include "../shape.hh"
 #include "../material.hh"
 
 namespace rt::scene::nodes
@@ -7,7 +7,7 @@ namespace rt::scene::nodes
     struct object
     {
         material_id_type material_id;
-        geometry_type geometry;
+        shape_type shape;
     };
 }
 

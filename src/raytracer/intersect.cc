@@ -1,5 +1,5 @@
 #include "../lib/glm/op/intersect.hh"
-#include "../scene/geometry.hh"
+#include "../scene/shape.hh"
 #include "intersect.hh"
 #include <numeric>
 
@@ -9,18 +9,18 @@ namespace rt::raytracer
     {
         using namespace scene;
 
-        inline namespace intersect_geometry_details
+        inline namespace intersect_shape_details
         {
-            geometry_hit_type intersect_geometry(ray_type const& ray, geometrys::sphere const& geom)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::sphere const& shape_info)
             {
                 hits::point_type position;
                 glm::vec3 normal;
 
                 if (intersectRaySphere(
                             ray.origin, *ray.dir,
-                            geom.center, geom.radius,
+                            shape_info.center, shape_info.radius,
                             position, normal)) {
-                    return hits::geometry{
+                    return hits::shape{
                         ray,
                         distance(ray.origin, position),
                         position,
@@ -31,14 +31,14 @@ namespace rt::raytracer
                 }
             }
 
-            geometry_hit_type intersect_geometry(ray_type const& ray, geometrys::line_segment const& geom)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::line_segment const& shape_info)
             {
                 // Raytracer DOES NOT render lines.
                 // So this is always missed.
                 return hits::missed{ray};
             }
 
-            geometry_hit_type intersect_geometry(ray_type const& ray, geometrys::mesh const& geom)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& shape_info)
             {
                 // TODO
                 return hits::missed{ray};
@@ -49,12 +49,12 @@ namespace rt::raytracer
         {
             object_hit_type intersect_node(ray_type const& ray, nodes::object const& node)
             {
-                return node.geometry.match([&] (auto& geom) {
-                        return intersect_geometry(ray, geom);
+                return node.shape.match([&] (auto& shape_info) {
+                        return intersect_shape(ray, shape_info);
                     }).match(
                         [] (hits::missed m) -> object_hit_type { return m; },
-                        [&] (hits::geometry geom) -> object_hit_type {
-                            return hits::object{ node.material_id, geom };
+                        [&] (hits::shape shape_info) -> object_hit_type {
+                            return hits::object{ node.material_id, shape_info };
                         }
                     );
             }

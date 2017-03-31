@@ -5,7 +5,7 @@
 
 namespace rt::scene
 {
-    namespace geometrys
+    namespace shapes
     {
         struct sphere
         {
@@ -23,13 +23,13 @@ namespace rt::scene
             // TODO
         };
 
-        using geometry_type = mapbox::util::variant<
+        using shape_type = mapbox::util::variant<
             sphere,
             line_segment,
             mesh
         >;
     }
 
-    using geometrys::geometry_type;
+    using shapes::shape_type;
 }
 
