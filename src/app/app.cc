@@ -17,11 +17,16 @@ namespace rt::app
             s.views[0].camera(),
         };
 
-        auto buf = raytracer::raytrace(s, 0, 0);
+        auto result = raytracer::raytrace(s, 0, 0);
+        auto& image = std::get<0>(result);
+        auto& buf = std::get<1>(result);
 
         if (!opts.output_path.empty()) {
-            auto composite = raytracer::shade(buf, s);
-            write(to_srgb(composite), opts.output_path);
+            write(to_srgb(tonemap(
+                            image,
+                            linear_rgb{0},
+                            linear_rgb{1})),
+                    opts.output_path);
         }
         if (!opts.depth_path.empty()) {
             auto depth = raytracer::shade_depth(buf, s, 0);

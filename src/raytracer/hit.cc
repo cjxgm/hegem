@@ -25,3 +25,8 @@ namespace rt::raytracer::hits
     }
 }
 
+namespace rt::image::image_impl
+{
+    template struct image<raytracer::object_hit_type>;
+}
+

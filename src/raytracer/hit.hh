@@ -3,6 +3,8 @@
 #include "../lib/mapbox/variant.hh"
 #include "../scene/material.hh"
 #include "../math/unit.hh"
+#include "../image/image.hh"
+#include "../image/color.hh"
 #include "ray.hh"
 
 namespace rt::raytracer
@@ -11,6 +13,7 @@ namespace rt::raytracer
     {
         using point_type = glm::vec3;
         using direction_type = math::unit<glm::vec3>;
+        using color_type = image::color::linear_rgb;
         using scene::material_id_type;
 
         struct shape
@@ -42,15 +45,30 @@ namespace rt::raytracer
             missed
         >;
 
+        struct shaded_object_hit_type
+        {
+            object_hit_type hit;
+            color_type radiance;
+        };
+
         // missed < missed: false
         // missed < hit   : false
         //    hit < missed: true
         //    hit < hit   : (a.extent < b.extent)
         bool less_extent(object_hit_type const& a, object_hit_type const& b);
         object_hit_type extent_lesser_one(object_hit_type a, object_hit_type b);
+
+        using hit_buffer_type = image::image<object_hit_type>;
     }
 
     using hits::shape_hit_type;
     using hits::object_hit_type;
+    using hits::shaded_object_hit_type;
+    using hits::hit_buffer_type;
+}
+
+namespace rt::image::image_impl
+{
+    extern template struct image<raytracer::object_hit_type>;
 }
 

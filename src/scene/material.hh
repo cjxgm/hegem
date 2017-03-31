@@ -14,6 +14,9 @@ namespace rt::scene
             phong,
             physically_based
         >;
+
+        bool reflective(material_type const& mat);
+        bool refractive(material_type const& mat);
     }
 
     using materials::material_type;
