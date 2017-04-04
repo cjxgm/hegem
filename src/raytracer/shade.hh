@@ -13,9 +13,6 @@ namespace rt::raytracer
         using color_type = image::color::linear_rgb;
         using scene::scene_type;
 
-        image_type shade_depth(hit_buffer_type const& buf, scene_type const& scene, int view_id);
-        image_type shade_normal(hit_buffer_type const& buf, scene_type const& scene, int view_id);
-
         color_type shade_environment(scene_type const& scene, ray_type const& ray);
         color_type shade_diffuse(scene_type const& scene, hits::object const& hit);
         color_type shade_illumination(
@@ -24,6 +21,13 @@ namespace rt::raytracer
                 color_type const& diffuse,
                 color_type const& reflected,
                 color_type const& refracted);
+        #include "shade.impl/environment.pull"
+        #include "shade.impl/diffuse.pull"
+        #include "shade.impl/illumination.pull"
+
+        image_type shade_depth(hit_buffer_type const& buf, scene_type const& scene, int view_id);
+        image_type shade_normal(hit_buffer_type const& buf, scene_type const& scene, int view_id);
+        #include "shade.impl/extra.pull"
     }
 
     using shading_details::shade_depth;
