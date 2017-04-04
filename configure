@@ -298,7 +298,7 @@ sub deps__clear_unknown_files
 sub path__impl_from_header
 {
     my ($header) = @_;
-    $header =~ s{\.(?:hh|hpp|hxx|h\+\+|H|h)$}{} or return;
+    $header =~ s{\.(?:hh|hpp|hxx|h\+\+|H|h|pull)$}{} or return;
     grep { -f } map { "$header.$_" } qw[cc cpp cxx c++ C c];
 }
 
