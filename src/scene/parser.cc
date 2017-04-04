@@ -4,214 +4,250 @@
 #include "view.hh"
 #include "material.hh"
 #include "shape.hh"
+#include "node.hh"
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 namespace rt::scene
 {
     namespace
     {
         using material_container_type = scene_type::material_container_type;
+        using group_node_container_type = nodes::group::node_container_type;
 
-        template <class T>
-        auto all_to_string(T&& x)
+        inline namespace literal_to_string_details
         {
-            std::ostringstream oss;
-            oss << x;
-            return oss.str();
+            template <class T, class = std::enable_if_t<std::is_arithmetic<T>::value>>
+            auto literal_to_string(T&& x)
+            {
+                std::ostringstream oss;
+                oss << x;
+                return oss.str();
+            }
+
+            auto literal_to_string(char const* x)
+            {
+                std::ostringstream oss;
+                oss << std::quoted(x);
+                return oss.str();
+            }
+
+            auto literal_to_string(std::string const& x)
+            {
+                return literal_to_string(x.data());
+            }
         }
 
-        template <class T>
-        T expect(std::string const& name, std::istream & ist)
+        inline namespace expect_details
         {
-            T x;
-            if (ist >> x) return x;
-            throw std::runtime_error{name + " expected"};
+            template <class T>
+            void expect(std::istream & ist, T&& x)
+            {
+                T v;
+                if ((ist >> v) && v == x) return;
+                throw std::runtime_error{"literal " + literal_to_string(x) + " expected"};
+            }
+
+            void expect(std::istream & ist, char const* x)
+            {
+                expect<std::string>(ist, x);
+            }
+
+            #define EXPECT(WHAT) expect(ist, WHAT)
         }
 
-        template <class T>
-        void expect(std::istream & ist, T&& x)
+        inline namespace parse_details
         {
-            T v;
-            if ((ist >> v) && v == x) return;
-            throw std::runtime_error{"\"" + all_to_string(x) + "\" literal expected"};
-        }
+            inline namespace impl
+            {
+                template <class T>
+                T parse(std::istream & ist, std::string const& name)
+                {
+                    T x;
+                    if (ist >> x) return x;
+                    throw std::runtime_error{"failed to parse " + name};
+                }
 
-        void expect(std::istream & ist, char const* x)
-        {
-            expect<std::string>(ist, x);
-        }
+                #define PARSE_FOR(WHAT) inline namespace impl
+                #define PARSE(TYPE, NAME) parse<TYPE>(ist, name + ": " #NAME)
+                #define PARSE_KV(TYPE, NAME) (EXPECT(#NAME), PARSE(TYPE, NAME))
 
-        template <>
-        glm::vec3 expect<glm::vec3>(std::string const& name, std::istream & ist)
-        {
-            return {
-                expect<float>(name + ": vec3.x", ist),
-                expect<float>(name + ": vec3.y", ist),
-                expect<float>(name + ": vec3.z", ist),
-            };
-        }
+                #define FN_PARSE(TYPE) \
+                    template <> \
+                    TYPE parse<TYPE>(std::istream & ist, std::string const& name)
 
-        struct background
-        {
-            glm::vec3 color;
-        };
 
-        template <>
-        background expect<background>(std::string const& name, std::istream & ist)
-        {
-            expect(ist, "background");
-            expect(ist, "{");
-            background bg{
-                (expect(ist, "color"), expect<glm::vec3>(name + ": color", ist)),
-            };
-            expect(ist, "}");
-            return bg;
-        }
+                #define RETURN_PARSE_BLOCK(TYPE, CONTENT...) do { \
+                    EXPECT("{"); \
+                    TYPE parse_block__item \
+                        CONTENT; \
+                    EXPECT("}"); \
+                    return parse_block__item; \
+                } while (false)
 
-        template <>
-        camera_type expect<camera_type>(std::string const& name, std::istream & ist)
-        {
-            auto kind = expect<std::string>(name + ": camera kind", ist);
+                #define FN_PARSE_BLOCK(TYPE, CONTENT...) \
+                    FN_PARSE(TYPE) \
+                    { \
+                        RETURN_PARSE_BLOCK(TYPE, CONTENT); \
+                    }
 
-            if (kind == "orthographic-camera") {
-                expect(ist, "{");
-                cameras::orthographic cam{
-                    (expect(ist, "center"), expect<glm::vec3>(name + ": center", ist)),
-                    (expect(ist, "direction"), expect<glm::vec3>(name + ": direction", ist)),
-                    (expect(ist, "up"), expect<glm::vec3>(name + ": up", ist)),
-                    (expect(ist, "size"), expect<float>(name + ": size", ist)),
+
+                #define RETURN_PARSE_VARIANT(NAME, CONTENT...) do { \
+                    auto parse_variant__kind = PARSE(std::string, NAME-kind); \
+                    CONTENT; \
+                    throw std::runtime_error{"Unknown " #NAME "-kind: " + parse_variant__kind}; \
+                } while (false)
+
+                #define RETURN_PARSE_VARIANT_ALTERNATIVE(TYPE, NAME) \
+                    if (parse_variant__kind == #NAME) return PARSE(TYPE, NAME);
+
+                #define FN_PARSE_VARIANT(TYPE, NAME, CONTENT...) \
+                    FN_PARSE(TYPE) \
+                    { \
+                        RETURN_PARSE_VARIANT(NAME, CONTENT); \
+                    }
+
+
+                #define RETURN_PARSE_VARIANT_LIST(TYPE, NAME, CONTENT...) do { \
+                    EXPECT("{"); \
+                    TYPE parse_variant_list__container; \
+                    while (true) { \
+                        auto parse_variant_list__kind = PARSE(std::string, NAME-kind); \
+                        if (parse_variant_list__kind == "}") { \
+                            return parse_variant_list__container; \
+                        } \
+                        CONTENT; \
+                        throw std::runtime_error{"Unknown " #NAME "-kind: " + parse_variant_list__kind}; \
+                    } \
+                } while (false)
+
+                #define RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(TYPE, NAME) \
+                    if (parse_variant_list__kind == #NAME) { \
+                        parse_variant_list__container.emplace_back(PARSE(TYPE, NAME)); \
+                        continue; \
+                    }
+
+                #define FN_PARSE_VARIANT_LIST(TYPE, NAME, CONTENT...) \
+                    FN_PARSE(TYPE) \
+                    { \
+                        RETURN_PARSE_VARIANT_LIST(TYPE, NAME, CONTENT); \
+                    }
+            }
+
+            PARSE_FOR(primitives)
+            {
+                FN_PARSE(glm::vec3)
+                {
+                    return {
+                        PARSE(float, vec3.x),
+                        PARSE(float, vec3.y),
+                        PARSE(float, vec3.z),
+                    };
+                }
+            }
+
+            PARSE_FOR(background)
+            {
+                struct background
+                {
+                    glm::vec3 color;
                 };
-                expect(ist, "}");
-                return cam;
+
+                FN_PARSE_BLOCK(background, {
+                    PARSE_KV(glm::vec3, color),
+                });
             }
 
-            throw std::runtime_error{"Unknown camera kind: " + kind};
-        }
+            PARSE_FOR(camera)
+            {
+                FN_PARSE_BLOCK(cameras::orthographic, {
+                    PARSE_KV(glm::vec3, center),
+                    PARSE_KV(glm::vec3, direction),
+                    PARSE_KV(glm::vec3, up),
+                    PARSE_KV(float, size),
+                });
 
-        template <>
-        materials::phong expect<materials::phong>(std::string const& name, std::istream & ist)
-        {
-            expect(ist, "{");
-            materials::phong mat{
-                (expect(ist, "diffuse-color"), expect<glm::vec3>(name + ": diffuse color", ist)),
-            };
-            expect(ist, "}");
-            return mat;
-        }
-
-        template <>
-        material_container_type expect<material_container_type>(std::string const& name, std::istream & ist)
-        {
-            material_container_type mats;
-            expect(ist, "materials");
-            expect(ist, "{");
-
-            while (true) {
-                auto kind = expect<std::string>(name + ": material kind", ist);
-
-                if (kind == "}") {
-                    return mats;
-                }
-
-                if (kind == "phong-material") {
-                    mats.emplace_back(expect<materials::phong>(name + ": phong", ist));
-                    continue;
-                }
-
-                throw std::runtime_error{"Unknown material kind: " + kind};
-            }
-        }
-
-        template <>
-        shapes::sphere expect<shapes::sphere>(std::string const& name, std::istream & ist)
-        {
-            expect(ist, "{");
-            shapes::sphere geo{
-                (expect(ist, "center"), expect<glm::vec3>(name + ": center", ist)),
-                (expect(ist, "radius"), expect<float>(name + ": radius", ist)),
-            };
-            expect(ist, "}");
-            return geo;
-        }
-
-        template <>
-        shape_type expect<shape_type>(std::string const& name, std::istream & ist)
-        {
-            auto kind = expect<std::string>(name + ": shape kind", ist);
-
-            if (kind == "sphere") {
-                return expect<shapes::sphere>(name + ": sphere", ist);
+                FN_PARSE_VARIANT(camera_type, camera, {
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(cameras::orthographic, orthographic-camera);
+                });
             }
 
-            throw std::runtime_error{"Unknown shape kind: " + kind};
-        }
+            PARSE_FOR(material_list)
+            {
+                FN_PARSE_BLOCK(materials::phong, {
+                    PARSE_KV(glm::vec3, diffuse-color),
+                });
 
-        template <>
-        nodes::object expect<nodes::object>(std::string const& name, std::istream & ist)
-        {
-            expect(ist, "{");
-            nodes::object node{
-                (expect(ist, "material-id"), expect<material_id_type>(name + ": material identity", ist)),
-                expect<shape_type>(name + ": shape", ist),
-            };
-            expect(ist, "}");
-            return node;
-        }
-
-        template <>
-        nodes::group expect<nodes::group>(std::string const& name, std::istream & ist)
-        {
-            expect(ist, "{");
-            nodes::group group;
-
-            while (true) {
-                auto kind = expect<std::string>(name + ": node kind", ist);
-
-                if (kind == "}") {
-                    return group;
-                }
-
-                if (kind == "group") {
-                    group.nodes.emplace_back(expect<nodes::group>(name + ": group", ist));
-                    continue;
-                }
-
-                if (kind == "object") {
-                    group.nodes.emplace_back(expect<nodes::object>(name + ": object", ist));
-                    continue;
-                }
-
-                throw std::runtime_error{"Unknown node kind: " + kind};
+                FN_PARSE_VARIANT_LIST(material_container_type, material, {
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(materials::phong, phong-material);
+                });
             }
-        }
 
-        template <>
-        node_type expect<node_type>(std::string const& name, std::istream & ist)
-        {
-            expect(ist, "group");
-            return expect<nodes::group>(name + ": group node", ist);
+            PARSE_FOR(shape)
+            {
+                FN_PARSE_BLOCK(shapes::sphere, {
+                    PARSE_KV(glm::vec3, center),
+                    PARSE_KV(float, radius),
+                });
+
+                FN_PARSE_VARIANT(shape_type, shape, {
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::sphere, sphere);
+                });
+            }
+
+            PARSE_FOR(node)
+            {
+                FN_PARSE_BLOCK(nodes::object, {
+                    PARSE_KV(material_id_type, material-id),
+                    PARSE(shape_type, shape),
+                });
+
+                FN_PARSE(nodes::group);
+
+                FN_PARSE_VARIANT_LIST(group_node_container_type, node, {
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(nodes::group, group);
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(nodes::object, object);
+                });
+
+                FN_PARSE(nodes::group)
+                {
+                    return {
+                        PARSE(group_node_container_type, nodes),
+                    };
+                }
+            }
+
+            PARSE_FOR(scene)
+            {
+                FN_PARSE(scene_type)
+                {
+                    auto cam = PARSE(camera_type, camera);
+                    auto bg = PARSE_KV(background, background);
+                    auto mats = PARSE_KV(material_container_type, materials);
+                    auto node = PARSE_KV(nodes::group, group);
+
+                    mats.emplace_back(materials::solid_color{bg.color});
+                    auto env_id = mats.size() - 1;
+
+                    return {
+                        std::move(mats),
+                        { view_type{{}, cam} },
+                        {},     // TODO: parse lamps
+                        env_id,
+                        node,
+                    };
+                }
+            }
         }
     }
 
     scene_type from_istream(std::istream & ist)
     {
-        auto cam = expect<camera_type>("camera", ist);
-        auto bg = expect<background>("background", ist);
-        auto mats = expect<material_container_type>("materials", ist);
-        auto node = expect<node_type>("root node", ist);
-
-        mats.emplace_back(materials::solid_color{bg.color});
-        auto env_id = mats.size() - 1;
-        return {
-            std::move(mats),
-            { view_type{{}, cam} },
-            {},     // TODO: parse lamps
-            env_id,
-            node,
-        };
+        return parse<scene_type>(ist, "scene");
     }
 
     scene_type from_path(gsl::cstring_span<> path)
