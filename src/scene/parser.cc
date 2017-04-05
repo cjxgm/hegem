@@ -1,4 +1,5 @@
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/op/trig.hh"
 #include "parser.hh"
 #include "camera.hh"
 #include "view.hh"
@@ -171,8 +172,16 @@ namespace rt::scene
                     PARSE_KV(float, size),
                 });
 
+                FN_PARSE_BLOCK(cameras::pin_hole, {
+                    PARSE_KV(glm::vec3, center),
+                    PARSE_KV(glm::vec3, direction),
+                    PARSE_KV(glm::vec3, up),
+                    glm::radians(PARSE_KV(float, angle)),
+                });
+
                 FN_PARSE_VARIANT(camera_type, camera, {
                     RETURN_PARSE_VARIANT_ALTERNATIVE(cameras::orthographic, orthographic-camera);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(cameras::pin_hole, perspective-camera);
                 });
             }
 

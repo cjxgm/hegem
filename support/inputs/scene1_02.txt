@@ -1,9 +1,9 @@
 
-orthographic-camera {
-    center 0 0 10
-    direction 0 0 -1
+perspective-camera {
+    center -0.2 2 4
+    direction 0.2 -0.5 -1
     up 0 1 0
-    size 5
+    angle 60
 }
 
 background { color 0.1 0.1 0.1 }
