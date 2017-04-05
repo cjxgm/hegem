@@ -18,6 +18,9 @@ materials {
     phong-material {
         diffuse-color 0 0 1
     }
+    phong-material {
+        diffuse-color 0.1 0.3 0
+    }
 }
 
 group {
@@ -56,6 +59,14 @@ group {
         sphere {
             center 1 -1 -1
             radius 0.75
+        }
+    }
+
+    object {
+        material-id 3
+        plane {
+            normal 0 2 -1
+            offset -2
         }
     }
 }

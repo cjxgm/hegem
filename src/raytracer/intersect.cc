@@ -31,6 +31,25 @@ namespace rt::raytracer
                 }
             }
 
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::plane const& shape)
+            {
+                auto p = ray.origin - *shape.normal * shape.offset;
+                auto pn = dot( p      , *shape.normal);
+                auto dn = dot(*ray.dir, *shape.normal);
+
+                if (pn * dn < 0) {
+                    auto extent = pn / -dn;
+                    return hits::shape{
+                        ray,
+                        extent,
+                        ray.at(extent),
+                        shape.normal,
+                    };
+                } else {
+                    return hits::missed{ray};
+                }
+            }
+
             shape_hit_type intersect_shape(ray_type const& ray, shapes::line_segment const& shape)
             {
                 // Raytracer DOES NOT render lines.

@@ -203,8 +203,14 @@ namespace rt::scene
                     PARSE_KV(float, radius),
                 });
 
+                FN_PARSE_BLOCK(shapes::plane, {
+                    PARSE_KV(glm::vec3, normal),
+                    PARSE_KV(float, offset),
+                });
+
                 FN_PARSE_VARIANT(shape_type, shape, {
                     RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::sphere, sphere);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::plane, plane);
                 });
             }
 
