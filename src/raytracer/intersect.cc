@@ -11,14 +11,14 @@ namespace rt::raytracer
 
         inline namespace intersect_shape_details
         {
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::sphere const& shape_info)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::sphere const& shape)
             {
                 hits::point_type position;
                 glm::vec3 normal;
 
                 if (intersectRaySphere(
                             ray.origin, *ray.dir,
-                            shape_info.center, shape_info.radius,
+                            shape.center, shape.radius,
                             position, normal)) {
                     return hits::shape{
                         ray,
@@ -31,14 +31,14 @@ namespace rt::raytracer
                 }
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::line_segment const& shape_info)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::line_segment const& shape)
             {
                 // Raytracer DOES NOT render lines.
                 // So this is always missed.
                 return hits::missed{ray};
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& shape_info)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& shape)
             {
                 // TODO
                 return hits::missed{ray};
@@ -49,8 +49,8 @@ namespace rt::raytracer
         {
             object_hit_type intersect_node(ray_type const& ray, nodes::object const& node)
             {
-                return node.shape.match([&] (auto& shape_info) {
-                        return intersect_shape(ray, shape_info);
+                return node.shape.match([&] (auto& shape) {
+                        return intersect_shape(ray, shape);
                     }).match(
                         [] (hits::missed m) -> object_hit_type { return m; },
                         [&] (hits::shape shape_info) -> object_hit_type {
