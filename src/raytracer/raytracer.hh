@@ -1,5 +1,6 @@
 #pragma once
 #include "hit.hh"
+#include "ray.hh"
 #include "../image/image.hh"
 #include "../scene/scene.hh"
 #include <tuple>

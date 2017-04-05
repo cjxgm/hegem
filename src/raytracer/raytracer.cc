@@ -1,5 +1,3 @@
-#include "../lib/glm/vec4.hh"
-#include "../scene/material.hh"
 #include "../image/color.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
@@ -63,17 +61,15 @@ namespace rt::raytracer::raytracer_details
             int max_bounce_count)
     {
         auto& view = scene.views[view_id];
-        auto view_camera_transform = view.transformation();
+        auto& cam = view.camera();
+        auto s2cp = view.screen_space_to_camera_plane_space();
+
         image_type img{view.size()};
         hit_buffer_type buf{view.size()};
 
         buf.each([&] (auto& hit, auto pos) {
-            auto homo_origin       = view_camera_transform * glm::vec4{pos,  0, 1};
-            auto homo_extent_point = view_camera_transform * glm::vec4{pos, -1, 1};
-            auto origin       = homo_origin.xyz()       / homo_origin.w;
-            auto extent_point = homo_extent_point.xyz() / homo_extent_point.w;
-            ray_type ray{origin, extent_point - origin};
-
+            auto p = s2cp * glm::vec3{pos, 1};
+            auto ray = camera_ray_from_camera_plane(p, cam);
             auto shaded_hit = raytrace(scene, ray, max_bounce_count);
             hit = shaded_hit.hit;
             img[pos] = shaded_hit.radiance;

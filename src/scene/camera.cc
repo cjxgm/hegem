@@ -4,27 +4,30 @@
 
 namespace rt::scene::cameras
 {
-    glm::mat4 orthographic::transformation() const
+    glm::mat3 camera_space_to_world_space_rotation_only(camera_type const& cam)
     {
-        auto half = size / 2.0f;
-        auto rot = rotation();
-        return {
-            glm::vec4{rot[0] * half, 0},
-            glm::vec4{rot[1] * half, 0},
-            glm::vec4{rot[2]       , 0},
-            glm::vec4{center       , 1},
-        };
+        return cam.match([] (auto& cam) {
+            direction_type right = cross(*cam.forward, *cam.up);
+            direction_type proper_up = cross(*right, *cam.forward);
+            return glm::mat3{
+                *right,
+                *proper_up,
+                -*cam.forward,
+            };
+        });
     }
 
-    glm::mat3 orthographic::rotation() const
+    glm::mat4 camera_space_to_world_space(camera_type const& cam)
     {
-        direction_type right = cross(*forward, *up);
-        direction_type proper_up = cross(*right, *forward);
-        return {
-            *right,
-            *proper_up,
-            -*forward, // <--- This. It will help you understand your question in src/raytracer/shade.cc.
-        };
+        return cam.match([&] (auto& cam_alt) {
+            auto c2w_rot = camera_space_to_world_space_rotation_only(cam);
+            return glm::mat4{
+                glm::vec4{c2w_rot[0]    , 0},
+                glm::vec4{c2w_rot[1]    , 0},
+                glm::vec4{c2w_rot[2]    , 0},
+                glm::vec4{cam_alt.center, 1},
+            };
+        });
     }
 }
 

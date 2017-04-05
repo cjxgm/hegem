@@ -13,28 +13,14 @@ namespace rt::scene
 
         struct pin_hole
         {
-            // TODO
-            glm::mat4 transformation() const { return {}; }
-            glm::mat3 rotation() const { return {}; }
+            glm::vec3 center;
+            direction_type forward;
+            direction_type up;
+            float fov;
         };
 
         struct orthographic
         {
-            orthographic(
-                    glm::vec3 center,
-                    direction_type forward,
-                    direction_type up,
-                    float size)
-                : center{center}
-                , forward{forward}
-                , up{up}
-                , size{size}
-            {}
-
-            glm::mat4 transformation() const;
-            glm::mat3 rotation() const;
-
-        private:
             glm::vec3 center;
             direction_type forward;
             direction_type up;
@@ -42,8 +28,13 @@ namespace rt::scene
         };
 
         using camera_type = mapbox::util::variant<orthographic, pin_hole>;
+
+        glm::mat3 camera_space_to_world_space_rotation_only(camera_type const& cam);
+        glm::mat4 camera_space_to_world_space(camera_type const& cam);
     }
 
     using cameras::camera_type;
+    using cameras::camera_space_to_world_space_rotation_only;
+    using cameras::camera_space_to_world_space;
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "../lib/glm/vec2.hh"
-#include "../lib/glm/mat4.hh"
+#include "../lib/glm/mat3.hh"
 #include "camera.hh"
 #include <utility>
 
@@ -15,8 +15,7 @@ namespace rt::scene
             , camera_{std::move(camera)}
         {}
 
-        glm::mat4 transformation() const;
-        glm::mat3 camera_rotation() const;
+        glm::mat3 screen_space_to_camera_plane_space() const;
 
         auto& size() const { return size_; }
         auto& camera() const { return camera_; }

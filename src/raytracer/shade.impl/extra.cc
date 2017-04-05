@@ -15,11 +15,7 @@ namespace rt::raytracer::shading_details
     image_type shade_depth(hit_buffer_type const& buf, scene_type const& scene, int view_id)
     {
         auto& view = scene.views[view_id];
-        auto view_camera_transform = view.transformation();
-
-        // Don't ask me why. It's just this.
-        // See src/scene/camera.cc to figure out why.
-        direction_type forward = -view_camera_transform[2].xyz();
+        direction_type forward = view.camera().match([] (auto& cam) { return cam.forward; });
 
         image_type img{buf.size(), color_type{inf}};
         img.each([&] (auto& pixel, auto pos) {
@@ -38,15 +34,15 @@ namespace rt::raytracer::shading_details
     image_type shade_normal(hit_buffer_type const& buf, scene_type const& scene, int view_id)
     {
         auto& view = scene.views[view_id];
-        auto inv_camera_rot = inverse(view.camera_rotation());
+        auto c2w_rot = scene::camera_space_to_world_space_rotation_only(view.camera());
+        auto w2c_rot = inverse(c2w_rot);
 
         image_type img{buf.size(), color_type{0.5, 0.5, 1}};
         img.each([&] (auto& pixel, auto pos) {
             buf[pos].match(
                     [] (hits::missed) {},
                     [&] (hits::object const& hit) {
-                        direction_type view_normal = inv_camera_rot
-                                * *hit.shape_info.normal;
+                        direction_type view_normal = w2c_rot * *hit.shape_info.normal;
                         pixel = *view_normal * 0.5f + 0.5f;
                     });
         });
