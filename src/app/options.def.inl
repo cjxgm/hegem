@@ -2,19 +2,19 @@
 // Define a list of command line options with metadata.
 
 #ifndef OPTION
-#   error "You must #define OPTION(...) before including this file."
+    #error "You must #define OPTION(...) before including this file."
 #endif
 
 #ifndef BEGIN_OPTIONS
-#   define BEGIN_OPTIONS
+    #define BEGIN_OPTIONS
 #endif
 
 #ifndef END_OPTIONS
-#   define END_OPTIONS
+    #define END_OPTIONS
 #endif
 
 #ifndef MORE_OPTIONS
-#   define MORE_OPTIONS
+    #define MORE_OPTIONS
 #endif
 
 // OPTION(type, variable_name, short, long, descriptive, default, check, check_args...)
@@ -55,32 +55,32 @@ OPTION(int        , anti_aliasing_level, ABBR(a), anti-aliasing, "anti-aliasing 
 END_OPTIONS
 
 #ifndef NO_UNDEF
-#   undef OPTION
-#   undef BEGIN_OPTIONS
-#   undef END_OPTIONS
-#   undef MORE_OPTIONS
-#
-#   ifdef ABBR
-#       undef ABBR
-#   endif
-#   ifdef DEFAULT
-#       undef DEFAULT
-#   endif
-#   ifdef CHECK_EMPTY
-#       undef CHECK_EMPTY
-#   endif
-#   ifdef CHECK_MIN
-#       undef CHECK_MIN
-#   endif
-#
-#   ifdef NO_ABBR
-#       undef NO_ABBR
-#   endif
-#   ifdef NO_DEFAULT
-#       undef NO_DEFAULT
-#   endif
-#   ifdef NO_CHECK
-#       undef NO_CHECK
-#   endif
+   #undef OPTION
+   #undef BEGIN_OPTIONS
+   #undef END_OPTIONS
+   #undef MORE_OPTIONS
+
+   #ifdef ABBR
+       #undef ABBR
+   #endif
+   #ifdef DEFAULT
+       #undef DEFAULT
+   #endif
+   #ifdef CHECK_EMPTY
+       #undef CHECK_EMPTY
+   #endif
+   #ifdef CHECK_MIN
+       #undef CHECK_MIN
+   #endif
+
+   #ifdef NO_ABBR
+       #undef NO_ABBR
+   #endif
+   #ifdef NO_DEFAULT
+       #undef NO_DEFAULT
+   #endif
+   #ifdef NO_CHECK
+       #undef NO_CHECK
+   #endif
 #endif
 
