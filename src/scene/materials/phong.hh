@@ -8,6 +8,11 @@ namespace rt::scene::materials
         using color_type = image::color::linear_rgb;
 
         color_type diffuse;
+        color_type reflection;
+        color_type refraction;
+        color_type specular;
+        float specular_exp;
+        float ior;
     };
 }
 

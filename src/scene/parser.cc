@@ -209,6 +209,11 @@ namespace rt::scene
             {
                 FN_PARSE_BLOCK(materials::phong, {
                     PARSE_KV(glm::vec3, diffuse-color),
+                    PARSE_KV(glm::vec3, reflection-color),
+                    PARSE_KV(glm::vec3, refraction-color),
+                    PARSE_KV(glm::vec3, specular-color),
+                    PARSE_KV(float, exponent),
+                    PARSE_KV(float, index-of-refraction),
                 });
 
                 FN_PARSE_VARIANT_LIST(material_container_type, material, {

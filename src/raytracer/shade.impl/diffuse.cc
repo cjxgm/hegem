@@ -1,5 +1,6 @@
 #include "../../lib/glm/vec3.hh"
 #include "../../lib/glm/op/geom.hh"
+#include "../../lib/glm/op/common.hh"
 #include "../../math/unit.hh"
 #include "../../scene/material.hh"
 #include "../../scene/lamp.hh"
@@ -56,6 +57,7 @@ namespace rt::raytracer::shading_details
             }
         };
 
+        // diffuse AND probably specular terms
         struct diffuse_term_extractor
         {
             ray_type const& to_lamp;
@@ -69,18 +71,25 @@ namespace rt::raytracer::shading_details
             }
 
         private:
-            float impl(materials::solid_color const& mat) const
+            color_type impl(materials::solid_color const& mat) const
             {
                 throw std::logic_error{"unreachable"};
             }
 
-            float impl(materials::phong const& mat) const
+            // Blinn-phong
+            color_type impl(materials::phong const& mat) const
             {
-                // TODO
-                return 1;
+                auto nl = glm::max(dot(*normal, *to_lamp.dir), 0.0f);
+                auto diffuse = mat.diffuse * nl;
+
+                direction_type half = *to_lamp.dir - *ray.dir;
+                auto nh = glm::max(dot(*normal, *half), 0.0f);     // FIXME: is this `max` necessary?
+                auto specular = glm::pow(nh, mat.specular_exp) * mat.specular * nl;
+
+                return diffuse + specular;
             }
 
-            float impl(materials::physically_based const& mat) const
+            color_type impl(materials::physically_based const& mat) const
             {
                 throw std::logic_error{"TODO"};
             }
@@ -90,12 +99,16 @@ namespace rt::raytracer::shading_details
     color_type shade_diffuse(scene_type const& scene, hits::object const& hit)
     {
         lamp_info_extractor lamp_info{hit};
-        diffuse_term_extractor diffuse_term{lamp_info.towards_lamp, hit.shape_info.ray, hit.shape_info.normal};
 
         color_type diffuse;
         auto& mat = scene.materials[hit.material_id];
         for (auto& lamp: scene.lamps) {
             apply_visitor(lamp_info, lamp);
+            diffuse_term_extractor diffuse_term{
+                lamp_info.towards_lamp,
+                hit.shape_info.ray,
+                hit.shape_info.normal,
+            };
 
             auto shadowed = intersect(scene.root, lamp_info.towards_lamp).match(
                     [] (hits::missed) { return false; },
