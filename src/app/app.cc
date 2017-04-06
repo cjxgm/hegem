@@ -25,7 +25,7 @@ namespace rt::app
             write(to_srgb(tonemap(
                             image,
                             linear_rgb{0},
-                            linear_rgb{1})),
+                            linear_rgb{10})),
                     opts.output_path);
         }
         if (!opts.depth_path.empty()) {
