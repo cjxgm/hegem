@@ -49,7 +49,7 @@ namespace rt::raytracer::ray_details
     ray_type camera_ray_from_camera_plane(position_type const& p, camera_type const& cam)
     {
         camera_ray_generator gen{p, scene::camera_space_to_world_space(cam)};
-        return cam.match(gen);
+        return apply_visitor(gen, cam);
     }
 }
 

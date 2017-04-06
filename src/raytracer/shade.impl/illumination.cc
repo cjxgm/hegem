@@ -49,7 +49,7 @@ namespace rt::raytracer::shading_details
             color_type const& refracted)
     {
         illumination_shader shader{hit, diffuse, reflected, refracted};
-        return scene.materials[hit.material_id].match(shader);
+        return apply_visitor(shader, scene.materials[hit.material_id]);
     }
 }
 

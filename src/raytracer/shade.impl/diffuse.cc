@@ -95,7 +95,7 @@ namespace rt::raytracer::shading_details
         color_type diffuse;
         auto& mat = scene.materials[hit.material_id];
         for (auto& lamp: scene.lamps) {
-            lamp.match(lamp_info);
+            apply_visitor(lamp_info, lamp);
 
             auto shadowed = intersect(scene.root, lamp_info.towards_lamp).match(
                     [] (hits::missed) { return false; },
@@ -104,7 +104,7 @@ namespace rt::raytracer::shading_details
                     });
             if (shadowed) continue;
 
-            diffuse += mat.match(diffuse_term) * lamp_info.received_radiance;
+            diffuse += apply_visitor(diffuse_term, mat) * lamp_info.received_radiance;
         }
         return diffuse;
     }

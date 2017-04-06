@@ -42,7 +42,7 @@ namespace rt::raytracer::shading_details
     color_type shade_environment(scene_type const& scene, ray_type const& ray)
     {
         environment_shader shader{scene, ray};
-        return scene.materials[scene.environment].match(shader);
+        return apply_visitor(shader, scene.materials[scene.environment]);
     }
 }
 
