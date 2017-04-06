@@ -161,7 +161,11 @@ namespace rt::scene
                 };
 
                 FN_PARSE_BLOCK(background, {
-                    PARSE_KV(glm::vec3, color),
+                    ([&] () {
+                        auto color = PARSE_KV(glm::vec3, color);
+                        auto strength = PARSE_KV(float, strength);
+                        return color * strength;
+                    })(),
                 });
             }
 
@@ -169,12 +173,20 @@ namespace rt::scene
             {
                 FN_PARSE_BLOCK(lamps::sun, {
                     PARSE_KV(glm::vec3, direction),
-                    PARSE_KV(glm::vec3, color),
+                    ([&] () {
+                        auto color = PARSE_KV(glm::vec3, color);
+                        auto strength = PARSE_KV(float, strength);
+                        return color * strength;
+                    })(),
                 });
 
                 FN_PARSE_BLOCK(lamps::omni, {
                     PARSE_KV(glm::vec3, center),
-                    PARSE_KV(glm::vec3, color),
+                    ([&] () {
+                        auto color = PARSE_KV(glm::vec3, color);
+                        auto strength = PARSE_KV(float, strength);
+                        return color * strength;
+                    })(),
                 });
 
                 FN_PARSE_VARIANT_LIST(lamp_container_type, lights, {
