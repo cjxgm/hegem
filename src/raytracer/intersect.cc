@@ -8,6 +8,7 @@ namespace rt::raytracer
     namespace
     {
         using namespace scene;
+        static constexpr auto eps = 1e-3f;
 
         inline namespace intersect_shape_details
         {
@@ -93,7 +94,10 @@ namespace rt::raytracer
     object_hit_type intersect(scene::node_type const& node, ray_type const& ray)
     {
         return node.match([&] (auto& node) {
-            return intersect_node(ray, node);
+            return intersect_node({
+                ray.at(eps),
+                ray.dir,
+            }, node);
         });
     }
 }
