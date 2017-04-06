@@ -30,7 +30,7 @@ namespace rt::raytracer::shading_details
             color_type impl(materials::phong const& mat) const
             {
                 // TODO
-                return diffuse;
+                return diffuse + mat.reflection * reflected;
             }
 
             color_type impl(materials::physically_based const& mat) const

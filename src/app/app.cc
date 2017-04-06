@@ -17,7 +17,7 @@ namespace rt::app
             s.views[0].camera(),
         };
 
-        auto result = raytracer::raytrace(s, 0, 0);
+        auto result = raytracer::raytrace(s, 0, 8);
         auto& image = std::get<0>(result);
         auto& buf = std::get<1>(result);
 

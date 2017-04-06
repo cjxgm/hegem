@@ -1,3 +1,4 @@
+#include "../lib/glm/op/geom.hh"
 #include "../image/color.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
@@ -38,7 +39,11 @@ namespace rt::raytracer::raytracer_details
 
                 auto& mat = scene.materials[hit.material_id];
                 if (reflective(mat)) {
-                    reflected = raytrace(scene, /* reflect */ ray, remaining_bounce_count).radiance;
+                    ray_type refl{
+                        hit.shape_info.hit_point,
+                        reflect(*ray.dir, *hit.shape_info.normal),
+                    };
+                    reflected = raytrace(scene, refl, remaining_bounce_count).radiance;
                 }
                 if (refractive(mat)) {
                     refracted = raytrace(scene, /* refract */ ray, remaining_bounce_count).radiance;
