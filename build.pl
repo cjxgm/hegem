@@ -21,13 +21,7 @@ my @inputs = (
     # [ input-name, size, depth-range ]
     #   size = [width, height]
     #   depth-range = [min, max]
-    [ 'scene1_01', $size, [9, 10] ],
-    [ 'scene1_02', $size, [2, 6] ],
-    [ 'scene1_03', $size, [8, 12] ],
-    [ 'scene1_04', $size, [12, 17] ],
-    [ 'scene1_05', $size, [14.5, 19.5] ],
-    [ 'scene1_06', $size, [3, 7] ],
-    [ 'scene1_07', $size, [-2, 2] ],
+    [ 'scene-phong-night', $size, [2, 6] ],
 );
 @makefile__commands__test = (
     (map {
