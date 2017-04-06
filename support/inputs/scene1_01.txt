@@ -6,6 +6,9 @@ orthographic-camera {
     size 5
 }
 
+lights {
+}
+
 background { color 0 0 0 }
 
 materials {

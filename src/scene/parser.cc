@@ -6,6 +6,7 @@
 #include "material.hh"
 #include "shape.hh"
 #include "node.hh"
+#include "lamp.hh"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -18,6 +19,7 @@ namespace rt::scene
     namespace
     {
         using material_container_type = scene_type::material_container_type;
+        using lamp_container_type = scene_type::lamp_container_type;
         using group_node_container_type = nodes::group::node_container_type;
 
         inline namespace literal_to_string_details
@@ -163,6 +165,24 @@ namespace rt::scene
                 });
             }
 
+            PARSE_FOR(lamp_list)
+            {
+                FN_PARSE_BLOCK(lamps::sun, {
+                    PARSE_KV(glm::vec3, direction),
+                    PARSE_KV(glm::vec3, color),
+                });
+
+                FN_PARSE_BLOCK(lamps::omni, {
+                    PARSE_KV(glm::vec3, center),
+                    PARSE_KV(glm::vec3, color),
+                });
+
+                FN_PARSE_VARIANT_LIST(lamp_container_type, lights, {
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(lamps::sun, directional-light);
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(lamps::omni, point-light);
+                });
+            }
+
             PARSE_FOR(camera)
             {
                 FN_PARSE_BLOCK(cameras::orthographic, {
@@ -241,6 +261,7 @@ namespace rt::scene
                 FN_PARSE(scene_type)
                 {
                     auto cam = PARSE(camera_type, camera);
+                    auto lamps = PARSE_KV(lamp_container_type, lights);
                     auto bg = PARSE_KV(background, background);
                     auto mats = PARSE_KV(material_container_type, materials);
                     auto node = PARSE_KV(nodes::group, group);
@@ -251,7 +272,7 @@ namespace rt::scene
                     return {
                         std::move(mats),
                         { view_type{{}, cam} },
-                        {},     // TODO: parse lamps
+                        std::move(lamps),
                         env_id,
                         node,
                     };

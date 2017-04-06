@@ -6,6 +6,13 @@ perspective-camera {
     angle 60
 }
 
+lights {
+    directional-light {
+        direction 1 -1 -1
+        color 2 2 2
+    }
+}
+
 background { color 0.1 0.1 0.1 }
 
 materials {
