@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cassert>
+#include <random>
 
 #include "../lib/stb/image-write.inl"
 
@@ -12,11 +13,18 @@ namespace rt::image::image_impl
 
     image<srgb> to_srgb(image<linear_rgb> const& src)
     {
+        std::random_device rd;
+        std::mt19937 gen{rd()};
+        std::uniform_real_distribution<float> dis{-0.5 / 255.0, 0.5 / 255.0};
+
         image<srgb> dst{src.size()};
         std::transform(
                 begin(src.pixels), end(src.pixels),
                 begin(dst.pixels),
-                [] (auto& linear) { return color::to_srgb(linear); });
+                [&] (auto& linear) {
+                    linear_rgb dither_noise{dis(gen), dis(gen), dis(gen)};
+                    return color::to_srgb(linear + dither_noise);
+                });
         return dst;
     }
 
