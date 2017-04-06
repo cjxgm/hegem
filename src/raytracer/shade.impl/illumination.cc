@@ -1,4 +1,7 @@
+#include "../../lib/glm/vec3.hh"
+#include "../../lib/glm/op/common.hh"
 #include "../../scene/material.hh"
+#include "../../math/unit.hh"
 #include "../shade.hh"
 #include <stdexcept>
 
@@ -7,6 +10,16 @@ namespace rt::raytracer::shading_details
     namespace
     {
         namespace materials = scene::materials;
+        using direction_type = math::unit<glm::vec3>;
+
+        float fresnel_schlick(float ior, direction_type viewing, direction_type normal)
+        {
+            auto base = (ior - 1) / (ior + 1);
+            base *= base;
+            auto exp = 1 + dot(*viewing, *normal);
+            exp = exp*exp*exp*exp*exp;
+            return base + (1-base)*exp;
+        }
 
         struct illumination_shader
         {
@@ -35,8 +48,9 @@ namespace rt::raytracer::shading_details
 
             color_type impl(materials::physically_based const& mat) const
             {
-                // TODO
-                return diffuse;
+                auto fresnel = fresnel_schlick(mat.ior, hit.shape_info.ray.dir, hit.shape_info.normal);
+                auto reflect = mat.reflection * reflected;
+                return mix(diffuse, reflect, fresnel);
             }
         };
     }

@@ -91,7 +91,16 @@ namespace rt::raytracer::shading_details
 
             color_type impl(materials::physically_based const& mat) const
             {
-                throw std::logic_error{"TODO"};
+                // FIXME: Temp. use Blinn-phong
+                auto nl = glm::max(dot(*normal, *to_lamp.dir), 0.0f);
+                auto diffuse = mat.albedo * nl;
+
+                direction_type half = *to_lamp.dir - *ray.dir;
+                auto nh = glm::max(dot(*normal, *half), 0.0f);     // FIXME: is this `max` necessary?
+                auto exp = (1.0f / (mat.roughness + 1.0f) - 0.5f) * 100.0f;
+                auto specular = glm::pow(nh, exp) * mat.reflection * nl;
+
+                return diffuse + specular;
             }
         };
     }

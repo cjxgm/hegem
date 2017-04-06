@@ -22,6 +22,7 @@ my @inputs = (
     #   size = [width, height]
     #   depth-range = [min, max]
     [ 'scene-phong-night', $size, [2, 6] ],
+    [ 'scene-pbr-night', $size, [2, 6] ],
 );
 @makefile__commands__test = (
     (map {
