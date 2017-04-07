@@ -1,3 +1,4 @@
+#include "../../lib/glm/op/common.hh"
 #include "../../scene/material.hh"
 #include "../../scene/lamp.hh"
 #include "../shade.hh"
@@ -24,15 +25,28 @@ namespace rt::raytracer::shading_details
         private:
             color_type impl(materials::solid_color const& mat) const
             {
-                return mat.color;
+                auto color = mat.color;
+                for (auto& lamp: scene.lamps) {
+                    lamp.match(
+                            [&] (lamps::sun const& lamp) {
+                                auto d = glm::max(-dot(*ray.dir, *lamp.dir), 0.0f);
+                                auto strength = glm::pow(d, 10.0f) * 0.1f
+                                        + glm::pow(d, 50.0f) * 0.5f
+                                        + glm::pow(d, 600.0f) * 3.0f
+                                        + glm::smoothstep(0.4f, 0.5f, glm::pow(d, 500.0f)) * 3.0f;
+                                color += lamp.color * strength;
+                            },
+                            [] (auto&) {});
+                }
+                return color;
             }
 
-            color_type impl(materials::phong const& mat) const
+            color_type impl(materials::phong const&) const
             {
                 throw std::runtime_error{"Phong materials cannot be used by environment."};
             }
 
-            color_type impl(materials::physically_based const& mat) const
+            color_type impl(materials::physically_based const&) const
             {
                 throw std::runtime_error{"PBR materials cannot be used by environment."};
             }
