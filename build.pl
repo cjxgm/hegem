@@ -11,6 +11,7 @@ use utf8;
     'observer-ptr/include',     # observer_ptr<T>
 );
 @library__pkg_config = qw{
+    glfw3
 };
 
 $compiler__flags__standard = "c++1z";
