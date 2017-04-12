@@ -12,6 +12,7 @@ use utf8;
 );
 @library__pkg_config = qw{
     glfw3
+    gl
 };
 
 $compiler__flags__standard = "c++1z";

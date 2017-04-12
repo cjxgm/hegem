@@ -1,9 +1,12 @@
-#include "app.hh"
+#include "../gui/wsi.hh"
 #include "../image/image.hh"
 #include "../scene/parser.hh"
+#if 0
 #include "../scene/view.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
+#endif
+#include "app.hh"
 
 namespace rt::app
 {
@@ -17,6 +20,10 @@ namespace rt::app
             s.views[0].camera(),
         };
 
+        gui::wsi::context ctx{"Raytracer"};
+        ctx.mainloop();
+
+        #if 0
         auto result = raytracer::raytrace(s, 0, 8);
         auto& image = std::get<0>(result);
         auto& buf = std::get<1>(result);
@@ -40,6 +47,7 @@ namespace rt::app
             auto normal = raytracer::shade_normal(buf, s, 0);
             write(to_srgb(normal), opts.normal_path);
         }
+        #endif
     }
 }
 
