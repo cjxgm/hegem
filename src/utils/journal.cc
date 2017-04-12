@@ -1,0 +1,29 @@
+#include "journal.hh"
+#include <iostream>
+
+namespace rt::utils
+{
+    inline namespace journal_details
+    {
+        namespace
+        {
+            template <class T>
+            journal write(journal j, T&& x)
+            {
+                std::cerr << x;
+                return j;
+            }
+        }
+
+        journal::journal(char const* component)
+        {
+            std::cerr << "\e[1;34m[" << component << "]\e[0m ";
+        }
+
+        journal operator << (journal j, void const* str) { return write(j, str); }
+        journal operator << (journal j, char const* str) { return write(j, str); }
+        journal operator << (journal j, int x) { return write(j, x); }
+        journal operator << (journal j, float x) { return write(j, x); }
+    }
+}
+
