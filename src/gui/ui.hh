@@ -16,7 +16,7 @@ namespace rt::gui
 
     private:
         ui();
-        void render(wsi::context& ctx);
+        void render();
     };
 }
 

@@ -4,15 +4,11 @@
 
 namespace rt::gui
 {
-    struct ui;
-
     namespace wsi
     {
         // NOTE: there can only be 1 instance in the whole application lifetime
         struct context : utils::non_transferable
         {
-            friend ui;
-
             context(gsl::cstring_span<> title);
             ~context();
 
