@@ -25,6 +25,7 @@ my @loader__flags__extra = ();
 
 my $build__config_path = "build.pl";
 my $build__cache_path = "build.cache";
+my $build__flags_path = "build.flags";
 my $build__makefile_path = "makefile";
 my $build__output_dir = "build";
 my $build__output_bin = "build";
@@ -45,8 +46,6 @@ my @makefile__commands__test = (
 ## IMPLEMENTATION DETAILS, ##
 ## DO NOT LOOK ANY FURTHER ##
 #############################
-
-# TODO: neomake compiler check integration?
 
 my $debugging = 0;
 my @compiler__flags;
@@ -106,6 +105,7 @@ sub main
 
     &deps__save($build__cache_path);
 
+    &flags__write($build__flags_path);
     &makefile__write($build__makefile_path);
 }
 
@@ -344,6 +344,26 @@ sub path__normalize
     abs2rel($apath);
 }
 
+# Try to expand relative path to absolute path.
+# Return the original parameter if failed (e.g. file not exists)
+sub path__try_expand
+{
+    use Cwd qw(abs_path);
+    my ($path) = @_;
+    my $apath = abs_path($path);
+    $apath || $path;
+}
+
+# Guess if the parameter is a path.
+sub path__guess
+{
+    my ($path) = @_;
+    for ($path) {
+        return undef if m{^-};
+        return m{^\.\.?/} || m{/};
+    }
+}
+
 sub path__extract_dir
 {
     use File::Basename;
@@ -454,6 +474,19 @@ sub system__invoke_read
     local $/;
     die "Error invoking @_: " . <$err> . "\n" if $exit_status != 0;
     <$rd>;
+}
+
+sub flags__write
+{
+    my ($path) = @_;
+    &output__progress("* writing", $path);
+
+    my @flags = map {
+        &path__guess($_) ? &path__try_expand($_) : $_
+    } (@compiler__flags, @loader__flags);
+
+    open my $fh, ">", $path;
+    print $fh &path__array__join(@flags);
 }
 
 sub makefile__write
