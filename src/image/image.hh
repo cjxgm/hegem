@@ -87,6 +87,8 @@ namespace rt::image
             )
             #include "../utils/const-helper.undef.hh"
 
+            color_type const* data() const { return pixels.data(); }
+
         private:
             dimension_type size_;
             std::vector<color_type> pixels;

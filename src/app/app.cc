@@ -1,12 +1,8 @@
 #include "../gui/wsi.hh"
-#include "../image/image.hh"
 #include "../scene/parser.hh"
-#if 0
 #include "../scene/view.hh"
-#include "../raytracer/raytracer.hh"
-#include "../raytracer/shade.hh"
-#endif
 #include "app.hh"
+#include "scene-instance.hh"
 
 namespace rt::app
 {
@@ -14,7 +10,8 @@ namespace rt::app
     {
         using image::color::linear_rgb;
 
-        auto s = scene::from_path(opts.input_path);
+        auto& s = scene_instance();
+        s = scene::from_path(opts.input_path);
         s.views[0] = scene::view_type {
             {opts.width, opts.height},
             s.views[0].camera(),

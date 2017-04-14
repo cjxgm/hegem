@@ -82,7 +82,7 @@ namespace rt::gui::wsi
                 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
                 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-                win = glfwCreateWindow(16*50, 9*50, ensure_z(title).data(), nullptr, nullptr);
+                win = glfwCreateWindow(16*80, 9*80, ensure_z(title).data(), nullptr, nullptr);
                 if (win == nullptr) throw std::runtime_error{"[WSI] glfw: create context failed."};
 
                 j() << "glfw: making context current\n";

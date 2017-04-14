@@ -35,11 +35,38 @@ prev;
 out vec4 color;
 
 layout(location=1) uniform sampler2D tex;
+layout(location=2) uniform int mode;
+layout(location=3) uniform vec2 tonemap_range;
+
+vec3 aces_film_tonemap(vec3 x)
+{
+    const float a = 2.51f;
+    const float b = 0.03f;
+    const float c = 2.43f;
+    const float d = 0.59f;
+    const float e = 0.14f;
+    x = max(x, vec3(0));
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), vec3(0), vec3(1));
+}
+
+vec3 tonemap(vec3 color, vec3 black, vec3 white)
+{
+    return aces_film_tonemap((color - black) / (white - black));
+}
 
 void main()
 {
-    float a = texture(tex, prev.uv).r;
-    color = prev.color * vec4(1, 1, 1, a);
+    vec4 mask = vec4(1, 0, 1, 1);
+    if (mode == 0) {
+        float a = texture(tex, prev.uv).r;
+        mask = vec4(1, 1, 1, a);
+    } else if (mode == 1) {
+        // TODO: dithering
+        vec3 src = texture(tex, prev.uv).rgb;
+        src = tonemap(src, tonemap_range.xxx, tonemap_range.yyy);
+        mask = vec4(src, 1);
+    }
+    color = prev.color * mask;
 }
 )fragment-shader",
 

@@ -17,6 +17,7 @@ use utf8;
 
 $compiler__flags__standard = "c++1z";
 $build__output_bin = "raytracer";
+@loader__flags__extra = qw[-pthread];
 
 my $size = [16*60, 9*60];
 my @inputs = (
