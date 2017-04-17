@@ -45,7 +45,7 @@ namespace rt::image::color
         return clamp(src, {0}, {1}) * linear_rgb{255.0};
     }
 
-    srgb to_srgb(utils::as_czstring hex_rrggbb)
+    srgb to_srgb(util::as_czstring hex_rrggbb)
     {
         try {
             if (hex_rrggbb.size() != 6) {

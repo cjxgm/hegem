@@ -28,7 +28,7 @@ namespace rt::image::image_impl
         return dst;
     }
 
-    void write(image<srgb> const& src, utils::as_czstring output_path)
+    void write(image<srgb> const& src, util::as_czstring output_path)
     {
         std::ofstream file{output_path.data()};
         auto size = src.size();

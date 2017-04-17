@@ -1,7 +1,7 @@
 #pragma once
 #include "as-czstring.hh"
 
-namespace rt::utils
+namespace rt::util
 {
     inline namespace journal_details
     {

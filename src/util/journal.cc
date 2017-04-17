@@ -1,7 +1,7 @@
 #include "journal.hh"
 #include <iostream>
 
-namespace rt::utils
+namespace rt::util
 {
     inline namespace journal_details
     {

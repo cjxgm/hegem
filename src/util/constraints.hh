@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rt::utils
+namespace rt::util
 {
 	inline namespace constraints
 	{

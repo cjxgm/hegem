@@ -1,7 +1,7 @@
 #include "../lib/gl/gl.hh"
 #include "../lib/imgui.hh"
-#include "../utils/journal.hh"
-#include "../utils/constraints.hh"
+#include "../util/journal.hh"
+#include "../util/constraints.hh"
 #include "gl-traits.hh"
 #include <cstddef>
 #include <stdexcept>
@@ -10,14 +10,14 @@ namespace
 {
     namespace imgui_details
     {
-        using rt::utils::journal;
+        using rt::util::journal;
         journal j() { return {"IMGUI"}; }
 
         char const* shader_program_source[2] = {
             #include "imgui.shader.inl"
         };
 
-        struct imgui_impl : rt::utils::non_transferable
+        struct imgui_impl : rt::util::non_transferable
         {
             imgui_impl()
             {

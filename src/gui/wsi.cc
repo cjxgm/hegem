@@ -1,7 +1,7 @@
 #include "../lib/gl/glfw.hh"
 #include "../lib/gl/gl.hh"
 #include "../lib/glm/vec2.hh"
-#include "../utils/journal.hh"
+#include "../util/journal.hh"
 #include "wsi.hh"
 #include "ui.hh"
 #include <stdexcept>
@@ -15,7 +15,7 @@ namespace rt::gui::wsi
 {
     namespace
     {
-        using rt::utils::journal;
+        using rt::util::journal;
         bool ctor_once = false;
         bool mainloop_once = false;
 
@@ -66,11 +66,11 @@ namespace rt::gui::wsi
         }
 
         template <class CallbackContext>
-        struct glfw : utils::non_transferable
+        struct glfw : util::non_transferable
         {
             using callback_context_type = CallbackContext;
 
-            glfw(utils::as_czstring title)
+            glfw(util::as_czstring title)
             {
                 j() << "glfw: (ctor)\n";
                 if (!glfwInit()) throw std::runtime_error{"[WSI] glfw: init failed."};
@@ -258,7 +258,7 @@ namespace rt::gui::wsi
         }
     }
 
-    context::context(utils::as_czstring title)
+    context::context(util::as_czstring title)
     {
         if (ctor_once) throw std::logic_error{"Cannot construct twice."};
         ctor_once = true;

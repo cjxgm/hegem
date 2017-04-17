@@ -3,7 +3,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace rt::utils
+namespace rt::util
 {
     inline namespace as_czstring_details
     {

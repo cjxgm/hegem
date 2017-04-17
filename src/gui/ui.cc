@@ -1,6 +1,6 @@
 #include "../lib/gl/gl.hh"
 #include "../lib/imgui.hh"
-#include "../utils/journal.hh"
+#include "../util/journal.hh"
 #include "../app/scene-instance.hh"
 #include "../image/image.hh"
 #include "../raytracer/raytracer.hh"
@@ -14,7 +14,7 @@
 #include <deque>
 #include <thread>
 
-using rt::utils::journal;
+using rt::util::journal;
 
 namespace rt::gui
 {
