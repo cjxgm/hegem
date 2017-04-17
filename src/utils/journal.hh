@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include "as-czstring.hh"
 
 namespace rt::utils
 {
@@ -10,15 +10,14 @@ namespace rt::utils
             journal(char const* component);
         };
 
-        journal operator << (journal j, void const* str);
-        journal operator << (journal j, char const* str);
-
-        journal operator << (journal j, int x);
+        journal operator << (journal j, as_czstring x);
+        journal operator << (journal j, void const* x);
         journal operator << (journal j, float x);
+        journal operator << (journal j, int x);
 
         template <class T>
         inline journal operator << (journal j, T const* p) { return (j << static_cast<void const*>(p)); }
-        inline journal operator << (journal j, std::string const& str) { return (j << str.data()); }
+        inline journal operator << (journal j, char const* p) { return (j << as_czstring{p}); }
     }
 }
 
