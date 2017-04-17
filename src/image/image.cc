@@ -28,9 +28,9 @@ namespace rt::image::image_impl
         return dst;
     }
 
-    void write(image<srgb> const& src, gsl::cstring_span<> output_path)
+    void write(image<srgb> const& src, utils::as_czstring output_path)
     {
-        std::ofstream file{ensure_z(output_path).data()};
+        std::ofstream file{output_path.data()};
         auto size = src.size();
         stbi_write_png_to_func(
                 [] (void* context, void* data, int size) {

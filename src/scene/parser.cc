@@ -331,9 +331,9 @@ namespace rt::scene
         return parse<scene_type>(ist, "scene");
     }
 
-    scene_type from_path(gsl::cstring_span<> path)
+    scene_type from_path(utils::as_czstring path)
     {
-        std::ifstream ifs{ensure_z(path).data()};
+        std::ifstream ifs{path.data()};
         return from_istream(ifs);
     }
 }

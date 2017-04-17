@@ -1,6 +1,6 @@
 #pragma once
 #include "../lib/glm/vec2.hh"
-#include "../lib/gsl/string-span.hh"
+#include "../utils/as-czstring.hh"
 #include "color.hh"
 #include <vector>
 #include <utility>
@@ -50,7 +50,7 @@ namespace rt::image
             auto& size() const { return size_; }
 
             friend image<srgb> to_srgb(image<linear_rgb> const& src);
-            friend void write(image<srgb> const& src, gsl::cstring_span<> output_path);
+            friend void write(image<srgb> const& src, utils::as_czstring output_path);
             friend image<linear_rgb> half(image<linear_rgb> const& src);
             friend image<linear_rgb> tonemap(
                     image<linear_rgb> const& src,

@@ -70,7 +70,7 @@ namespace rt::gui::wsi
         {
             using callback_context_type = CallbackContext;
 
-            glfw(gsl::cstring_span<> title)
+            glfw(utils::as_czstring title)
             {
                 j() << "glfw: (ctor)\n";
                 if (!glfwInit()) throw std::runtime_error{"[WSI] glfw: init failed."};
@@ -82,7 +82,7 @@ namespace rt::gui::wsi
                 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
                 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-                win = glfwCreateWindow(16*80, 9*80, ensure_z(title).data(), nullptr, nullptr);
+                win = glfwCreateWindow(16*80, 9*80, title.data(), nullptr, nullptr);
                 if (win == nullptr) throw std::runtime_error{"[WSI] glfw: create context failed."};
 
                 j() << "glfw: making context current\n";
@@ -248,7 +248,7 @@ namespace rt::gui::wsi
         std::unique_ptr<imgui_impl> imgui;
         std::unique_ptr<gui::ui> ui;
 
-        inline namespace utils
+        inline namespace unique_helper
         {
             template <class T, class ...Args>
             void emplace_unique(std::unique_ptr<T>& p, Args&&... args)
@@ -258,7 +258,7 @@ namespace rt::gui::wsi
         }
     }
 
-    context::context(gsl::cstring_span<> title)
+    context::context(utils::as_czstring title)
     {
         if (ctor_once) throw std::logic_error{"Cannot construct twice."};
         ctor_once = true;

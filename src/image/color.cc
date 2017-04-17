@@ -1,5 +1,6 @@
 #include "../lib/glm/op/common.hh"
 #include "../lib/glm/op/exp.hh"
+#include "../lib/std/string-view.hh"
 #include "color.hh"
 #include <string>
 #include <stdexcept>
@@ -17,7 +18,7 @@ namespace rt::image::color
             throw std::runtime_error{std::string{"Invalid hex digit: "} + hex};
         }
 
-        unsigned char to_srgb_component(gsl::cstring_span<> const& hex_component)
+        unsigned char to_srgb_component(lib::string_view hex_component)
         {
             assert(hex_component.size() == 2);
             return (from_hex_digit(hex_component[0]) << 4) | from_hex_digit(hex_component[1]);
@@ -44,7 +45,7 @@ namespace rt::image::color
         return clamp(src, {0}, {1}) * linear_rgb{255.0};
     }
 
-    srgb to_srgb(gsl::cstring_span<> hex_rrggbb)
+    srgb to_srgb(utils::as_czstring hex_rrggbb)
     {
         try {
             if (hex_rrggbb.size() != 6) {
@@ -52,9 +53,9 @@ namespace rt::image::color
                     "Invalid length: " + std::to_string(hex_rrggbb.size())
                 };
             }
-            auto r = to_srgb_component(hex_rrggbb.subspan(0, 2));
-            auto g = to_srgb_component(hex_rrggbb.subspan(2, 2));
-            auto b = to_srgb_component(hex_rrggbb.subspan(4, 2));
+            auto r = to_srgb_component(hex_rrggbb.view().substr(0, 2));
+            auto g = to_srgb_component(hex_rrggbb.view().substr(2, 2));
+            auto b = to_srgb_component(hex_rrggbb.view().substr(4, 2));
             return {r, g, b};
         }
         catch (std::runtime_error const& ex) {

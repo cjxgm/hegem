@@ -1,6 +1,6 @@
 #pragma once
 #include "../lib/glm/vec3.hh"
-#include "../lib/gsl/string-span.hh"
+#include "../utils/as-czstring.hh"
 
 namespace rt::image
 {
@@ -10,7 +10,7 @@ namespace rt::image
         using srgb = glm::tvec3<unsigned char, glm::defaultp>;
 
         srgb to_srgb(linear_rgb const& src);
-        srgb to_srgb(gsl::cstring_span<> hex_rrggbb);
+        srgb to_srgb(utils::as_czstring hex_rrggbb);
         linear_rgb to_linear_rgb(srgb const& src);
         linear_rgb tonemap(linear_rgb const& src, linear_rgb const& black, linear_rgb const& white);
         linear_rgb gamma_to_internal(linear_rgb const& src);
