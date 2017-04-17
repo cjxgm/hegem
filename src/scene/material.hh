@@ -1,14 +1,38 @@
 #pragma once
 #include "../lib/mapbox/variant.hh"
-#include "materials/solid-color.hh"
-#include "materials/phong.hh"
-#include "materials/physically-based.hh"
+#include "../image/color.hh"
 #include <cstddef>
 
 namespace rt::scene
 {
     namespace materials
     {
+        using color_type = image::color::linear_rgb;
+
+        struct solid_color
+        {
+            color_type color;
+        };
+
+        struct phong
+        {
+            color_type diffuse;
+            color_type reflection;
+            color_type refraction;
+            color_type specular;
+            float specular_exp;
+            float ior;
+        };
+
+        struct physically_based
+        {
+            color_type albedo;
+            color_type reflection;
+            float roughness;
+            float ior;
+        };
+
+        using material_id_type = std::size_t;
         using material_type = mapbox::util::variant<
             solid_color,
             phong,
@@ -19,7 +43,7 @@ namespace rt::scene
         bool refractive(material_type const& mat);
     }
 
+    using materials::material_id_type;
     using materials::material_type;
-    using material_id_type = std::size_t;
 }
 
