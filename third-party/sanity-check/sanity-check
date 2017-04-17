@@ -1,12 +1,27 @@
+// vim: ft=cpp
+
+// .... common ............................................................
+
 #if __cplusplus <= 201402L
-#   error "You need a bare minimum of C++17/C++1z support."
+    #error "You need a bare minimum of C++17/C++1z support."
 #endif
 
 #ifndef __has_include
-#   error "Your compiler is too old. __has_include is required."
+    #error "Your compiler is too old. __has_include is required."
 #endif
 
-#if __cpp_nested_namespace_definitions < 201411
-#   error "Your compiler is too old. Nested namespace from C++17 is required."
+// .... per compiler ......................................................
+
+#ifdef __clang__
+    // FIXME: __cpp_nested_namespace_definitions does not exists???
+    #if __clang_major__ < 4
+        #error "Your clang is too old. At least version 4.0 is required."
+    #endif
+#elif __gcc__
+    #if __cpp_nested_namespace_definitions < 201411
+        #error "Nested namespace from C++17 is required."
+    #endif
+#else
+    #warning "Your compiler is unsupported and is very unlikely to work."
 #endif
 

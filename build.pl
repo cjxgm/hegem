@@ -15,6 +15,8 @@ use utf8;
     gl
 };
 
+$compiler__bin = "clang++";
+$loader__bin = $compiler__bin;
 $compiler__flags__standard = "c++1z";
 $build__output_bin = "raytracer";
 @loader__flags__extra = qw[-pthread];
