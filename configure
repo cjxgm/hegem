@@ -86,6 +86,7 @@ sub main
     &deps__load($build__cache_path) if -f $build__cache_path;
 
     # prepare compiler flags
+    push @compiler__flags, ("-fno-operator-names");     # Operator name should be fucked off from C++!
     push @compiler__flags, ("-march=$compiler__flags__architecture");
     push @compiler__flags, ("-std=$compiler__flags__standard");
     push @compiler__flags, ("-O$compiler__flags__optimization_level");
