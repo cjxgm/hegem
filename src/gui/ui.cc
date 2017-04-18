@@ -8,12 +8,10 @@
 #include "../raytracer/shade.hh"
 #include "ui.hh"
 #include "wsi.hh"
-#include <memory>
+#include "hdr-texture.hh"
 #include <vector>
-#include <atomic>
-#include <mutex>
-#include <deque>
 #include <thread>
+#include <functional>
 
 using rt::util::journal;
 
@@ -26,66 +24,43 @@ namespace rt::gui
 
         journal j() { return {"UI"}; }
 
-        struct texture2d
+        std::vector<hdr_texture> images;
+        util::mpsc<std::function<void()>> tasks;
+
+        struct upload_job
         {
-            texture2d(int w, int h, int lod=1)
-                : w{w}, h{h}
-            {
-                gl::create_textures(gl::texture_2d, 1, &tex);
-                gl::texture_storage2d(tex, lod, gl::rgba32f, w, h);
-                unique_tex.reset(&tex);
-            }
-
-            gl::uint_type & get() { return tex; }
-            gl::uint_type const& get() const { return tex; }
-            gl::uint_type const& operator * () const { return get(); }
-
-            auto width() const { return w; }
-            auto height() const { return h; }
-
-        private:
-            int w;
-            int h;
-            gl::uint_type tex;
-
-            struct deleter_type
-            {
-                using pointer = void*;
-                void operator () (pointer p)
-                {
-                    gl::delete_textures(1, static_cast<gl::uint_type*>(p));
-                }
-            };
-
-            std::unique_ptr<void, deleter_type> unique_tex{};
-        };
-
-        struct render_result
-        {
-            gl::uint_type tex;
+            hdr_texture const& hdr;
             image_rgb image;
+
+            void operator () () const
+            {
+                auto size = image.size();
+                gl::texture_sub_image2d(
+                        hdr.tex.get(),
+                        0,
+                        0, 0, size.x, size.y,
+                        gl::rgb, gl::float_,
+                        image.data());
+            }
         };
 
-        std::vector<texture2d> images;
-        std::atomic_int render_job_count{};
-        util::mpsc<render_result> render_results;
+        void render_job(scene_type const& scene, int view_id, hdr_texture const& hdr)
+        {
+            auto result = raytracer::raytrace(scene, view_id, 8);
+            auto& image = std::get<0>(result);
+            tasks.push(upload_job{ hdr, std::move(image) });
+        }
 
         void render_view(scene_type const& scene, int view_id)
         {
             auto& view = scene.views[view_id];
             images.emplace_back(view.size().x, view.size().y);
 
-            auto tex = images.back().get();
-            gl::texture_parameteri(tex, gl::texture_min_filter, gl::linear);
-            gl::texture_parameteri(tex, gl::texture_mag_filter, gl::nearest);
+            auto& hdr = images.back();
+            gl::texture_parameteri(hdr.tex.get(), gl::texture_min_filter, gl::linear);
+            gl::texture_parameteri(hdr.tex.get(), gl::texture_mag_filter, gl::nearest);
 
-            render_job_count++;
-            std::thread{[&scene, view_id, tex] () {
-                auto result = raytracer::raytrace(scene, view_id, 8);
-                auto& image = std::get<0>(result);
-                render_job_count--;
-                render_results.push({ tex, std::move(image) });
-            }}.detach();
+            std::thread{render_job, std::cref(scene), view_id, std::cref(hdr)}.detach();
         }
 
         void render_all_views(scene_type const& scene)
@@ -96,53 +71,10 @@ namespace rt::gui
 
         void upload_render_results()
         {
-            while (render_results) {
-                auto result = render_results.pop();
-                auto size = result.image.size();
-                gl::texture_sub_image2d(
-                        result.tex,
-                        0,
-                        0, 0, size.x, size.y,
-                        gl::rgb, gl::float_,
-                        result.image.data());
+            while (tasks) {
+                auto task = tasks.pop();
+                task();
             }
-        }
-
-        struct tonemapping_data
-        {
-            float min;
-            float max;
-        };
-
-        void tonemapping_command(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* pcmd)
-        {
-            auto pdata = static_cast<tonemapping_data*>(pcmd->UserCallbackData);
-            gl::uniform1i(2, 1);                        // tonemap mode
-            gl::uniform2f(3, pdata->min, pdata->max);   // tonemap range
-            delete pdata;
-        }
-
-        void tonemapping_restore(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* /*pcmd*/)
-        {
-            gl::uniform1i(2, 0);                        // general mode
-        }
-
-        void begin_tonemapping(float min, float max)
-        {
-            auto& cmd_list = *ImGui::GetWindowDrawList();
-            // FIXME: needs an allocator
-            auto data = new tonemapping_data{min, max};
-            cmd_list.AddDrawCmd();
-            cmd_list.AddCallback(tonemapping_command, data);
-            cmd_list.AddDrawCmd();
-        }
-
-        void end_tonemapping()
-        {
-            auto& cmd_list = *ImGui::GetWindowDrawList();
-            cmd_list.AddDrawCmd();
-            cmd_list.AddCallback(tonemapping_restore, nullptr);
-            cmd_list.AddDrawCmd();
         }
     }
 
@@ -167,12 +99,10 @@ namespace rt::gui
         ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Appearing);
         ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Appearing);
         ImGui::Begin("Control");
-        if (render_job_count == 0 && ImGui::Button("Render")) {
+        if (ImGui::Button("Render")) {
             selected_render_image = images.size();
             render_all_views(app::scene_instance());
         }
-        ImGui::SameLine();
-        ImGui::Text(render_job_count == 0 ? "Standby." : "Rendering...");
         ImGui::Separator();
         if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
         ImGui::End();
@@ -207,9 +137,7 @@ namespace rt::gui
             ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
             if (selected_render_image >= 0 && selected_render_image < (int)images.size()) {
                 auto& image = images[selected_render_image];
-                begin_tonemapping(tonemap_min, tonemap_max);
-                ImGui::Image(&image.get(), ImVec2(image.width(), image.height()));
-                end_tonemapping();
+                imgui_hdr_texture(&image);
             } else {
                 ImGui::Text("No image selected");
             }

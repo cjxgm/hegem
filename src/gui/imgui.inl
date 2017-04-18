@@ -3,6 +3,7 @@
 #include "../util/journal.hh"
 #include "../util/constraints.hh"
 #include "../glu/traits.hh"
+#include "../glu/resource.hh"
 #include <cstddef>
 #include <stdexcept>
 
@@ -36,7 +37,6 @@ namespace
 
                 gl::delete_buffers(2, vertex_buffers);
                 gl::delete_vertex_arrays(1, &vao);
-                gl::delete_textures(1, &tex_font);
                 gl::delete_program(program);
 
                 ImGui::Shutdown();
@@ -172,8 +172,9 @@ namespace
                             int y1 = cmd.ClipRect.y;
                             int x2 = cmd.ClipRect.z;
                             int y2 = cmd.ClipRect.w;
+                            auto tex = static_cast<gl::uint_type>(reinterpret_cast<std::uintptr_t>(cmd.TextureId));
                             gl::scissor(x1, fbh-y2, x2-x1, y2-y1);
-                            gl::bind_texture_unit(0, *static_cast<gl::uint_type*>(cmd.TextureId));
+                            gl::bind_texture_unit(0, tex);
                             gl::draw_elements(
                                     gl::triangles,
                                     cmd.ElemCount,
@@ -193,7 +194,7 @@ namespace
             bool mouse_once_down[3]{};
             float mouse_scroll_y{};
             gl::uint_type program{};
-            gl::uint_type tex_font{};
+            rt::glu::texture tex_font{};
             gl::uint_type vao{};
             gl::uint_type vertex_buffers[2]{};  // { vertices, elements }
 
@@ -236,18 +237,20 @@ namespace
                 io.Fonts->GetTexDataAsAlpha8(&pixels, &w, &h);
 
                 j() << "uploading font texture\n";
-                gl::create_textures(gl::texture_2d, 1, &tex_font);
-                gl::texture_storage2d(tex_font, 1, gl::r8, w, h);
+                gl::uint_type tex;
+                gl::create_textures(gl::texture_2d, 1, &tex);
+                tex_font.reset(tex);
+                gl::texture_storage2d(tex, 1, gl::r8, w, h);
                 gl::texture_sub_image2d(
-                        tex_font,
+                        tex,
                         0,                              // LOD
                         0, 0, w, h,                     // geometry
                         gl::red, gl::unsigned_byte,     // format
                         pixels);
-                gl::texture_parameteri(tex_font, gl::texture_min_filter, gl::linear);
-                gl::texture_parameteri(tex_font, gl::texture_mag_filter, gl::linear);
+                gl::texture_parameteri(tex, gl::texture_min_filter, gl::linear);
+                gl::texture_parameteri(tex, gl::texture_mag_filter, gl::linear);
 
-                io.Fonts->TexID = &tex_font;
+                io.Fonts->TexID = tex_font.get().ptr();
             }
 
             void prepare_input()

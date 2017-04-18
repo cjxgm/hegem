@@ -36,7 +36,8 @@ out vec4 color;
 
 layout(location=1) uniform sampler2D tex;
 layout(location=2) uniform int mode;
-layout(location=3) uniform vec2 tonemap_range;
+layout(location=3) uniform vec3 hdr_blackpoint;
+layout(location=4) uniform vec3 hdr_whitepoint;
 
 vec3 aces_film_tonemap(vec3 x)
 {
@@ -63,7 +64,7 @@ void main()
     } else if (mode == 1) {
         // TODO: dithering
         vec3 src = texture(tex, prev.uv).rgb;
-        src = tonemap(src, tonemap_range.xxx, tonemap_range.yyy);
+        src = tonemap(src, hdr_blackpoint, hdr_whitepoint);
         mask = vec4(src, 1);
     }
     color = prev.color * mask;
