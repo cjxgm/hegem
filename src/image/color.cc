@@ -1,3 +1,4 @@
+#include "../lib/glm/vec3.hh"
 #include "../lib/glm/op/common.hh"
 #include "../lib/glm/op/exp.hh"
 #include "../lib/std/string-view.hh"
@@ -34,15 +35,15 @@ namespace rt::image::color
             constexpr auto c = 2.43f;
             constexpr auto d = 0.59f;
             constexpr auto e = 0.14f;
-            x = max(x, {0});
-            return clamp((x * (a * x + b)) / (x * (c * x + d) + e), {0}, {1});
+            x = max(x, linear_rgb{0});
+            return clamp((x * (a * x + b)) / (x * (c * x + d) + e), linear_rgb{0}, linear_rgb{1});
         }
     }
 
     srgb to_srgb(linear_rgb const& src)
     {
         // Seems like stb-image-write automatically does gamma correction???
-        return clamp(src, {0}, {1}) * linear_rgb{255.0};
+        return clamp(src, linear_rgb{0}, linear_rgb{1}) * linear_rgb{255.0};
     }
 
     srgb to_srgb(util::as_czstring hex_rrggbb)

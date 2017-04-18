@@ -1,7 +1,6 @@
 #pragma once
 #include "../lib/glm/vec3.hh"
-#include "../lib/glm/mat3.hh"
-#include "../lib/glm/mat4.hh"
+#include "../lib/glm/fwd.hh"
 #include "../lib/mapbox/variant.hh"
 #include "../math/unit.hh"
 

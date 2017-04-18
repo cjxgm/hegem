@@ -1,5 +1,4 @@
 #pragma once
-#include "../lib/glm/op/geom.hh"
 
 namespace rt::math
 {

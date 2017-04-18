@@ -1,3 +1,4 @@
+#include "../lib/glm/vec3.hh"
 #include "image.hh"
 #include <algorithm>
 #include <fstream>

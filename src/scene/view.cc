@@ -1,3 +1,4 @@
+#include "../lib/glm/mat3.hh"
 #include "view.hh"
 
 namespace rt::scene

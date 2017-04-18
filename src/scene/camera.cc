@@ -1,4 +1,6 @@
 #include "../lib/glm/vec4.hh"
+#include "../lib/glm/mat3.hh"
+#include "../lib/glm/mat4.hh"
 #include "../lib/glm/op/geom.hh"
 #include "camera.hh"
 

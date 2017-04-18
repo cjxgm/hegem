@@ -1,5 +1,5 @@
 #pragma once
-#include "../lib/glm/vec3.hh"
+#include "../lib/glm/fwd.hh"
 #include "../util/as-czstring.hh"
 
 namespace rt::image

@@ -1,5 +1,7 @@
 #include "../lib/glm/vec3.hh"
 #include "../lib/glm/op/trig.hh"
+#include "../lib/glm/op/common.hh"
+#include "../lib/glm/op/geom.hh"
 #include "parser.hh"
 #include "camera.hh"
 #include "view.hh"

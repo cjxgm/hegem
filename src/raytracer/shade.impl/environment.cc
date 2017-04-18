@@ -1,4 +1,5 @@
 #include "../../lib/glm/op/common.hh"
+#include "../../lib/glm/op/geom.hh"
 #include "../../scene/material.hh"
 #include "../../scene/lamp.hh"
 #include "../shade.hh"

@@ -1,4 +1,5 @@
 #include "../lib/glm/op/geom.hh"
+#include "../lib/glm/mat3.hh"
 #include "../image/color.hh"
 #include "raytracer.hh"
 #include "intersect.hh"

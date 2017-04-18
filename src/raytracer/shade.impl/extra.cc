@@ -1,4 +1,6 @@
 #include "../../lib/glm/vec3.hh"
+#include "../../lib/glm/mat3.hh"
+#include "../../lib/glm/op/geom.hh"
 #include "../../math/unit.hh"
 #include "../shade.hh"
 #include <limits>

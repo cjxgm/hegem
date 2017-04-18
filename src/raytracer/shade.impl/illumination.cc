@@ -1,5 +1,6 @@
 #include "../../lib/glm/vec3.hh"
 #include "../../lib/glm/op/common.hh"
+#include "../../lib/glm/op/geom.hh"
 #include "../../scene/material.hh"
 #include "../../math/unit.hh"
 #include "../shade.hh"

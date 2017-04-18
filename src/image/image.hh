@@ -1,5 +1,6 @@
 #pragma once
 #include "../lib/glm/vec2.hh"
+#include "../lib/glm/relational.hh"
 #include "../util/as-czstring.hh"
 #include "color.hh"
 #include <vector>

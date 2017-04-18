@@ -1,6 +1,6 @@
 #pragma once
 #include "../lib/glm/vec2.hh"
-#include "../lib/glm/mat3.hh"
+#include "../lib/glm/fwd.hh"
 #include "camera.hh"
 #include <utility>
 

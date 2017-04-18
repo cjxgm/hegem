@@ -6,7 +6,6 @@
 
 namespace rt::raytracer
 {
-
     namespace ray_details
     {
         using position_type = glm::vec2;
