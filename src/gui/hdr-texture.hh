@@ -28,5 +28,14 @@ namespace rt::gui
     };
 
     void imgui_hdr_texture(hdr_texture* hdr);
+    void imgui_hdr_color(
+            char const* color_label,
+            char const* intensity_label,
+            glm::vec3* color,
+            float intensity_speed=1,
+            float intensity_min=0,
+            float intensity_max=1000,
+            char const* intensity_format="%.3f",
+            float intensity_power = 10);
 }
 

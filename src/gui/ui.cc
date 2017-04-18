@@ -113,17 +113,9 @@ namespace rt::gui
         }
 
         if (images.size()) {
-            static float tonemap_min = 0;
-            static float tonemap_max = 10;
-
             ImGui::SetNextWindowPos(ImVec2(250, 20), ImGuiSetCond_Appearing);
             ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiSetCond_Appearing);
             ImGui::Begin("Image Viewer");
-
-            // TODO: should be able to be tinted: separate tint and strength
-            ImGui::DragFloat("Blackpoint", &tonemap_min, 0.001, -100, 10000, "%.2f", 10);
-            ImGui::DragFloat("Whitepoint", &tonemap_max, 0.001, -100, 10000, "%.2f", 10);
-            ImGui::Separator();
 
             ImGui::BeginChild("image selector", ImVec2(150, 0), true);
             for (int i=0; i < (int)images.size(); i++) {
@@ -137,7 +129,11 @@ namespace rt::gui
             ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
             if (selected_render_image >= 0 && selected_render_image < (int)images.size()) {
                 auto& image = images[selected_render_image];
+                imgui_hdr_color("Blackpoint", "Intensity", &image.blackpoint, 0.001, -100, 10000, "%.2f", 10);
+                imgui_hdr_color("Whitepoint", "Intensity", &image.whitepoint, 0.001, -100, 10000, "%.2f", 10);
+                ImGui::BeginChild("image viewer", ImVec2(0, 0), false);
                 imgui_hdr_texture(&image);
+                ImGui::EndChild();
             } else {
                 ImGui::Text("No image selected");
             }
