@@ -1,6 +1,7 @@
 #include "../lib/gl/gl.hh"
 #include "../lib/imgui.hh"
 #include "../util/journal.hh"
+#include "../util/mpsc.hh"
 #include "../app/scene-instance.hh"
 #include "../image/image.hh"
 #include "../raytracer/raytracer.hh"
@@ -59,48 +60,15 @@ namespace rt::gui
             std::unique_ptr<void, deleter_type> unique_tex{};
         };
 
-        template <class T>
-        struct mpsc_queue
-        {
-            using value_type = T;
-
-            void push(value_type x)
-            {
-                std::lock_guard<std::mutex> _{m};
-                queue.emplace_back(std::move(x));
-            }
-
-            bool empty() const
-            {
-                std::lock_guard<std::mutex> _{m};
-                return queue.empty();
-            }
-
-            value_type pop()
-            {
-                std::lock_guard<std::mutex> _{m};
-                auto x = std::move(queue.front());
-                queue.pop_front();
-                return x;
-            }
-
-            operator bool () const { return !empty(); }
-
-        private:
-            std::deque<value_type> queue;
-            mutable std::mutex m;
-        };
-
         struct render_result
         {
             gl::uint_type tex;
             image_rgb image;
         };
 
-
         std::vector<texture2d> images;
         std::atomic_int render_job_count{};
-        mpsc_queue<render_result> render_results;
+        util::mpsc<render_result> render_results;
 
         void render_view(scene_type const& scene, int view_id)
         {
