@@ -2,9 +2,9 @@
 #include "../lib/gl/gl.hh"
 #include <type_traits>
 
-namespace rt::gui
+namespace rt::glu
 {
-    namespace gl_traits
+    namespace traits
     {
         template <gl::enum_type e>
         using gl_enum = std::integral_constant<gl::enum_type, e>;

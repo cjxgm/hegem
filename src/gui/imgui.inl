@@ -2,7 +2,7 @@
 #include "../lib/imgui.hh"
 #include "../util/journal.hh"
 #include "../util/constraints.hh"
-#include "gl-traits.hh"
+#include "../glu/traits.hh"
 #include <cstddef>
 #include <stdexcept>
 
@@ -177,7 +177,7 @@ namespace
                             gl::draw_elements(
                                     gl::triangles,
                                     cmd.ElemCount,
-                                    rt::gui::gl_traits::equiv_unsigned_type_enum<ImDrawIdx>,
+                                    rt::glu::traits::equiv_unsigned_type_enum<ImDrawIdx>,
                                     idx_buffer_offset);
                         }
                         idx_buffer_offset += cmd.ElemCount;
