@@ -9,7 +9,7 @@
 #include "ui.hh"
 #include "wsi.hh"
 #include "hdr-texture.hh"
-#include <vector>
+#include <deque>
 #include <thread>
 #include <functional>
 
@@ -24,7 +24,7 @@ namespace rt::gui
 
         journal j() { return {"UI"}; }
 
-        std::vector<hdr_texture> images;
+        std::deque<hdr_texture> images;
         util::mpsc<std::function<void()>> tasks;
 
         struct upload_job
