@@ -4,7 +4,7 @@
 #include "../lib/imgui.hh"
 #include "hdr-texture.hh"
 
-namespace rt::gui
+namespace rt::app
 {
     namespace
     {

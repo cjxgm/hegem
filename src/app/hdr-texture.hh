@@ -3,7 +3,7 @@
 #include "../lib/glm/vec3.hh"
 #include "../glu/resource.hh"
 
-namespace rt::gui
+namespace rt::app
 {
     struct hdr_texture
     {
