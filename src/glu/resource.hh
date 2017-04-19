@@ -62,11 +62,23 @@ namespace rt::glu
         {
             static void destroy(gl::uint_type id) { gl::delete_textures(1, &id); }
         };
+
+        struct vertex_array
+        {
+            static void destroy(gl::uint_type id) { gl::delete_vertex_arrays(1, &id); }
+        };
+
+        struct buffer
+        {
+            static void destroy(gl::uint_type id) { gl::delete_buffers(1, &id); }
+        };
     }
 
     using resource_details::unique_resource;
 
     using program = unique_resource<resource_destroyer::program>;
     using texture = unique_resource<resource_destroyer::texture>;
+    using vertex_array = unique_resource<resource_destroyer::vertex_array>;
+    using buffer = unique_resource<resource_destroyer::buffer>;
 }
 

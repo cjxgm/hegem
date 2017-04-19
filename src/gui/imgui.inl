@@ -35,10 +35,6 @@ namespace
                 auto& io = ImGui::GetIO();
                 io.Fonts->TexID = nullptr;
 
-                gl::delete_buffers(2, vertex_buffers);
-                gl::delete_vertex_arrays(1, &vao);
-                gl::delete_program(program);
-
                 ImGui::Shutdown();
             }
 
@@ -89,7 +85,7 @@ namespace
                      0.0f  ,  0.0f  , -1.0f, 0.0f,
                     -1.0f  ,  1.0f  ,  0.0f, 1.0f,
                 };
-                gl::program_uniform_matrix4fv(program, 0, 1, false, proj);
+                gl::program_uniform_matrix4fv(program.get(), 0, 1, false, proj);
             }
 
             template <class Context>
@@ -145,20 +141,20 @@ namespace
                 gl::blend_equation(gl::func_add);
                 gl::blend_func(gl::src_alpha, gl::one_minus_src_alpha);
 
-                gl::bind_vertex_array(vao);
-                gl::use_program(program);
+                gl::bind_vertex_array(vao.get());
+                gl::use_program(program.get());
 
                 // TODO: optimize this with Ranges TS
                 for (auto first=draw.CmdLists, last=first+draw.CmdListsCount; first < last; first++) {
                     auto& cmd_list = **first;
 
                     gl::named_buffer_data(
-                            vertex_buffers[0],
+                            vertex_buffers[0].get(),
                             cmd_list.VtxBuffer.Size * sizeof(ImDrawVert),
                             cmd_list.VtxBuffer.Data,
                             gl::stream_draw);
                     gl::named_buffer_data(
-                            vertex_buffers[1],
+                            vertex_buffers[1].get(),
                             cmd_list.IdxBuffer.Size * sizeof(ImDrawIdx),
                             cmd_list.IdxBuffer.Data,
                             gl::stream_draw);
@@ -193,10 +189,10 @@ namespace
             double time{};
             bool mouse_once_down[3]{};
             float mouse_scroll_y{};
-            gl::uint_type program{};
+            rt::glu::program program{};
             rt::glu::texture tex_font{};
-            gl::uint_type vao{};
-            gl::uint_type vertex_buffers[2]{};  // { vertices, elements }
+            rt::glu::vertex_array vao{};
+            rt::glu::buffer vertex_buffers[2]{};  // { vertices, elements }
 
             void compile_shader()
             {
@@ -210,15 +206,15 @@ namespace
                 gl::shader_source(frag, 1, &shader_program_source[1], nullptr);
                 gl::compile_shader(frag);
 
-                program = gl::create_program();
-                gl::attach_shader(program, vert);
-                gl::attach_shader(program, frag);
-                gl::link_program(program);
+                program.reset(gl::create_program());
+                gl::attach_shader(program.get(), vert);
+                gl::attach_shader(program.get(), frag);
+                gl::link_program(program.get());
 
                 gl::delete_shader(frag);
                 gl::delete_shader(vert);
 
-                gl::program_uniform1i(program, 1, 0);      // bind "tex" to unit 0
+                gl::program_uniform1i(program.get(), 1, 0);      // bind "tex" to unit 0
             }
 
             void upload_font()
@@ -256,32 +252,39 @@ namespace
             void prepare_input()
             {
                 j() << "creating vertex array and buffers\n";
-                gl::create_vertex_arrays(1, &vao);
-                gl::create_buffers(2, vertex_buffers);
+                {
+                    gl::uint_type vao_id;
+                    gl::uint_type buffers[2];
+                    gl::create_vertex_arrays(1, &vao_id);
+                    gl::create_buffers(2, buffers);
+                    vao.reset(vao_id);
+                    vertex_buffers[0].reset(buffers[0]);
+                    vertex_buffers[1].reset(buffers[1]);
+                }
 
-                gl::enable_vertex_array_attrib(vao, 0);     // vec2 pos
-                gl::enable_vertex_array_attrib(vao, 1);     // vec2 uv
-                gl::enable_vertex_array_attrib(vao, 2);     // vec4 color
+                gl::enable_vertex_array_attrib(vao.get(), 0);     // vec2 pos
+                gl::enable_vertex_array_attrib(vao.get(), 1);     // vec2 uv
+                gl::enable_vertex_array_attrib(vao.get(), 2);     // vec4 color
 
                 gl::vertex_array_attrib_format(
-                        vao, 0,
+                        vao.get(), 0,
                         2, gl::float_, false,
                         offsetof(ImDrawVert, pos));
                 gl::vertex_array_attrib_format(
-                        vao, 1,
+                        vao.get(), 1,
                         2, gl::float_, false,
                         offsetof(ImDrawVert, uv));
                 gl::vertex_array_attrib_format(
-                        vao, 2,
+                        vao.get(), 2,
                         4, gl::unsigned_byte, true,
                         offsetof(ImDrawVert, col));
 
-                gl::vertex_array_vertex_buffer(vao, 0, vertex_buffers[0], 0, sizeof(ImDrawVert));
-                gl::vertex_array_element_buffer(vao, vertex_buffers[1]);
+                gl::vertex_array_vertex_buffer(vao.get(), 0, vertex_buffers[0].get(), 0, sizeof(ImDrawVert));
+                gl::vertex_array_element_buffer(vao.get(), vertex_buffers[1].get());
 
-                gl::vertex_array_attrib_binding(vao, 0, 0);
-                gl::vertex_array_attrib_binding(vao, 1, 0);
-                gl::vertex_array_attrib_binding(vao, 2, 0);
+                gl::vertex_array_attrib_binding(vao.get(), 0, 0);
+                gl::vertex_array_attrib_binding(vao.get(), 1, 0);
+                gl::vertex_array_attrib_binding(vao.get(), 2, 0);
             }
 
             void setup_style()
