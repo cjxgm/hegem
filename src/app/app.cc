@@ -7,6 +7,7 @@
 #include "../util/tile.hh"
 #include "../util/spawn.hh"
 #include "../raytracer/raytracer.hh"
+#include "../raytracer/shade.hh"
 #include "app.hh"
 #include "glfw.hh"
 #include "hdr-texture.hh"
@@ -35,7 +36,7 @@ namespace rt::app
 
         std::deque<hdr_texture> images;
         util::mpsc<std::function<void()>> tasks;
-        int tile_size[2] = {32, 32};
+        int tile_size[2] = {64, 64};
         std::array<float, framerate_history_size> framerate_history{};
         int framerate_history_offset{};
 
@@ -49,13 +50,6 @@ namespace rt::app
 
                 void operator () () const
                 {
-                    auto size = image.size();
-                    j() << "uploading " << hdr.name
-                        << " to " << (int)hdr.tex.get()
-                        << " of size " << size.x << "x" << size.y
-                        << " tile (" << tile.x << ", " << tile.y << ") "
-                        << tile.w << "x" << tile.h
-                        << "\n";
                     gl::texture_sub_image2d(
                             hdr.tex.get(),
                             0,
@@ -96,31 +90,54 @@ namespace rt::app
             };
         }
 
-        void render_job(scene_type const& scene, view_type view, hdr_texture const& hdr, util::tile tile)
+        void render_job(
+                scene_type const& scene,
+                view_type view,
+                util::tile tile,
+                hdr_texture const& hdr_combined,
+                hdr_texture const& hdr_depth,
+                hdr_texture const& hdr_normal)
         {
-            j() << "rendering " << hdr.name
-                << " tile (" << tile.x << ", " << tile.y << ") "
-                << tile.w << "x" << tile.h
-                << "\n";
-            tasks.push(job::mark_as_working_tile{ hdr, tile });
+            tasks.push(job::mark_as_working_tile{ hdr_combined, tile });
+            tasks.push(job::mark_as_working_tile{ hdr_depth, tile });
+            tasks.push(job::mark_as_working_tile{ hdr_normal, tile });
+
             auto result = raytracer::raytrace(scene, view, tile);
             auto& image = std::get<0>(result);
-            tasks.push(job::upload{ hdr, std::move(image), std::move(tile) });
+            auto& buf = std::get<1>(result);
+
+            tasks.push(job::upload{ hdr_combined, std::move(image), tile });
+
+            auto depth = raytracer::shade_depth(buf, view);
+            tasks.push(job::upload{ hdr_depth, std::move(depth), tile });
+
+            auto normal = raytracer::shade_normal(buf, view);
+            tasks.push(job::upload{ hdr_normal, std::move(normal), tile });
         }
 
         void render_view(scene_type const& scene, view_type view, util::spawner& spawner)
         {
-            images.emplace_back(view.size.x, view.size.y);
+            auto name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
 
-            auto& hdr = images.back();
-            gl::texture_parameteri(hdr.tex.get(), gl::texture_min_filter, gl::linear);
-            gl::texture_parameteri(hdr.tex.get(), gl::texture_mag_filter, gl::nearest);
-            hdr.name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
+            images.emplace_back(view.size.x, view.size.y);
+            auto& hdr_depth = images.back();
+            hdr_depth.blackpoint = glm::vec3{10};
+            hdr_depth.whitepoint = glm::vec3{-10};
+            hdr_depth.name = name + " (depth)";
+
+            images.emplace_back(view.size.x, view.size.y);
+            auto& hdr_normal = images.back();
+            hdr_normal.whitepoint = glm::vec3{2};
+            hdr_normal.name = name + " (normal)";
+
+            images.emplace_back(view.size.x, view.size.y);
+            auto& hdr_combined = images.back();
+            hdr_combined.name = std::move(name);
 
             auto [tile_w, tile_h] = tile_size;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
                 spawner.spawn([&, view, tile] () {
-                    render_job(scene, view, hdr, tile);
+                    render_job(scene, view, tile, hdr_combined, hdr_depth, hdr_normal);
                 });
             }
         }
@@ -142,7 +159,7 @@ namespace rt::app
                 ImGui::Columns(2, "hdr viewer");
                 if (first_time) {
                     first_time = false;
-                    ImGui::SetColumnOffset(1, 200);
+                    ImGui::SetColumnOffset(1, 300);
                 }
 
                 ImGui::BeginChild("image list", ImVec2(0, 0), true);
@@ -332,32 +349,6 @@ namespace rt::app
         util::spawner spawner{4};   // TODO: auto detect threads? allow customization?
         glfw::init_once("Raytracer");
         glfw::mainloop_once([&] () { gui::main(opts.scenes, spawner); });
-
-        #if 0
-        auto result = raytracer::raytrace(s, 0, 8);
-        auto& image = std::get<0>(result);
-        auto& buf = std::get<1>(result);
-
-        if (!opts.output_path.empty()) {
-            write(to_srgb(tonemap(
-                            image,
-                            linear_rgb{0},
-                            linear_rgb{10})),
-                    opts.output_path);
-        }
-        if (!opts.depth_path.empty()) {
-            auto depth = raytracer::shade_depth(buf, s, 0);
-            write(to_srgb(tonemap(
-                            depth,
-                            linear_rgb{opts.depth_max},
-                            linear_rgb{opts.depth_min})),
-                    opts.depth_path);
-        }
-        if (!opts.normal_path.empty()) {
-            auto normal = raytracer::shade_normal(buf, s, 0);
-            write(to_srgb(normal), opts.normal_path);
-        }
-        #endif
     }
 }
 

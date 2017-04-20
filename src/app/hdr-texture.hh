@@ -27,6 +27,9 @@ namespace rt::app
 
             float black[4]{0.0f, 0.0f, 0.0f, 1.0f};
             gl::clear_tex_image(id, 0, gl::rgba, gl::float_, black);
+
+            gl::texture_parameteri(id, gl::texture_min_filter, gl::linear);
+            gl::texture_parameteri(id, gl::texture_mag_filter, gl::nearest);
         }
     };
 
