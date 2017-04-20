@@ -38,6 +38,21 @@ layout(location=1) uniform sampler2D tex;
 layout(location=2) uniform int mode;
 layout(location=3) uniform vec3 hdr_blackpoint;
 layout(location=4) uniform vec3 hdr_whitepoint;
+layout(location=5) uniform float time;
+layout(location=6) uniform float dither_amount;
+
+float hash(vec2 p)
+{
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+// uniform over [a, b], where a=0 and b=1
+//     mean = (b-a)    /  2 = 1 /  2
+// variance = (b-a)**2 / 12 = 1 / 12
+float uniform_dist(vec2 p)
+{
+    return hash(p + 0.07 * time);
+}
 
 vec3 aces_film_tonemap(vec3 x)
 {
@@ -62,10 +77,10 @@ void main()
         float a = texture(tex, prev.uv).r;
         mask = vec4(1, 1, 1, a);
     } else if (mode == 1) {
-        // TODO: dithering
         vec3 src = texture(tex, prev.uv).rgb;
         src = tonemap(src, hdr_blackpoint, hdr_whitepoint);
-        mask = vec4(src, 1);
+        float dither = (uniform_dist(prev.uv) - 0.5) * dither_amount / 255.0;
+        mask = vec4(src + dither, 1);
     }
     color = prev.color * mask;
 }

@@ -122,9 +122,9 @@ namespace rt::app
                     auto& image = images[selected_render_image];
                     imgui_hdr_color("Blackpoint", "Intensity", &image.blackpoint, 0.001, -100, 10000, "%.2f", 10);
                     imgui_hdr_color("Whitepoint", "Intensity", &image.whitepoint, 0.001, -100, 10000, "%.2f", 10);
-                    ImGui::BeginChild("image viewer", ImVec2(0, 0), false);
+                    ImGui::SliderFloat("Dithering", &image.dither_amount, 0, 2, "%.2f");
+                    ImGui::Separator();
                     imgui_hdr_texture(&image);
-                    ImGui::EndChild();
                 } else {
                     ImGui::Text("No image selected");
                 }

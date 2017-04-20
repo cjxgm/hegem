@@ -12,6 +12,7 @@ namespace rt::app
         glu::texture tex{};
         glm::vec3 blackpoint{0};
         glm::vec3 whitepoint{10};
+        float dither_amount{1};
 
         hdr_texture(int w, int h)
             :w{w}, h{h}

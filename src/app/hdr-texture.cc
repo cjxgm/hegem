@@ -1,3 +1,4 @@
+#include "../lib/gl/glfw.hh"
 #include "../lib/gl/gl.hh"
 #include "../lib/glm/op/common.hh"
 #include "../lib/glm/op/geom.hh"
@@ -18,6 +19,8 @@ namespace rt::app
             gl::uniform1i(2, 1);                        // HDR mode
             gl::uniform3fv(3, 1, &hdr->blackpoint[0]);  // blackpoint
             gl::uniform3fv(4, 1, &hdr->whitepoint[0]);  // whitepoint
+            gl::uniform1f(5, glfwGetTime());            // time
+            gl::uniform1f(6, hdr->dither_amount);       // dither amount
         }
 
         void disable_hdr(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* /*pcmd*/)
