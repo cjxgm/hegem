@@ -11,6 +11,7 @@
 #include "glfw.hh"
 #include "hdr-texture.hh"
 #include <deque>
+#include <array>
 #include <functional>
 
 namespace rt::app
@@ -27,6 +28,7 @@ namespace rt::app
 
         // Process at most `frame_task_capacity` number of tasks per frame
         static constexpr auto frame_task_capacity = 32;
+        static constexpr auto framerate_history_size = 60*2;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
         float const working_tile_border[] = { 10, 6, 1, 1 };
         float const working_tile_background[] = { 0, 0, 0, 1 };
@@ -34,6 +36,8 @@ namespace rt::app
         std::deque<hdr_texture> images;
         util::mpsc<std::function<void()>> tasks;
         int tile_size[2] = {32, 32};
+        std::array<float, framerate_history_size> framerate_history{};
+        int framerate_history_offset{};
 
         namespace job
         {
@@ -246,6 +250,22 @@ namespace rt::app
                 return render_invoked;
             }
 
+            void framerates()
+            {
+                auto avg_fps = ImGui::GetIO().Framerate;
+                auto avg_frametime = 1000.0f / avg_fps;
+                auto frametime = ImGui::GetIO().DeltaTime;
+                auto fps = 1.0f / frametime;
+
+                framerate_history[framerate_history_offset] = fps;
+                framerate_history_offset = (framerate_history_offset + 1) % framerate_history_size;
+
+                ImGui::Text("Average %.3f mspf, %.1f fps", avg_frametime, avg_fps);
+                ImGui::PushItemWidth(-1);
+                ImGui::PlotLines("##fps", framerate_history.data(), framerate_history_size, framerate_history_offset, nullptr, 0, 70, ImVec2(300, 80));
+                ImGui::PopItemWidth();
+            }
+
             template <class SceneList>
             void main(SceneList& scenes, util::spawner& spawner)
             {
@@ -294,6 +314,11 @@ namespace rt::app
                     hdr_viewer(&selected_hdr_image);
                     ImGui::End();
                 }
+
+                ImGui::SetNextWindowPos(ImVec2(50, 500), ImGuiSetCond_Appearing);
+                ImGui::Begin("Framerates", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+                framerates();
+                ImGui::End();
 
                 process_pending_tasks();
             }
