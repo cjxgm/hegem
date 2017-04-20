@@ -8,6 +8,7 @@ use utf8;
     'stb',                      # single header libraries for game-dev
     'variant/include',          # variant and optional
     'observer-ptr/include',     # observer_ptr<T>
+    'cxxpool/src',              # thread pool
 );
 @library__pkg_config = qw{
     glfw3

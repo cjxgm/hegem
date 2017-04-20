@@ -1,9 +1,10 @@
 #pragma once
-#include "hit.hh"
-#include "ray.hh"
 #include "../image/image.hh"
 #include "../scene/scene.hh"
 #include "../scene/view.hh"
+#include "../util/tile.hh"
+#include "hit.hh"
+#include "ray.hh"
 #include <tuple>
 
 namespace rt::raytracer
@@ -16,7 +17,7 @@ namespace rt::raytracer
         using scene::view_type;
 
         shaded_object_hit_type raytrace(scene_type const& scene, ray_type const& ray, int remaining_bounce_count);
-        raytracing_result_type raytrace(scene_type const& scene, view_type const& view);
+        raytracing_result_type raytrace(scene_type const& scene, view_type const& view, util::tile const& tile);
     }
 
     using raytracer_details::raytrace;

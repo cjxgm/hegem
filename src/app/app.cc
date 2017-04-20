@@ -4,12 +4,13 @@
 #include "../image/image.hh"
 #include "../util/journal.hh"
 #include "../util/mpsc.hh"
+#include "../util/tile.hh"
+#include "../util/spawn.hh"
 #include "../raytracer/raytracer.hh"
 #include "app.hh"
 #include "glfw.hh"
 #include "hdr-texture.hh"
 #include <deque>
-#include <thread>
 #include <functional>
 
 namespace rt::app
@@ -27,9 +28,12 @@ namespace rt::app
         // Process at most `frame_task_capacity` number of tasks per frame
         static constexpr auto frame_task_capacity = 32;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
+        float const working_tile_border[] = { 10, 6, 1, 1 };
+        float const working_tile_background[] = { 0, 0, 0, 1 };
 
         std::deque<hdr_texture> images;
         util::mpsc<std::function<void()>> tasks;
+        int tile_size[2] = {32, 32};
 
         namespace job
         {
@@ -37,30 +41,70 @@ namespace rt::app
             {
                 hdr_texture const& hdr;
                 image_rgb image;
+                util::tile tile;
 
                 void operator () () const
                 {
                     auto size = image.size();
-                    j() << "uploading " << hdr.name << " to " << (int)hdr.tex.get() << " of size " << size.x << "x" << size.y << "\n";
+                    j() << "uploading " << hdr.name
+                        << " to " << (int)hdr.tex.get()
+                        << " of size " << size.x << "x" << size.y
+                        << " tile (" << tile.x << ", " << tile.y << ") "
+                        << tile.w << "x" << tile.h
+                        << "\n";
                     gl::texture_sub_image2d(
                             hdr.tex.get(),
                             0,
-                            0, 0, size.x, size.y,
+                            tile.x, tile.y, tile.w, tile.h,
                             gl::rgb, gl::float_,
                             image.data());
                 }
             };
+
+            // FIXME: This job causes heavy framedrops.
+            struct mark_as_working_tile
+            {
+                hdr_texture const& hdr;
+                util::tile tile;
+
+                void operator () () const
+                {
+                    //j() << "working on " << hdr.name
+                    //    << " texture " << (int)hdr.tex.get()
+                    //    << " tile (" << tile.x << ", " << tile.y << ") "
+                    //    << tile.w << "x" << tile.h
+                    //    << "\n";
+                    //gl::clear_tex_sub_image(
+                    //        hdr.tex.get(),
+                    //        0,
+                    //        tile.x, tile.y, 0, tile.w, tile.h, 1,
+                    //        gl::rgba, gl::float_,
+                    //        working_tile_border);
+                    //if (tile.w > 2 && tile.h > 2) {
+                    //    gl::clear_tex_sub_image(
+                    //            hdr.tex.get(),
+                    //            0,
+                    //            tile.x+1, tile.y+1, 0, tile.w-2, tile.h-2, 1,
+                    //            gl::rgba, gl::float_,
+                    //            working_tile_background);
+                    //}
+                }
+            };
         }
 
-        void render_job(scene_type const& scene, view_type view, hdr_texture const& hdr)
+        void render_job(scene_type const& scene, view_type view, hdr_texture const& hdr, util::tile tile)
         {
-            j() << "rendering " << hdr.name << "\n";
-            auto result = raytracer::raytrace(scene, view);
+            j() << "rendering " << hdr.name
+                << " tile (" << tile.x << ", " << tile.y << ") "
+                << tile.w << "x" << tile.h
+                << "\n";
+            tasks.push(job::mark_as_working_tile{ hdr, tile });
+            auto result = raytracer::raytrace(scene, view, tile);
             auto& image = std::get<0>(result);
-            tasks.push(job::upload{ hdr, std::move(image) });
+            tasks.push(job::upload{ hdr, std::move(image), std::move(tile) });
         }
 
-        void render_view(scene_type const& scene, view_type view)
+        void render_view(scene_type const& scene, view_type view, util::spawner& spawner)
         {
             images.emplace_back(view.size.x, view.size.y);
 
@@ -69,7 +113,12 @@ namespace rt::app
             gl::texture_parameteri(hdr.tex.get(), gl::texture_mag_filter, gl::nearest);
             hdr.name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
 
-            std::thread{render_job, std::cref(scene), std::move(view), std::cref(hdr)}.detach();
+            auto [tile_w, tile_h] = tile_size;
+            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+                spawner.spawn([&, view, tile] () {
+                    render_job(scene, view, hdr, tile);
+                });
+            }
         }
 
         void process_pending_tasks()
@@ -124,7 +173,7 @@ namespace rt::app
 
             // returns true when "Render" is invoked
             template <class SceneList>
-            bool scene_list(SceneList& scenes, ImGuiID* selected)
+            bool scene_list(SceneList& scenes, ImGuiID* selected, util::spawner& spawner)
             {
                 bool render_invoked = false;
                 static bool first_time = true;
@@ -169,7 +218,7 @@ namespace rt::app
                             ImGui::NextColumn();
 
                             if (ImGui::Button("Render")) {
-                                render_view(loaded_scene, view);
+                                render_view(loaded_scene, view, spawner);
                                 render_invoked = true;
                             }
                             ImGui::NextColumn();
@@ -198,7 +247,7 @@ namespace rt::app
             }
 
             template <class SceneList>
-            void main(SceneList& scenes)
+            void main(SceneList& scenes, util::spawner& spawner)
             {
                 gl::clear_bufferfv(gl::color, 0, background);
 
@@ -209,11 +258,15 @@ namespace rt::app
                 static ImGuiID selected_scene_view = 0;
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiSetCond_Appearing);
                 ImGui::Begin("Control");
                 if (ImGui::Button("Scenes")) show_scene_list ^= 1;
                 ImGui::SameLine();
                 if (ImGui::Button("HDR Viewer")) show_hdr_viewer ^= 1;
+                ImGui::Separator();
+                ImGui::PushItemWidth(-100);
+                ImGui::DragInt2("Tile Size", tile_size, 0.1, 4, 512);
+                ImGui::PopItemWidth();
                 ImGui::Separator();
                 if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
                 ImGui::End();
@@ -227,7 +280,7 @@ namespace rt::app
                     ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiSetCond_FirstUseEver);
                     ImGui::Begin("Scenes", &show_scene_list);
-                    if (scene_list(scenes, &selected_scene_view)) {
+                    if (scene_list(scenes, &selected_scene_view, spawner)) {
                         selected_hdr_image = images.size() - 1;
                         show_hdr_viewer = true;
                     }
@@ -251,8 +304,9 @@ namespace rt::app
     {
         j() << "run\n";
 
+        util::spawner spawner{4};   // TODO: auto detect threads? allow customization?
         glfw::init_once("Raytracer");
-        glfw::mainloop_once([&] () { gui::main(opts.scenes); });
+        glfw::mainloop_once([&] () { gui::main(opts.scenes, spawner); });
 
         #if 0
         auto result = raytracer::raytrace(s, 0, 8);

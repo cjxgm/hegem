@@ -63,16 +63,17 @@ namespace rt::raytracer::raytracer_details
 
     raytracing_result_type raytrace(
             scene_type const& scene,
-            view_type const& view)
+            view_type const& view,
+            util::tile const& tile)
     {
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        image_type img{view.size};
-        hit_buffer_type buf{view.size};
+        image_type img{{tile.w, tile.h}};
+        hit_buffer_type buf{{tile.w, tile.h}};
 
         buf.each([&] (auto& hit, auto pos) {
-            auto p = s2cp * glm::vec3{pos, 1};
+            auto p = s2cp * glm::vec3{pos + glm::ivec2{tile.x, tile.y}, 1};
             auto ray = camera_ray_from_camera_plane(p, cam);
             auto shaded_hit = raytrace(scene, ray, view.bounces);
             hit = shaded_hit.hit;
