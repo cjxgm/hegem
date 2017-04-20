@@ -23,6 +23,10 @@ namespace rt::app
 
         journal j() { return {"APP"}; }
 
+        // Process at most `frame_task_capacity` number of tasks per frame
+        static constexpr auto frame_task_capacity = 32;
+        float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
+
         std::deque<hdr_texture> images;
         util::mpsc<std::function<void()>> tasks;
 
@@ -56,7 +60,7 @@ namespace rt::app
         void render_view(scene_type const& scene, int view_id)
         {
             auto& view = scene.views[view_id];
-            images.emplace_back(view.size().x, view.size().y);
+            images.emplace_back(view.size.x, view.size.y);
 
             auto& hdr = images.back();
             gl::texture_parameteri(hdr.tex.get(), gl::texture_min_filter, gl::linear);
@@ -73,7 +77,7 @@ namespace rt::app
 
         void process_pending_tasks()
         {
-            for (int i=0; i < 32 && tasks; i++) {
+            for (int i=0; i < frame_task_capacity && tasks; i++) {
                 auto task = tasks.pop();
                 task();
             }
@@ -81,13 +85,12 @@ namespace rt::app
 
         void render_gui(scene_type const& scene)
         {
-            static float background[] = {0.2667, 0.5333, 1.0000, 0.0000};
             gl::clear_bufferfv(gl::color, 0, background);
 
             static bool show_test_window = false;
             static int selected_render_image = 0;
 
-            ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Appearing);
+            ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
             ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Appearing);
             ImGui::Begin("Control");
             if (ImGui::Button("Render")) {
@@ -99,13 +102,13 @@ namespace rt::app
             ImGui::End();
 
             if (show_test_window) {
-                ImGui::SetNextWindowPos(ImVec2(300, 20), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
                 ImGui::ShowTestWindow(&show_test_window);
             }
 
             if (images.size()) {
-                ImGui::SetNextWindowPos(ImVec2(250, 20), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiSetCond_FirstUseEver);
                 ImGui::Begin("Image Viewer");
 
                 ImGui::BeginChild("image selector", ImVec2(150, 0), true);
@@ -141,10 +144,7 @@ namespace rt::app
     {
         j() << "loading scene\n";
         auto s = scene::from_path(opts.input_path);
-        s.views[0] = scene::view_type {
-            {opts.width, opts.height},
-            s.views[0].camera(),
-        };
+        s.views[0].size = { opts.width, opts.height };
 
         glfw::init_once("Raytracer");
         glfw::mainloop_once([&] () { render_gui(s); });

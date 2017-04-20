@@ -67,11 +67,11 @@ namespace rt::raytracer::raytracer_details
             int max_bounce_count)
     {
         auto& view = scene.views[view_id];
-        auto& cam = view.camera();
+        auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        image_type img{view.size()};
-        hit_buffer_type buf{view.size()};
+        image_type img{view.size};
+        hit_buffer_type buf{view.size};
 
         buf.each([&] (auto& hit, auto pos) {
             auto p = s2cp * glm::vec3{pos, 1};

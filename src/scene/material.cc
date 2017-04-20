@@ -14,6 +14,7 @@ namespace rt::scene::materials
     bool refractive(material_type const& mat)
     {
         // TODO
+        (void)mat;
         return false;
     }
 }

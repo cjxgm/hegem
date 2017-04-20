@@ -71,7 +71,7 @@ namespace rt::raytracer::shading_details
             }
 
         private:
-            color_type impl(materials::solid_color const& mat) const
+            color_type impl(materials::solid_color const& /*mat*/) const
             {
                 throw std::logic_error{"unreachable"};
             }

@@ -51,7 +51,7 @@ namespace rt::raytracer
                 }
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::line_segment const& shape)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::line_segment const& /*shape*/)
             {
                 // Raytracer DOES NOT render lines.
                 // So this is always missed.
@@ -61,6 +61,7 @@ namespace rt::raytracer
             shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& shape)
             {
                 // TODO
+                (void)shape;
                 return hits::missed{ray};
             }
         }

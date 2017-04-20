@@ -190,10 +190,8 @@ namespace rt::app::imgui
         static context _{};
     }
 
-    void on_char(GLFWwindow* win, unsigned int codepoint)
+    void on_char(GLFWwindow* /*win*/, unsigned int codepoint)
     {
-        (void)win;
-
         if (codepoint == 0) return;
 
         auto& io = ImGui::GetIO();
@@ -204,10 +202,8 @@ namespace rt::app::imgui
         }
     }
 
-    void on_key(GLFWwindow* win, int key, bool down)
+    void on_key(GLFWwindow* /*win*/, int key, bool down)
     {
-        (void)win;
-
         auto& io = ImGui::GetIO();
         io.KeysDown[key] = down;
 
@@ -225,27 +221,20 @@ namespace rt::app::imgui
             io.KeysDown[GLFW_KEY_RIGHT_SUPER];
     }
 
-    void on_scroll(GLFWwindow* win, float x, float y)
+    void on_scroll(GLFWwindow* /*win*/, float /*x*/, float y)
     {
-        (void)win;
-        (void)x;
-
         mouse_scroll_y += y;
     }
 
-    void on_mouse_button(GLFWwindow* win, int button, bool down)
+    void on_mouse_button(GLFWwindow* /*win*/, int button, bool down)
     {
-        (void)win;
-
         if (button < 0) throw std::runtime_error{"WTF? You have an odd mouse!"};
         if (button >= 3) return;    // only support 3-button mouse
         if (down) mouse_once_down[button] = true;
     }
 
-    void on_framebuffer_resized(GLFWwindow* win, int w, int h, int fbw, int fbh)
+    void on_framebuffer_resized(GLFWwindow* /*win*/, int w, int h, int fbw, int fbh)
     {
-        (void)win;
-
         j() << "resized window=" << w << "x" << h << " framebuffer=" << fbw << "x" << fbh << "\n";
         auto& io = ImGui::GetIO();
         io.DisplaySize = ImVec2(w, h);
@@ -294,10 +283,8 @@ namespace rt::app::imgui
         ImGui::NewFrame();
     }
 
-    void on_frame_end(GLFWwindow* win)
+    void on_frame_end(GLFWwindow* /*win*/)
     {
-        (void)win;
-
         ImGui::Render();
 
         auto& draw = *ImGui::GetDrawData();

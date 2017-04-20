@@ -27,94 +27,97 @@ namespace rt::app::glfw
             }
         }
 
-        void on_gl_debug(
-                gl::enum_type source,
-                gl::enum_type type,
-                gl::uint_type id,
-                gl::enum_type severity,
-                gl::sizei_type /*length*/,
-                gl::char_type const* msg,
-                void const* /*userdata*/)
+        inline namespace callbacks
         {
-            if (id == 131185) return;
-            journal{"GL"}
-                << "debug:\n"
-                << severity_to_ansi_escape_sequence(severity)
-                << (int)source
-                << "@" << (int)type
-                << "#" << (int)id
-                << "!" << (int)severity
-                << ": " << msg
-                << "\e[0m\n";
-            if (severity == gl::debug_severity_notification)
-                return;
-            if (severity == gl::debug_severity_high
-                    || type == gl::debug_type_error
-                    || source == gl::debug_source_shader_compiler
-                    || source == gl::debug_source_api)
-                throw std::logic_error{"OpenGL error."};
-        }
-
-        void on_error(int err, char const* desc)
-        {
-            throw std::runtime_error{"[WSI] glfw: error " + std::to_string(err) + ": " + desc};
-        }
-
-        void on_char(GLFWwindow* win, unsigned int codepoint)
-        {
-            imgui::on_char(win, codepoint);
-        }
-
-        void on_key(GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/)
-        {
-            switch (action) {
-                case GLFW_PRESS:
-                    imgui::on_key(win, key, true);
-                    break;
-                case GLFW_RELEASE:
-                    imgui::on_key(win, key, false);
-                    break;
-                case GLFW_REPEAT:
-                    // ignored intentionally
-                    break;
-                default: throw std::logic_error{"unreachable"};
+            void on_gl_debug(
+                    gl::enum_type source,
+                    gl::enum_type type,
+                    gl::uint_type id,
+                    gl::enum_type severity,
+                    gl::sizei_type /*length*/,
+                    gl::char_type const* msg,
+                    void const* /*userdata*/)
+            {
+                if (id == 131185) return;
+                journal{"GL"}
+                    << "debug:\n"
+                    << severity_to_ansi_escape_sequence(severity)
+                    << (int)source
+                    << "@" << (int)type
+                    << "#" << (int)id
+                    << "!" << (int)severity
+                    << ": " << msg
+                    << "\e[0m\n";
+                if (severity == gl::debug_severity_notification)
+                    return;
+                if (severity == gl::debug_severity_high
+                        || type == gl::debug_type_error
+                        || source == gl::debug_source_shader_compiler
+                        || source == gl::debug_source_api)
+                    throw std::logic_error{"OpenGL error."};
             }
-        }
 
-        void on_scroll(GLFWwindow* win, double x, double y)
-        {
-            imgui::on_scroll(win, x, y);
-        }
-
-        void on_mouse_button(GLFWwindow* win, int button, int action, int /*mods*/)
-        {
-            switch (action) {
-                case GLFW_PRESS:
-                    imgui::on_mouse_button(win, button, true);
-                    break;
-                case GLFW_RELEASE:
-                    imgui::on_mouse_button(win, button, false);
-                    break;
-                default: throw std::logic_error{"unreachable"};
+            void on_error(int err, char const* desc)
+            {
+                throw std::runtime_error{"[WSI] glfw: error " + std::to_string(err) + ": " + desc};
             }
-        }
 
-        void on_framebuffer_resized(GLFWwindow* win, int /*fbw*/, int /*fbh*/)
-        {
-            int w, h, fbw, fbh;
-            glfwGetWindowSize(win, &w, &h);
-            glfwGetFramebufferSize(win, &fbw, &fbh);
-            imgui::on_framebuffer_resized(win, w, h, fbw, fbh);
-        }
+            void on_char(GLFWwindow* win, unsigned int codepoint)
+            {
+                imgui::on_char(win, codepoint);
+            }
 
-        void on_frame_begin(GLFWwindow* win)
-        {
-            imgui::on_frame_begin(win);
-        }
+            void on_key(GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/)
+            {
+                switch (action) {
+                    case GLFW_PRESS:
+                        imgui::on_key(win, key, true);
+                        break;
+                    case GLFW_RELEASE:
+                        imgui::on_key(win, key, false);
+                        break;
+                    case GLFW_REPEAT:
+                        // ignored intentionally
+                        break;
+                    default: throw std::logic_error{"unreachable"};
+                }
+            }
 
-        void on_frame_end(GLFWwindow* win)
-        {
-            imgui::on_frame_end(win);
+            void on_scroll(GLFWwindow* win, double x, double y)
+            {
+                imgui::on_scroll(win, x, y);
+            }
+
+            void on_mouse_button(GLFWwindow* win, int button, int action, int /*mods*/)
+            {
+                switch (action) {
+                    case GLFW_PRESS:
+                        imgui::on_mouse_button(win, button, true);
+                        break;
+                    case GLFW_RELEASE:
+                        imgui::on_mouse_button(win, button, false);
+                        break;
+                    default: throw std::logic_error{"unreachable"};
+                }
+            }
+
+            void on_framebuffer_resized(GLFWwindow* win, int /*fbw*/, int /*fbh*/)
+            {
+                int w, h, fbw, fbh;
+                glfwGetWindowSize(win, &w, &h);
+                glfwGetFramebufferSize(win, &fbw, &fbh);
+                imgui::on_framebuffer_resized(win, w, h, fbw, fbh);
+            }
+
+            void on_frame_begin(GLFWwindow* win)
+            {
+                imgui::on_frame_begin(win);
+            }
+
+            void on_frame_end(GLFWwindow* win)
+            {
+                imgui::on_frame_end(win);
+            }
         }
 
         struct context

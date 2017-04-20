@@ -36,14 +36,14 @@ namespace rt::raytracer::shading_details
             }
 
         private:
-            color_type impl(materials::solid_color const& mat) const
+            color_type impl(materials::solid_color const& /*mat*/) const
             {
                 return diffuse;
             }
 
             color_type impl(materials::phong const& mat) const
             {
-                // TODO
+                // TODO: refraction
                 return diffuse + mat.reflection * reflected;
             }
 
