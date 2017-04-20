@@ -3,6 +3,7 @@
 #include "ray.hh"
 #include "../image/image.hh"
 #include "../scene/scene.hh"
+#include "../scene/view.hh"
 #include <tuple>
 
 namespace rt::raytracer
@@ -12,9 +13,10 @@ namespace rt::raytracer
         using image_type = image::image_rgb;
         using raytracing_result_type = std::tuple<image_type, hit_buffer_type>;
         using scene::scene_type;
+        using scene::view_type;
 
         shaded_object_hit_type raytrace(scene_type const& scene, ray_type const& ray, int remaining_bounce_count);
-        raytracing_result_type raytrace(scene_type const& scene, int view_id, int max_bounce_count);
+        raytracing_result_type raytrace(scene_type const& scene, view_type const& view);
     }
 
     using raytracer_details::raytrace;

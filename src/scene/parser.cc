@@ -2,6 +2,7 @@
 #include "../lib/glm/op/trig.hh"
 #include "../lib/glm/op/common.hh"
 #include "../lib/glm/op/geom.hh"
+#include "../lib/std/filesystem.hh"
 #include "parser.hh"
 #include "camera.hh"
 #include "view.hh"
@@ -23,6 +24,7 @@ namespace rt::scene
         using material_container_type = scene_type::material_container_type;
         using lamp_container_type = scene_type::lamp_container_type;
         using group_node_container_type = nodes::group::node_container_type;
+        namespace fs = lib::filesystem;
 
         inline namespace literal_to_string_details
         {
@@ -318,7 +320,7 @@ namespace rt::scene
 
                     return {
                         std::move(mats),
-                        { view_type{{}, cam} },
+                        { view_type{{16*60, 9*60}, cam} },
                         std::move(lamps),
                         env_id,
                         node,
@@ -336,7 +338,12 @@ namespace rt::scene
     scene_type from_path(util::as_czstring path)
     {
         std::ifstream ifs{path.data()};
-        return from_istream(ifs);
+        auto s = from_istream(ifs);
+
+        auto p = fs::path{path.data()};
+        s.name = p.stem();
+        if (s.name.empty()) s.name = p.filename();
+        return s;
     }
 }
 

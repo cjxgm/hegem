@@ -20,6 +20,7 @@ namespace rt::app
         using image::image_rgb;
         using image::color::linear_rgb;
         using scene::scene_type;
+        using scene::view_type;
 
         journal j() { return {"APP"}; }
 
@@ -40,6 +41,7 @@ namespace rt::app
                 void operator () () const
                 {
                     auto size = image.size();
+                    j() << "uploading " << hdr.name << " to " << (int)hdr.tex.get() << " of size " << size.x << "x" << size.y << "\n";
                     gl::texture_sub_image2d(
                             hdr.tex.get(),
                             0,
@@ -50,29 +52,24 @@ namespace rt::app
             };
         }
 
-        void render_job(scene_type const& scene, int view_id, hdr_texture const& hdr)
+        void render_job(scene_type const& scene, view_type view, hdr_texture const& hdr)
         {
-            auto result = raytracer::raytrace(scene, view_id, 8);
+            j() << "rendering " << hdr.name << "\n";
+            auto result = raytracer::raytrace(scene, view);
             auto& image = std::get<0>(result);
             tasks.push(job::upload{ hdr, std::move(image) });
         }
 
-        void render_view(scene_type const& scene, int view_id)
+        void render_view(scene_type const& scene, view_type view)
         {
-            auto& view = scene.views[view_id];
             images.emplace_back(view.size.x, view.size.y);
 
             auto& hdr = images.back();
             gl::texture_parameteri(hdr.tex.get(), gl::texture_min_filter, gl::linear);
             gl::texture_parameteri(hdr.tex.get(), gl::texture_mag_filter, gl::nearest);
+            hdr.name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
 
-            std::thread{render_job, std::cref(scene), view_id, std::cref(hdr)}.detach();
-        }
-
-        void render_all_views(scene_type const& scene)
-        {
-            for (auto i=0u; i < scene.views.size(); i++)
-                render_view(scene, i);
+            std::thread{render_job, std::cref(scene), std::move(view), std::cref(hdr)}.detach();
         }
 
         void process_pending_tasks()
@@ -83,71 +80,179 @@ namespace rt::app
             }
         }
 
-        void render_gui(scene_type const& scene)
+        namespace gui
         {
-            gl::clear_bufferfv(gl::color, 0, background);
+            void hdr_viewer(int* selected)
+            {
+                static bool first_time = true;
 
-            static bool show_test_window = false;
-            static int selected_render_image = 0;
+                ImGui::Columns(2, "hdr viewer");
+                if (first_time) {
+                    first_time = false;
+                    ImGui::SetColumnOffset(1, 200);
+                }
 
-            ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
-            ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Appearing);
-            ImGui::Begin("Control");
-            if (ImGui::Button("Render")) {
-                selected_render_image = images.size();
-                render_all_views(scene);
-            }
-            ImGui::Separator();
-            if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
-            ImGui::End();
-
-            if (show_test_window) {
-                ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
-                ImGui::ShowTestWindow(&show_test_window);
-            }
-
-            if (images.size()) {
-                ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiSetCond_FirstUseEver);
-                ImGui::Begin("Image Viewer");
-
-                ImGui::BeginChild("image selector", ImVec2(150, 0), true);
+                ImGui::BeginChild("image list", ImVec2(0, 0), true);
                 for (int i=0; i < (int)images.size(); i++) {
-                    auto label = "Image " + std::to_string(i);
-                    if (ImGui::Selectable(label.data(), selected_render_image == i))
-                        selected_render_image = i;
+                    ImGui::PushID(i);
+                    if (ImGui::Selectable(images[i].name.data(), *selected == i))
+                        *selected = i;
+                    ImGui::PopID();
                 }
                 ImGui::EndChild();
-                ImGui::SameLine();
+                ImGui::NextColumn();
 
                 ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
-                if (selected_render_image >= 0 && selected_render_image < (int)images.size()) {
-                    auto& image = images[selected_render_image];
+                if (*selected >= 0 && *selected < (int)images.size()) {
+                    auto& image = images[*selected];
+                    ImGui::PushItemWidth(-100);
                     imgui_hdr_color("Blackpoint", "Intensity", &image.blackpoint, 0.001, -100, 10000, "%.2f", 10);
                     imgui_hdr_color("Whitepoint", "Intensity", &image.whitepoint, 0.001, -100, 10000, "%.2f", 10);
                     ImGui::SliderFloat("Dithering", &image.dither_amount, 0, 2, "%.2f");
+                    ImGui::PopItemWidth();
                     ImGui::Separator();
+                    ImGui::BeginChild("image", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
                     imgui_hdr_texture(&image);
+                    ImGui::EndChild();
                 } else {
                     ImGui::Text("No image selected");
                 }
                 ImGui::EndChild();
 
-                ImGui::End();
+                ImGui::Columns();
             }
 
-            process_pending_tasks();
+            // returns true when "Render" is invoked
+            template <class SceneList>
+            bool scene_list(SceneList& scenes, ImGuiID* selected)
+            {
+                bool render_invoked = false;
+                static bool first_time = true;
+
+                ImGui::Columns(5, "scene list");
+                if (first_time) {
+                    first_time = false;
+                    ImGui::SetColumnOffset(1, 300);
+                }
+                ImGui::Text("Scene"); ImGui::NextColumn();
+                ImGui::Text("View"); ImGui::NextColumn();
+                ImGui::Text("Dimension"); ImGui::NextColumn();
+                ImGui::Text("Bounces"); ImGui::NextColumn();
+                ImGui::Text("Action"); ImGui::NextColumn();
+                ImGui::Separator();
+
+                for (auto& scene: scenes) {
+                    auto& scene_name = name(scene);
+                    ImGui::PushID(scene_name.data());
+
+                    if (loaded(scene)) {
+                        auto& loaded_scene = get_or_load(scene);
+                        for (auto& view: loaded_scene.views) {
+                            ImGui::PushID(view.name.data());
+                            if (auto id = ImGui::GetID("selection");
+                                    ImGui::Selectable(
+                                        scene_name.data(),
+                                        *selected == id)) {
+                                *selected = id;
+                            }
+                            ImGui::NextColumn();
+                            ImGui::Text("%s", view.name.data()); ImGui::NextColumn();
+
+                            ImGui::PushItemWidth(-1);
+                            ImGui::DragInt2("##dimension", &view.size[0], 0.1, 16, 1920);
+                            ImGui::PopItemWidth();
+                            ImGui::NextColumn();
+
+                            ImGui::PushItemWidth(-1);
+                            ImGui::DragInt("##bounces", &view.bounces, 0.1, 0, 16);
+                            ImGui::PopItemWidth();
+                            ImGui::NextColumn();
+
+                            if (ImGui::Button("Render")) {
+                                render_view(loaded_scene, view);
+                                render_invoked = true;
+                            }
+                            ImGui::NextColumn();
+                            ImGui::PopID();
+                        }
+                    } else {
+                        if (auto id = ImGui::GetID("selection");
+                                ImGui::Selectable(
+                                    scene_name.data(),
+                                    *selected == id)) {
+                            *selected = id;
+                        }
+                        ImGui::NextColumn();
+                        ImGui::Text(""); ImGui::NextColumn();
+                        ImGui::Text(""); ImGui::NextColumn();
+                        ImGui::Text(""); ImGui::NextColumn();
+                        if (ImGui::Button("Load")) get_or_load(scene);
+                        ImGui::NextColumn();
+                    }
+
+                    ImGui::PopID();
+                }
+
+                ImGui::Columns();
+                return render_invoked;
+            }
+
+            template <class SceneList>
+            void main(SceneList& scenes)
+            {
+                gl::clear_bufferfv(gl::color, 0, background);
+
+                static bool show_test_window = false;
+                static bool show_scene_list = true;
+                static bool show_hdr_viewer = false;
+                static int selected_hdr_image = 0;
+                static ImGuiID selected_scene_view = 0;
+
+                ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Appearing);
+                ImGui::Begin("Control");
+                if (ImGui::Button("Scenes")) show_scene_list ^= 1;
+                ImGui::SameLine();
+                if (ImGui::Button("HDR Viewer")) show_hdr_viewer ^= 1;
+                ImGui::Separator();
+                if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
+                ImGui::End();
+
+                if (show_test_window) {
+                    ImGui::SetNextWindowPos(ImVec2(50, 440), ImGuiSetCond_Appearing);
+                    ImGui::ShowTestWindow(&show_test_window);
+                }
+
+                if (show_scene_list) {
+                    ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
+                    ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiSetCond_FirstUseEver);
+                    ImGui::Begin("Scenes", &show_scene_list);
+                    if (scene_list(scenes, &selected_scene_view)) {
+                        selected_hdr_image = images.size() - 1;
+                        show_hdr_viewer = true;
+                    }
+                    ImGui::End();
+                }
+
+                if (show_hdr_viewer) {
+                    ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
+                    ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiSetCond_FirstUseEver);
+                    ImGui::Begin("HDR Viewer", &show_hdr_viewer);
+                    hdr_viewer(&selected_hdr_image);
+                    ImGui::End();
+                }
+
+                process_pending_tasks();
+            }
         }
     }
 
-    void run_once(options const& opts)
+    void run_once(options opts)
     {
-        j() << "loading scene\n";
-        auto s = scene::from_path(opts.input_path);
-        s.views[0].size = { opts.width, opts.height };
+        j() << "run\n";
 
         glfw::init_once("Raytracer");
-        glfw::mainloop_once([&] () { render_gui(s); });
+        glfw::mainloop_once([&] () { gui::main(opts.scenes); });
 
         #if 0
         auto result = raytracer::raytrace(s, 0, 8);

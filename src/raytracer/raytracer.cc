@@ -63,10 +63,8 @@ namespace rt::raytracer::raytracer_details
 
     raytracing_result_type raytrace(
             scene_type const& scene,
-            int view_id,
-            int max_bounce_count)
+            view_type const& view)
     {
-        auto& view = scene.views[view_id];
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
@@ -76,7 +74,7 @@ namespace rt::raytracer::raytracer_details
         buf.each([&] (auto& hit, auto pos) {
             auto p = s2cp * glm::vec3{pos, 1};
             auto ray = camera_ray_from_camera_plane(p, cam);
-            auto shaded_hit = raytrace(scene, ray, max_bounce_count);
+            auto shaded_hit = raytrace(scene, ray, view.bounces);
             hit = shaded_hit.hit;
             img[pos] = shaded_hit.radiance;
         });

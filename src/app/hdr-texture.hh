@@ -2,6 +2,7 @@
 #include "../lib/gl/gl.hh"
 #include "../lib/glm/vec3.hh"
 #include "../glu/resource.hh"
+#include <string>
 
 namespace rt::app
 {
@@ -13,6 +14,7 @@ namespace rt::app
         glm::vec3 blackpoint{0};
         glm::vec3 whitepoint{10};
         float dither_amount{1};
+        std::string name{"<unnamed>"};
 
         hdr_texture(int w, int h)
             :w{w}, h{h}

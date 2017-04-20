@@ -2,6 +2,6 @@
 
 namespace rt::app
 {
-    void run_once(options const& opts);
+    void run_once(options opts);
 }
 

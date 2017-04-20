@@ -5,20 +5,38 @@
 #include "lamp.hh"
 #include "material.hh"
 #include <deque>
+#include <string>
 
 namespace rt::scene
 {
-    struct scene_type
+    namespace scene_details
     {
-        using material_container_type = std::deque<material_type>;
-        using view_container_type = std::deque<view_type>;
-        using lamp_container_type = std::deque<lamp_type>;
+        struct scene_type
+        {
+            using material_container_type = std::deque<material_type>;
+            using view_container_type = std::deque<view_type>;
+            using lamp_container_type = std::deque<lamp_type>;
 
-        material_container_type materials;
-        view_container_type views;
-        lamp_container_type lamps;
-        material_id_type environment;
-        node_type root;
-    };
+            material_container_type materials;
+            view_container_type views;
+            lamp_container_type lamps;
+            material_id_type environment;
+            node_type root;
+            std::string name{"<unnamed>"};
+        };
+
+        using filename_type = std::string;
+        using loadable_scene = mapbox::util::variant<filename_type, scene_type>;
+
+        bool loaded(loadable_scene const& loadable);
+        scene_type& get_or_load(loadable_scene& loadable);
+        std::string const& name(loadable_scene const& loadable);
+    }
+
+    using scene_details::scene_type;
+    using scene_details::loadable_scene;
+    using scene_details::loaded;
+    using scene_details::get_or_load;
+    using scene_details::name;
 }
 
