@@ -17,7 +17,7 @@ namespace rt::raytracer::shading_details
         {
             auto base = (ior - 1) / (ior + 1);
             base *= base;
-            auto exp = 1 + dot(*viewing, *normal);
+            auto exp = 1 - glm::abs(dot(*viewing, *normal));
             exp = exp*exp*exp*exp*exp;
             return base + (1-base)*exp;
         }
