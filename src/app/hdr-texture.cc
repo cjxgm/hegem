@@ -38,7 +38,6 @@ namespace rt::app
         ImGui::Image(hdr->tex.get().ptr(), ImVec2(hdr->w, hdr->h));
         cmd_list.AddDrawCmd();
         cmd_list.AddCallback(disable_hdr, nullptr);
-        cmd_list.AddDrawCmd();
     }
 
     void imgui_hdr_color(

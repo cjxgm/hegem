@@ -331,13 +331,15 @@ namespace rt::app::imgui
                     int x2 = cmd.ClipRect.z;
                     int y2 = cmd.ClipRect.w;
                     auto tex = static_cast<gl::uint_type>(reinterpret_cast<std::uintptr_t>(cmd.TextureId));
-                    gl::scissor(x1, fbh-y2, x2-x1, y2-y1);
                     gl::bind_texture_unit(0, tex);
-                    gl::draw_elements(
-                            gl::triangles,
-                            cmd.ElemCount,
-                            glu::traits::equiv_unsigned_type_enum<ImDrawIdx>,
-                            idx_buffer_offset);
+                    if (cmd.ElemCount != 0) {
+                        gl::scissor(x1, fbh-y2, x2-x1, y2-y1);
+                        gl::draw_elements(
+                                gl::triangles,
+                                cmd.ElemCount,
+                                glu::traits::equiv_unsigned_type_enum<ImDrawIdx>,
+                                idx_buffer_offset);
+                    }
                 }
                 idx_buffer_offset += cmd.ElemCount;
             }
