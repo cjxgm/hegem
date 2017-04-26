@@ -9,7 +9,7 @@ int main(int argc, char const* argv[]) try
 }
 catch (std::runtime_error const& ex)
 {
-    std::cerr << ex.what() << "\n";
+    std::cerr << "\e[1;31m[ERROR] \e[0;31m" << ex.what() << "\e[0m\n";
     return 1;
 }
 
