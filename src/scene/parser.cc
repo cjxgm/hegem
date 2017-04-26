@@ -1,8 +1,8 @@
+#include "../lib/glm/vec2.hh"
 #include "../lib/glm/vec3.hh"
 #include "../lib/glm/op/trig.hh"
 #include "../lib/glm/op/common.hh"
 #include "../lib/glm/op/geom.hh"
-#include "../lib/std/filesystem.hh"
 #include "parser.hh"
 #include "camera.hh"
 #include "view.hh"
@@ -23,8 +23,8 @@ namespace rt::scene
     {
         using material_container_type = scene_type::material_container_type;
         using lamp_container_type = scene_type::lamp_container_type;
+        using view_container_type = scene_type::view_container_type;
         using group_node_container_type = nodes::group::node_container_type;
-        namespace fs = lib::filesystem;
 
         inline namespace literal_to_string_details
         {
@@ -52,19 +52,19 @@ namespace rt::scene
         inline namespace expect_details
         {
             template <class T>
-            void expect(std::istream & ist, T&& x)
+            void expect(std::istream & ist, T&& x, std::string const& name)
             {
                 T v;
                 if ((ist >> v) && v == x) return;
-                throw std::runtime_error{"literal " + literal_to_string(x) + " expected"};
+                throw std::runtime_error{"literal " + literal_to_string(x) + " expected for " + name};
             }
 
-            void expect(std::istream & ist, char const* x)
+            void expect(std::istream & ist, char const* x, std::string const& name)
             {
-                expect<std::string>(ist, x);
+                expect<std::string>(ist, x, name);
             }
 
-            #define EXPECT(WHAT) expect(ist, WHAT)
+            #define EXPECT(WHAT) expect(ist, WHAT, name)
         }
 
         inline namespace parse_details
@@ -147,12 +147,27 @@ namespace rt::scene
 
             PARSE_FOR(primitives)
             {
+                FN_PARSE(std::string)
+                {
+                    std::string x;
+                    if (ist >> std::quoted(x)) return x;
+                    throw std::runtime_error{"failed to parse " + name};
+                }
+
                 FN_PARSE(glm::vec3)
                 {
                     return {
                         PARSE(float, vec3.x),
                         PARSE(float, vec3.y),
                         PARSE(float, vec3.z),
+                    };
+                }
+
+                FN_PARSE(glm::ivec2)
+                {
+                    return {
+                        PARSE(int, ivec2.x),
+                        PARSE(int, ivec2.y),
                     };
                 }
             }
@@ -221,6 +236,20 @@ namespace rt::scene
                 });
             }
 
+            PARSE_FOR(view)
+            {
+                FN_PARSE_BLOCK(view_type, {
+                    PARSE_KV(std::string, name),
+                    PARSE_KV(glm::ivec2, dimension),
+                    PARSE_KV(int, bounces),
+                    PARSE(camera_type, camera),
+                });
+
+                FN_PARSE_VARIANT_LIST(view_container_type, views, {
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(view_type, view);
+                });
+            }
+
             PARSE_FOR(material_list)
             {
                 FN_PARSE_BLOCK(materials::phong, {
@@ -238,7 +267,6 @@ namespace rt::scene
                     float roughness;
                     float metalness;
                     float ior;
-
                 };
 
                 FN_PARSE_BLOCK(pbr_material, {
@@ -309,7 +337,8 @@ namespace rt::scene
             {
                 FN_PARSE(scene_type)
                 {
-                    auto cam = PARSE(camera_type, camera);
+                    auto scene_name = PARSE_KV(std::string, name);
+                    auto views = PARSE_KV(view_container_type, views);
                     auto lamps = PARSE_KV(lamp_container_type, lights);
                     auto bg = PARSE_KV(background, background);
                     auto mats = PARSE_KV(material_container_type, materials);
@@ -319,11 +348,12 @@ namespace rt::scene
                     auto env_id = mats.size() - 1;
 
                     return {
-                        std::move(mats),
-                        { view_type{{16*60, 9*60}, cam} },
+                        std::move(scene_name),
+                        std::move(views),
                         std::move(lamps),
-                        env_id,
-                        node,
+                        std::move(mats),
+                        std::move(node),
+                        std::move(env_id),
                     };
                 }
             }
@@ -338,12 +368,7 @@ namespace rt::scene
     scene_type from_path(util::as_czstring path)
     {
         std::ifstream ifs{path.data()};
-        auto s = from_istream(ifs);
-
-        auto p = fs::path{path.data()};
-        s.name = p.stem();
-        if (s.name.empty()) s.name = p.filename();
-        return s;
+        return from_istream(ifs);
     }
 }
 

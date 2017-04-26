@@ -17,12 +17,12 @@ namespace rt::scene
             using view_container_type = std::deque<view_type>;
             using lamp_container_type = std::deque<lamp_type>;
 
-            material_container_type materials;
+            std::string name;
             view_container_type views;
             lamp_container_type lamps;
-            material_id_type environment;
+            material_container_type materials;
             node_type root;
-            std::string name{"<unnamed>"};
+            material_id_type environment;
         };
 
         using filename_type = std::string;

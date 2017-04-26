@@ -11,10 +11,10 @@ namespace rt::scene
     {
         using dimension_type = glm::ivec2;
 
+        std::string name;
         dimension_type size;
+        int bounces;
         camera_type camera;
-        std::string name{"<unnamed>"};
-        int bounces{8};
 
         glm::mat3 screen_space_to_camera_plane_space() const;
     };
