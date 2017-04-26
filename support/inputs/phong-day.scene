@@ -1,9 +1,17 @@
+name "Phong Day"
 
-perspective-camera {
-    center -0.2 -0.5 5
-    direction 0.2 0 -1
-    up 0.1 1 0
-    angle 60
+views {
+    view {
+        name "Main View"
+        dimension 800 480
+        bounces 3
+        perspective-camera {
+            center -0.2 -0.5 5
+            direction 0.2 0 -1
+            up 0.1 1 0
+            angle 60
+        }
+    }
 }
 
 lights {

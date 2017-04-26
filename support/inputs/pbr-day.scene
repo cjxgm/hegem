@@ -1,9 +1,53 @@
+name "PBR Day"
 
-perspective-camera {
-    center -0.2 -0.5 5
-    direction 0.2 0 -1
-    up 0.1 1 0
-    angle 60
+views {
+    view {
+        name "Main View"
+        dimension 800 480
+        bounces 3
+        perspective-camera {
+            center -0.2 -0.5 5
+            direction 0.2 0 -1
+            up 0.1 1 0
+            angle 60
+        }
+    }
+
+    view {
+        name "Main HQ"
+        dimension 1920 1080
+        bounces 8
+        perspective-camera {
+            center -0.2 -0.5 5
+            direction 0.2 0 -1
+            up 0.1 1 0
+            angle 60
+        }
+    }
+
+    view {
+        name "Ortho View"
+        dimension 800 400
+        bounces 0
+        orthographic-camera {
+            center -0.5 1 5
+            direction 0.2 -0.2 -1
+            up 0.1 1 0
+            size 5
+        }
+    }
+
+    view {
+        name "Ortho Bounced"
+        dimension 800 400
+        bounces 1
+        orthographic-camera {
+            center -0.5 1 5
+            direction 0.2 -0.2 -1
+            up 0.1 1 0
+            size 5
+        }
+    }
 }
 
 lights {

@@ -1,27 +1,30 @@
+name "Sunny"
 
-perspective-camera {
-    center -0.2 -0.5 5
-    direction 0.2 0 -1
-    up 0.1 1 0
-    angle 60
+views {
+    view {
+        name "Main View"
+        dimension 800 480
+        bounces 3
+        perspective-camera {
+            center -0.2 -0.5 5
+            direction 0.2 0 -1
+            up 0.1 1 0
+            angle 60
+        }
+    }
 }
 
 lights {
     directional-light {
-        direction 2 -2 -1
+        direction 1 -1 2
         color 1 0.9 0.8
-        strength 1
-    }
-    point-light {
-        center 2 -1.5 1
-        color 1 0.5 0.1
-        strength 50
+        strength 10
     }
 }
 
 background {
     color 0.3 0.3 1
-    strength 1
+    strength 10
 }
 
 materials {
