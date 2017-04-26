@@ -256,7 +256,14 @@ namespace rt::app
                         ImGui::Text(""); ImGui::NextColumn();
                         ImGui::Text(""); ImGui::NextColumn();
                         ImGui::Text(""); ImGui::NextColumn();
-                        if (ImGui::Button("Load")) get_or_load(scene);
+                        if (ImGui::Button("Load")) {
+                            try {
+                                get_or_load(scene);
+                            }
+                            catch (std::runtime_error const& e) {
+                                j() << "\e[1;31merror: \e[0;31m" << e.what() << "\e[0m\n";
+                            }
+                        }
                         ImGui::NextColumn();
                     }
 
