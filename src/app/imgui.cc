@@ -1,8 +1,10 @@
+#include "../lib/gl/gl.hh"
 #include "../lib/gl/glfw.hh"
 #include "../lib/imgui.hh"
 #include "../util/journal.hh"
 #include "../glu/resource.hh"
 #include "../glu/traits.hh"
+#include "../glu/states.hh"
 #include "imgui.hh"
 #include <cstddef>
 #include <stdexcept>
@@ -295,10 +297,10 @@ namespace rt::app::imgui
         int fbh = io.DisplaySize.y * io.DisplayFramebufferScale.y;
         gl::funcs::viewport(0, 0, fbw, fbh);
 
-        gl::disable(gl::enums::cull_face);
-        gl::disable(gl::depth_test);
-        gl::enable(gl::scissor_test);
-        gl::enable(gl::blend);
+        glu::states_manager::instance().enable_only({
+            gl::scissor_test,
+            gl::blend,
+        });
 
         gl::blend_equation(gl::func_add);
         gl::blend_func(gl::src_alpha, gl::one_minus_src_alpha);
@@ -344,9 +346,6 @@ namespace rt::app::imgui
                 idx_buffer_offset += cmd.ElemCount;
             }
         }
-
-        // TODO: use a state tracker instead
-        gl::disable(gl::scissor_test);
     }
 }
 

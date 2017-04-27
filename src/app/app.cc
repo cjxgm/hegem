@@ -6,6 +6,7 @@
 #include "../util/mpsc.hh"
 #include "../util/tile.hh"
 #include "../util/spawn.hh"
+#include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
 #include "app.hh"
@@ -31,8 +32,8 @@ namespace rt::app
         static constexpr auto frame_task_capacity = 32;
         static constexpr auto framerate_history_size = 60*2;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
-        float const working_tile_border[] = { 10, 6, 1, 1 };
-        float const working_tile_background[] = { 0, 0, 0, 1 };
+        //float const working_tile_border[] = { 10, 6, 1, 1 };
+        //float const working_tile_background[] = { 0, 0, 0, 1 };
 
         std::deque<hdr_texture> images;
         util::mpsc<std::function<void()>> tasks;
@@ -293,8 +294,6 @@ namespace rt::app
             template <class SceneList>
             void main(SceneList& scenes, util::spawner& spawner)
             {
-                gl::clear_bufferfv(gl::color, 0, background);
-
                 static bool show_test_window = false;
                 static bool show_scene_list = true;
                 static bool show_hdr_viewer = false;
@@ -355,7 +354,11 @@ namespace rt::app
 
         util::spawner spawner{4};   // TODO: auto detect threads? allow customization?
         glfw::init_once("Raytracer");
-        glfw::mainloop_once([&] () { gui::main(opts.scenes, spawner); });
+        glfw::mainloop_once([&] () {
+            glu::states_manager::instance().enable_only({});
+            gl::clear_bufferfv(gl::color, 0, background);
+            gui::main(opts.scenes, spawner);
+        });
     }
 }
 
