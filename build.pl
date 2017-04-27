@@ -17,9 +17,12 @@ use utf8;
 
 $compiler__bin = "clang++";
 $loader__bin = $compiler__bin;
-$compiler__flags__standard = "c++1z";
 $build__output_bin = "raytracer";
-@loader__flags__extra = qw[-pthread -lstdc++fs];    # FIXME: feature detection on "libstdc++fs" / C++17 filesystem
+
+$compiler__flags__standard = "c++1z";
+@compiler__flags__extra = qw[-g];
+@loader__flags__extra = qw[-pthread -lstdc++fs -g];    # FIXME: feature detection on "libstdc++fs" / C++17 filesystem
+
 @makefile__commands__test = (
     {
         name => '$(BIN)',
