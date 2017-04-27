@@ -2,9 +2,11 @@
 #include "../lib/gl/glfw.hh"
 #include "../lib/imgui.hh"
 #include "../util/journal.hh"
+#include "../util/constraints.hh"
 #include "../glu/resource.hh"
 #include "../glu/traits.hh"
 #include "../glu/states.hh"
+#include "../glu/cast.hh"
 #include "imgui.hh"
 #include <cstddef>
 #include <stdexcept>
@@ -16,20 +18,17 @@ namespace rt::app::imgui
         using rt::util::journal;
         journal j() { return {"IMGUI"}; }
 
-        char const* shader_sources[2] = {
-            #include "imgui.shader.inl"
-        };
-
-        double time{};
-        bool mouse_once_down[3]{};
-        float mouse_scroll_y{};
-        glu::program program{};
-        glu::texture tex_font{};
-        glu::vertex_array vao{};
-        glu::buffer vertex_buffers[2]{};  // { vertices, elements }
-
-        struct context
+        struct context: util::non_transferable
         {
+            double time{};
+            bool mouse_once_down[3]{};
+            float mouse_scroll_y{};
+            glu::shared_program program;
+            glu::shared_texture2d tex_font;
+            glu::shared_vertex_array vao;
+            glu::shared_buffer vertices_buffer;
+            glu::shared_buffer elements_buffer;
+
             context()
             {
                 j() << "(ctor)\n";
@@ -48,31 +47,38 @@ namespace rt::app::imgui
                 ImGui::Shutdown();
             }
 
+            static context& instance()
+            {
+                static context ctx;
+                return ctx;
+            }
+
         private:
-            static void compile_shader()
+            static constexpr char const* shader_sources[2] = {
+                #include "imgui.shader.inl"
+            };
+
+            void compile_shader()
             {
                 j() << "compiling shader\n";
 
-                auto vert = gl::create_shader(gl::vertex_shader);
+                auto vert = glu::vertex_shader_pool::instance().allocate();
                 gl::shader_source(vert, 1, &shader_sources[0], nullptr);
                 gl::compile_shader(vert);
 
-                auto frag = gl::create_shader(gl::fragment_shader);
+                auto frag = glu::fragment_shader_pool::instance().allocate();
                 gl::shader_source(frag, 1, &shader_sources[1], nullptr);
                 gl::compile_shader(frag);
 
-                program.reset(gl::create_program());
-                gl::attach_shader(program.get(), vert);
-                gl::attach_shader(program.get(), frag);
-                gl::link_program(program.get());
+                program = glu::program_pool::instance().allocate();
+                gl::attach_shader(program, vert);
+                gl::attach_shader(program, frag);
+                gl::link_program(program);
 
-                gl::delete_shader(frag);
-                gl::delete_shader(vert);
-
-                gl::program_uniform1i(program.get(), 1, 0);      // bind "tex" to unit 0
+                gl::program_uniform1i(program, 1, 0);      // bind "tex" to unit 0
             }
 
-            static void upload_font()
+            void upload_font()
             {
                 auto& io = ImGui::GetIO();
 
@@ -88,61 +94,55 @@ namespace rt::app::imgui
                 io.Fonts->GetTexDataAsAlpha8(&pixels, &w, &h);
 
                 j() << "uploading font texture\n";
-                gl::uint_type tex;
-                gl::create_textures(gl::texture_2d, 1, &tex);
-                tex_font.reset(tex);
-                gl::texture_storage2d(tex, 1, gl::r8, w, h);
+                tex_font = glu::texture2d_pool::instance().allocate();
+                gl::texture_storage2d(tex_font, 1, gl::r8, w, h);
                 gl::texture_sub_image2d(
-                        tex,
+                        tex_font,
                         0,                              // LOD
                         0, 0, w, h,                     // geometry
                         gl::red, gl::unsigned_byte,     // format
                         pixels);
-                gl::texture_parameteri(tex, gl::texture_min_filter, gl::linear);
-                gl::texture_parameteri(tex, gl::texture_mag_filter, gl::linear);
+                gl::texture_parameteri(tex_font, gl::texture_min_filter, gl::linear);
+                gl::texture_parameteri(tex_font, gl::texture_mag_filter, gl::linear);
 
-                io.Fonts->TexID = tex_font.get().ptr();
+                io.Fonts->TexID = glu::cast::id_to_ptr(tex_font);
             }
 
-            static void prepare_input()
+            void prepare_input()
             {
                 j() << "creating vertex array and buffers\n";
-                {
-                    gl::uint_type vao_id;
-                    gl::uint_type buffers[2];
-                    gl::create_vertex_arrays(1, &vao_id);
-                    gl::create_buffers(2, buffers);
-                    vao.reset(vao_id);
-                    vertex_buffers[0].reset(buffers[0]);
-                    vertex_buffers[1].reset(buffers[1]);
-                }
+                auto& vao_pool = glu::vertex_array_pool::instance();
+                auto& buf_pool = glu::buffer_pool::instance();
+                vao = vao_pool.allocate();
+                vertices_buffer = buf_pool.allocate();
+                elements_buffer = buf_pool.allocate();
 
-                gl::enable_vertex_array_attrib(vao.get(), 0);     // vec2 pos
-                gl::enable_vertex_array_attrib(vao.get(), 1);     // vec2 uv
-                gl::enable_vertex_array_attrib(vao.get(), 2);     // vec4 color
+                gl::enable_vertex_array_attrib(vao, 0);     // vec2 pos
+                gl::enable_vertex_array_attrib(vao, 1);     // vec2 uv
+                gl::enable_vertex_array_attrib(vao, 2);     // vec4 color
 
                 gl::vertex_array_attrib_format(
-                        vao.get(), 0,
+                        vao, 0,
                         2, gl::float_, false,
                         offsetof(ImDrawVert, pos));
                 gl::vertex_array_attrib_format(
-                        vao.get(), 1,
+                        vao, 1,
                         2, gl::float_, false,
                         offsetof(ImDrawVert, uv));
                 gl::vertex_array_attrib_format(
-                        vao.get(), 2,
+                        vao, 2,
                         4, gl::unsigned_byte, true,
                         offsetof(ImDrawVert, col));
 
-                gl::vertex_array_vertex_buffer(vao.get(), 0, vertex_buffers[0].get(), 0, sizeof(ImDrawVert));
-                gl::vertex_array_element_buffer(vao.get(), vertex_buffers[1].get());
+                gl::vertex_array_vertex_buffer(vao, 0, vertices_buffer, 0, sizeof(ImDrawVert));
+                gl::vertex_array_element_buffer(vao, elements_buffer);
 
-                gl::vertex_array_attrib_binding(vao.get(), 0, 0);
-                gl::vertex_array_attrib_binding(vao.get(), 1, 0);
-                gl::vertex_array_attrib_binding(vao.get(), 2, 0);
+                gl::vertex_array_attrib_binding(vao, 0, 0);
+                gl::vertex_array_attrib_binding(vao, 1, 0);
+                gl::vertex_array_attrib_binding(vao, 2, 0);
             }
 
-            static void setup_style()
+            void setup_style()
             {
                 auto& style = ImGui::GetStyle();
                 style.WindowPadding       = ImVec2(10, 10);
@@ -157,7 +157,7 @@ namespace rt::app::imgui
                 style.GrabRounding        = 1;
             }
 
-            static void setup_keymap()
+            void setup_keymap()
             {
                 auto& io = ImGui::GetIO();
 
@@ -189,7 +189,7 @@ namespace rt::app::imgui
 
     void init_once()
     {
-        static context _{};
+        context::instance();
     }
 
     void on_char(GLFWwindow* /*win*/, unsigned int codepoint)
@@ -225,18 +225,22 @@ namespace rt::app::imgui
 
     void on_scroll(GLFWwindow* /*win*/, float /*x*/, float y)
     {
-        mouse_scroll_y += y;
+        auto& ctx = context::instance();
+        ctx.mouse_scroll_y += y;
     }
 
     void on_mouse_button(GLFWwindow* /*win*/, int button, bool down)
     {
+        auto& ctx = context::instance();
         if (button < 0) throw std::runtime_error{"WTF? You have an odd mouse!"};
         if (button >= 3) return;    // only support 3-button mouse
-        if (down) mouse_once_down[button] = true;
+        if (down) ctx.mouse_once_down[button] = true;
     }
 
     void on_framebuffer_resized(GLFWwindow* /*win*/, int w, int h, int fbw, int fbh)
     {
+        auto& ctx = context::instance();
+
         j() << "resized window=" << w << "x" << h << " framebuffer=" << fbw << "x" << fbh << "\n";
         auto& io = ImGui::GetIO();
         io.DisplaySize = ImVec2(w, h);
@@ -249,19 +253,20 @@ namespace rt::app::imgui
              0.0f  ,  0.0f  , -1.0f, 0.0f,
             -1.0f  ,  1.0f  ,  0.0f, 1.0f,
         };
-        gl::program_uniform_matrix4fv(program.get(), 0, 1, false, proj);
+        gl::program_uniform_matrix4fv(ctx.program, 0, 1, false, proj);
     }
 
     void on_frame_begin(GLFWwindow* win)
     {
+        auto& ctx = context::instance();
         auto& io = ImGui::GetIO();
 
         // frame time
         auto now = glfwGetTime();
-        io.DeltaTime = time == 0
+        io.DeltaTime = ctx.time == 0
             ? 1.0f / 60.0f
-            : static_cast<float>(now - time);
-        time = now;
+            : static_cast<float>(now - ctx.time);
+        ctx.time = now;
 
         // mouse position
         if (glfwGetWindowAttrib(win, GLFW_FOCUSED)) {
@@ -273,14 +278,14 @@ namespace rt::app::imgui
         }
 
         // mouse button
-        for (auto i=0u; i < sizeof(mouse_once_down)/sizeof(*mouse_once_down); i++) {
-            io.MouseDown[i] = mouse_once_down[i] || glfwGetMouseButton(win, i);
-            mouse_once_down[i] = false;
+        for (auto i=0u; i < sizeof(ctx.mouse_once_down)/sizeof(*ctx.mouse_once_down); i++) {
+            io.MouseDown[i] = ctx.mouse_once_down[i] || glfwGetMouseButton(win, i);
+            ctx.mouse_once_down[i] = false;
         }
 
         // mouse scroll (only support 1 axis)
-        io.MouseWheel = mouse_scroll_y;
-        mouse_scroll_y = 0;
+        io.MouseWheel = ctx.mouse_scroll_y;
+        ctx.mouse_scroll_y = 0;
 
         ImGui::NewFrame();
     }
@@ -289,6 +294,7 @@ namespace rt::app::imgui
     {
         ImGui::Render();
 
+        auto& ctx = context::instance();
         auto& draw = *ImGui::GetDrawData();
         auto& io = ImGui::GetIO();
         draw.ScaleClipRects(io.DisplayFramebufferScale);
@@ -305,20 +311,20 @@ namespace rt::app::imgui
         gl::blend_equation(gl::func_add);
         gl::blend_func(gl::src_alpha, gl::one_minus_src_alpha);
 
-        gl::bind_vertex_array(vao.get());
-        gl::use_program(program.get());
+        gl::bind_vertex_array(ctx.vao);
+        gl::use_program(ctx.program);
 
         // TODO: optimize this with Ranges TS
         for (auto first=draw.CmdLists, last=first+draw.CmdListsCount; first < last; first++) {
             auto& cmd_list = **first;
 
             gl::named_buffer_data(
-                    vertex_buffers[0].get(),
+                    ctx.vertices_buffer,
                     cmd_list.VtxBuffer.Size * sizeof(ImDrawVert),
                     cmd_list.VtxBuffer.Data,
                     gl::stream_draw);
             gl::named_buffer_data(
-                    vertex_buffers[1].get(),
+                    ctx.elements_buffer,
                     cmd_list.IdxBuffer.Size * sizeof(ImDrawIdx),
                     cmd_list.IdxBuffer.Data,
                     gl::stream_draw);
@@ -332,7 +338,7 @@ namespace rt::app::imgui
                     int y1 = cmd.ClipRect.y;
                     int x2 = cmd.ClipRect.z;
                     int y2 = cmd.ClipRect.w;
-                    auto tex = static_cast<gl::uint_type>(reinterpret_cast<std::uintptr_t>(cmd.TextureId));
+                    auto tex = glu::cast::ptr_to_id(cmd.TextureId);
                     gl::bind_texture_unit(0, tex);
                     if (cmd.ElemCount != 0) {
                         gl::scissor(x1, fbh-y2, x2-x1, y2-y1);

@@ -35,11 +35,31 @@ namespace rt::app
         //float const working_tile_border[] = { 10, 6, 1, 1 };
         //float const working_tile_background[] = { 0, 0, 0, 1 };
 
-        std::deque<hdr_texture> images;
-        util::mpsc<std::function<void()>> tasks;
-        int tile_size[2] = {64, 64};
-        std::array<float, framerate_history_size> framerate_history{};
-        int framerate_history_offset{};
+        struct context
+        {
+            std::deque<hdr_texture> images;
+            util::mpsc<std::function<void()>> tasks;
+            int tile_size[2] = {64, 64};
+            std::array<float, framerate_history_size> framerate_history{};
+            int framerate_history_offset{};
+
+            static context& instance()
+            {
+                static context ctx;
+                return ctx;
+            }
+
+            ~context()
+            {
+                j() << "context: (dtor)\n";
+            }
+
+        private:
+            context()
+            {
+                j() << "context: (ctor)\n";
+            }
+        };
 
         namespace job
         {
@@ -99,6 +119,9 @@ namespace rt::app
                 hdr_texture const& hdr_depth,
                 hdr_texture const& hdr_normal)
         {
+            auto& ctx = context::instance();
+            auto& tasks = ctx.tasks;
+
             tasks.push(job::mark_as_working_tile{ hdr_combined, tile });
             tasks.push(job::mark_as_working_tile{ hdr_depth, tile });
             tasks.push(job::mark_as_working_tile{ hdr_normal, tile });
@@ -118,6 +141,8 @@ namespace rt::app
 
         void render_view(scene_type const& scene, view_type view, util::spawner& spawner)
         {
+            auto& ctx = context::instance();
+            auto& images = ctx.images;
             auto name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
 
             images.emplace_back(view.size.x, view.size.y);
@@ -135,7 +160,7 @@ namespace rt::app
             auto& hdr_combined = images.back();
             hdr_combined.name = std::move(name);
 
-            auto [tile_w, tile_h] = tile_size;
+            auto [tile_w, tile_h] = ctx.tile_size;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
                 spawner.spawn([&, view, tile] () {
                     render_job(scene, view, tile, hdr_combined, hdr_depth, hdr_normal);
@@ -145,6 +170,9 @@ namespace rt::app
 
         void process_pending_tasks()
         {
+            auto& ctx = context::instance();
+            auto& tasks = ctx.tasks;
+
             for (int i=0; i < frame_task_capacity && tasks; i++) {
                 auto task = tasks.pop();
                 task();
@@ -155,6 +183,8 @@ namespace rt::app
         {
             void hdr_viewer(int* selected)
             {
+                auto& ctx = context::instance();
+                auto& images = ctx.images;
                 static bool first_time = true;
 
                 ImGui::Columns(2, "hdr viewer");
@@ -277,23 +307,26 @@ namespace rt::app
 
             void framerates()
             {
+                auto& ctx = context::instance();
                 auto avg_fps = ImGui::GetIO().Framerate;
                 auto avg_frametime = 1000.0f / avg_fps;
                 auto frametime = ImGui::GetIO().DeltaTime;
                 auto fps = 1.0f / frametime;
 
-                framerate_history[framerate_history_offset] = fps;
-                framerate_history_offset = (framerate_history_offset + 1) % framerate_history_size;
+                ctx.framerate_history[ctx.framerate_history_offset] = fps;
+                ctx.framerate_history_offset = (ctx.framerate_history_offset + 1) % framerate_history_size;
 
                 ImGui::Text("Average %.3f mspf, %.1f fps", avg_frametime, avg_fps);
                 ImGui::PushItemWidth(-1);
-                ImGui::PlotLines("##fps", framerate_history.data(), framerate_history_size, framerate_history_offset, nullptr, 0, 70, ImVec2(300, 80));
+                ImGui::PlotLines("##fps", ctx.framerate_history.data(), framerate_history_size, ctx.framerate_history_offset, nullptr, 0, 70, ImVec2(300, 80));
                 ImGui::PopItemWidth();
             }
 
             template <class SceneList>
             void main(SceneList& scenes, util::spawner& spawner)
             {
+                auto& ctx = context::instance();
+                auto& images = ctx.images;
                 static bool show_test_window = false;
                 static bool show_scene_list = true;
                 static bool show_hdr_viewer = false;
@@ -308,7 +341,7 @@ namespace rt::app
                 if (ImGui::Button("HDR Viewer")) show_hdr_viewer ^= 1;
                 ImGui::Separator();
                 ImGui::PushItemWidth(-100);
-                ImGui::DragInt2("Tile Size", tile_size, 0.1, 4, 512);
+                ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
                 ImGui::PopItemWidth();
                 ImGui::Separator();
                 if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
@@ -358,6 +391,7 @@ namespace rt::app
             glu::states_manager::instance().enable_only({});
             gl::clear_bufferfv(gl::color, 0, background);
             gui::main(opts.scenes, spawner);
+            glu::resource_recycler::instance().try_recycle();
         });
     }
 }

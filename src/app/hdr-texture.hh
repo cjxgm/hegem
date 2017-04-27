@@ -10,26 +10,22 @@ namespace rt::app
     {
         int w;
         int h;
-        glu::texture tex{};
+        glu::shared_texture2d tex;
         glm::vec3 blackpoint{0};
         glm::vec3 whitepoint{10};
         float dither_amount{1};
         std::string name{"<unnamed>"};
 
         hdr_texture(int w, int h)
-            :w{w}, h{h}
+            :w{w}, h{h}, tex{glu::texture2d_pool::instance().allocate()}
         {
-            gl::uint_type id;
-            gl::create_textures(gl::texture_2d, 1, &id);
-            tex.reset(id);
-
-            gl::texture_storage2d(id, 1, gl::rgba32f, w, h);
+            gl::texture_storage2d(tex, 1, gl::rgba32f, w, h);
 
             float black[4]{0.0f, 0.0f, 0.0f, 1.0f};
-            gl::clear_tex_image(id, 0, gl::rgba, gl::float_, black);
+            gl::clear_tex_image(tex, 0, gl::rgba, gl::float_, black);
 
-            gl::texture_parameteri(id, gl::texture_min_filter, gl::linear);
-            gl::texture_parameteri(id, gl::texture_mag_filter, gl::nearest);
+            gl::texture_parameteri(tex, gl::texture_min_filter, gl::linear);
+            gl::texture_parameteri(tex, gl::texture_mag_filter, gl::nearest);
         }
     };
 

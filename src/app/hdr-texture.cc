@@ -3,6 +3,7 @@
 #include "../lib/glm/op/common.hh"
 #include "../lib/glm/op/geom.hh"
 #include "../lib/imgui.hh"
+#include "../glu/cast.hh"
 #include "hdr-texture.hh"
 
 namespace rt::app
@@ -35,7 +36,7 @@ namespace rt::app
         cmd_list.AddDrawCmd();
         cmd_list.AddCallback(enable_hdr, hdr);
         cmd_list.AddDrawCmd();
-        ImGui::Image(hdr->tex.get().ptr(), ImVec2(hdr->w, hdr->h));
+        ImGui::Image(glu::cast::id_to_ptr(hdr->tex), ImVec2(hdr->w, hdr->h));
         cmd_list.AddDrawCmd();
         cmd_list.AddCallback(disable_hdr, nullptr);
     }

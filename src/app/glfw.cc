@@ -166,15 +166,6 @@ namespace rt::app::glfw
 
                 j() << "glfw: setup window dimension limits\n";
                 glfwSetWindowSizeLimits(win, 16, 16, GLFW_DONT_CARE, GLFW_DONT_CARE);
-
-                j() << "glfw: installing callbacks\n";
-                glfwSetCharCallback(win, on_char);
-                glfwSetKeyCallback(win, on_key);
-                glfwSetScrollCallback(win, on_scroll);
-                glfwSetMouseButtonCallback(win, on_mouse_button);
-                glfwSetFramebufferSizeCallback(win, on_framebuffer_resized);
-
-                imgui::init_once();
             }
 
             ~context()
@@ -190,8 +181,17 @@ namespace rt::app::glfw
             template <class Render>
             context_mainloop(Render&& render)
             {
-                j() << "glfw: entering mainloop\n";
+                j() << "glfw mainloop: init imgui\n";
+                imgui::init_once();
+                j() << "glfw mainloop: installing callbacks\n";
+                glfwSetCharCallback(win, on_char);
+                glfwSetKeyCallback(win, on_key);
+                glfwSetScrollCallback(win, on_scroll);
+                glfwSetMouseButtonCallback(win, on_mouse_button);
+                glfwSetFramebufferSizeCallback(win, on_framebuffer_resized);
                 on_framebuffer_resized(win, -1, -1);    // trigger first-time size
+
+                j() << "glfw mainloop: entering\n";
                 while (!glfwWindowShouldClose(win)) {
                     glfwPollEvents();
                     on_frame_begin(win);
@@ -199,7 +199,7 @@ namespace rt::app::glfw
                     on_frame_end(win);
                     glfwSwapBuffers(win);
                 }
-                j() << "glfw: exited mainloop\n";
+                j() << "glfw mainloop: exited\n";
             }
         };
     }
