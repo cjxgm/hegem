@@ -71,7 +71,7 @@ namespace rt::glu
                     log << " " << refs;
                     if (refs > 0) dirty = true;
                 }
-                log << "\n";
+                if (names_refcounts.size() != 0) log << "\n";
 
                 if (dirty) {
                     log << " \e[1;33mWARNING: \e[0;33mperforming dirty destruction\e[0m\n";
@@ -140,7 +140,7 @@ namespace rt::glu
                 for (auto name: names) {
                     auto log = j() << "recycling " << name << ": <" << (int)resources[name] << ">\n";
                     traits::recycle(resources[name]);
-                    log << "recycled for <" << (int)resources[name] << ">\n";
+                    log << " recycled for <" << (int)resources[name] << ">\n";
                     name_allocator.deallocate(name);
                 }
             }

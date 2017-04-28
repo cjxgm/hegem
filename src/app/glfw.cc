@@ -150,10 +150,10 @@ namespace rt::app::glfw
                 j() << "gl: loading\n";
                 gl::load();
                 j() << "gl: version info\n"
-                    << "  - OpenGL:   " << (char const*)gl::get_string(gl::version) << "\n"
-                    << "  - Vendor:   " << (char const*)gl::get_string(gl::vendor) << "\n"
-                    << "  - Renderer: " << (char const*)gl::get_string(gl::renderer) << "\n"
-                    << "  - Shader:   " << (char const*)gl::get_string(gl::shading_language_version) << "\n"
+                    << " - OpenGL:   " << (char const*)gl::get_string(gl::version) << "\n"
+                    << " - Vendor:   " << (char const*)gl::get_string(gl::vendor) << "\n"
+                    << " - Renderer: " << (char const*)gl::get_string(gl::renderer) << "\n"
+                    << " - Shader:   " << (char const*)gl::get_string(gl::shading_language_version) << "\n"
                 ;
 
                 j() << "glfw: enabling vsync\n";
