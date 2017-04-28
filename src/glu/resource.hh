@@ -120,10 +120,8 @@ namespace rt::glu
                 gl::enum_type, Type,
                 shader,
                 gl::create_shader, gl::delete_shader);
-        using fragment_shader_pool   = shader_pool<gl::fragment_shader>;
-        using vertex_shader_pool     = shader_pool<gl::vertex_shader>;
-        using shared_fragment_shader = shared_shader<gl::fragment_shader>;
-        using shared_vertex_shader   = shared_shader<gl::vertex_shader>;
+
+        void init_all_resource_pools_once();
 
 
         #undef DEFINE_RESOURCE_TEMPLATED_NON_BULK

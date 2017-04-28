@@ -170,7 +170,7 @@ namespace rt::app::glfw
 
             ~context()
             {
-                j() << "glfw: (dtor)\n";
+                j() << "glfw: (dtor) \e[1;32m-- must be the last output --\e[0m\n";
                 if (win) glfwDestroyWindow(win);
                 glfwTerminate();
             }

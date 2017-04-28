@@ -24,8 +24,6 @@ namespace rt::app
         void unmark(util::tile tile);
 
     private:
-        glu::shared_program prog;
-        glu::shared_vertex_array vao;
         glu::shared_framebuffer fbo;
     };
 

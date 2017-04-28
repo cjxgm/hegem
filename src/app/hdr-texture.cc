@@ -38,6 +38,25 @@ namespace rt::app
         {
             gl::uniform1i(2, 2);                        // LDR mode
         }
+
+        struct context
+        {
+            glu::shared_program prog;
+            glu::shared_vertex_array vao;
+
+            static context& instance()
+            {
+                static context ctx;
+                return ctx;
+            }
+
+        private:
+            context()
+            {
+                prog = glu::shader_factory::program_from_name("working-tile-marker");
+                vao = glu::vertex_array_pool::instance().allocate();
+            }
+        };
     }
 
     void imgui_hdr_texture(hdr_texture* hdr)
@@ -106,8 +125,6 @@ namespace rt::app
         gl::texture_parameteri(markers, gl::texture_min_filter, gl::linear);
         gl::texture_parameteri(markers, gl::texture_mag_filter, gl::nearest);
 
-        prog = glu::shader_factory::program_from_name("working-tile-marker");
-        vao = glu::vertex_array_pool::instance().allocate();
         fbo = glu::framebuffer_pool::instance().allocate();
         gl::named_framebuffer_draw_buffer(fbo, gl::color_attachment0);
         gl::named_framebuffer_texture(fbo, gl::color_attachment0, markers, 0);
@@ -115,12 +132,13 @@ namespace rt::app
 
     void hdr_texture::mark(util::tile tile)
     {
+        auto& ctx = context::instance();
         gl::funcs::viewport(tile.x, tile.y, tile.w, tile.h);
         glu::states_manager::instance().enable_only({});
 
         gl::bind_framebuffer(gl::framebuffer, fbo);
-        gl::bind_vertex_array(vao);
-        gl::use_program(prog);
+        gl::bind_vertex_array(ctx.vao);
+        gl::use_program(ctx.prog);
         gl::draw_arrays(gl::points, 0, 1);
     }
 

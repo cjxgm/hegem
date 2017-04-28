@@ -364,9 +364,10 @@ namespace rt::app
     void run_once(options opts)
     {
         j() << "run\n";
-
         util::spawner spawner{4};   // TODO: auto detect threads? allow customization?
         glfw::init_once("Raytracer");
+        glu::init_all_resource_pools_once();
+
         glfw::mainloop_once([&] () {
             glu::states_manager::instance().enable_only({});
             gl::clear_bufferfv(gl::color, 0, background);
