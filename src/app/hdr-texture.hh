@@ -2,6 +2,7 @@
 #include "../lib/gl/gl.hh"
 #include "../lib/glm/vec3.hh"
 #include "../glu/resource.hh"
+#include "../util/tile.hh"
 #include <string>
 
 namespace rt::app
@@ -11,22 +12,21 @@ namespace rt::app
         int w;
         int h;
         glu::shared_texture2d tex;
+        glu::shared_texture2d markers;
         glm::vec3 blackpoint{0};
         glm::vec3 whitepoint{10};
         float dither_amount{1};
         std::string name{"<unnamed>"};
 
-        hdr_texture(int w, int h)
-            :w{w}, h{h}, tex{glu::texture2d_pool::instance().allocate()}
-        {
-            gl::texture_storage2d(tex, 1, gl::rgba32f, w, h);
+        hdr_texture(int w, int h);
 
-            float black[4]{0.0f, 0.0f, 0.0f, 1.0f};
-            gl::clear_tex_image(tex, 0, gl::rgba, gl::float_, black);
+        void mark(util::tile tile);
+        void unmark(util::tile tile);
 
-            gl::texture_parameteri(tex, gl::texture_min_filter, gl::linear);
-            gl::texture_parameteri(tex, gl::texture_mag_filter, gl::nearest);
-        }
+    private:
+        glu::shared_program prog;
+        glu::shared_vertex_array vao;
+        glu::shared_framebuffer fbo;
     };
 
     void imgui_hdr_texture(hdr_texture* hdr);

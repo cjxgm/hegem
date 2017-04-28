@@ -48,14 +48,16 @@ vec3 tonemap(vec3 color, vec3 black, vec3 white)
 void main()
 {
     vec4 mask = vec4(1, 0, 1, 1);
-    if (mode == 0) {
+    if (mode == 0) {                            // general mode
         float a = texture(tex, prev.uv).r;
         mask = vec4(1, 1, 1, a);
-    } else if (mode == 1) {
+    } else if (mode == 1) {                     // HDR mode
         vec3 src = texture(tex, prev.uv).rgb;
         src = tonemap(src, hdr_blackpoint, hdr_whitepoint);
         float dither = (uniform_dist(prev.uv) - 0.5) * dither_amount / 255.0;
         mask = vec4(src + dither, 1);
+    } else if (mode == 2) {                     // LDR mode
+        mask = texture(tex, prev.uv);
     }
     color = prev.color * mask;
 }

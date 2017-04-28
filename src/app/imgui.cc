@@ -295,6 +295,7 @@ namespace rt::app::imgui
         gl::blend_equation(gl::func_add);
         gl::blend_func(gl::src_alpha, gl::one_minus_src_alpha);
 
+        gl::bind_framebuffer(gl::framebuffer, 0);
         gl::bind_vertex_array(ctx.vao);
         gl::use_program(ctx.program);
 

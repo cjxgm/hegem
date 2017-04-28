@@ -32,8 +32,6 @@ namespace rt::app
         static constexpr auto frame_task_capacity = 32;
         static constexpr auto framerate_history_size = 60*2;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
-        //float const working_tile_border[] = { 10, 6, 1, 1 };
-        //float const working_tile_background[] = { 0, 0, 0, 1 };
 
         struct context
         {
@@ -65,48 +63,30 @@ namespace rt::app
         {
             struct upload
             {
-                hdr_texture const& hdr;
+                hdr_texture& hdr;
                 image_rgb image;
                 util::tile tile;
 
                 void operator () () const
                 {
                     gl::texture_sub_image2d(
-                            hdr.tex.get(),
+                            hdr.tex,
                             0,
                             tile.x, tile.y, tile.w, tile.h,
                             gl::rgb, gl::float_,
                             image.data());
+                    hdr.unmark(tile);
                 }
             };
 
-            // FIXME: This job causes heavy framedrops.
             struct mark_as_working_tile
             {
-                hdr_texture const& hdr;
+                hdr_texture& hdr;
                 util::tile tile;
 
                 void operator () () const
                 {
-                    //j() << "working on " << hdr.name
-                    //    << " texture " << (int)hdr.tex.get()
-                    //    << " tile (" << tile.x << ", " << tile.y << ") "
-                    //    << tile.w << "x" << tile.h
-                    //    << "\n";
-                    //gl::clear_tex_sub_image(
-                    //        hdr.tex.get(),
-                    //        0,
-                    //        tile.x, tile.y, 0, tile.w, tile.h, 1,
-                    //        gl::rgba, gl::float_,
-                    //        working_tile_border);
-                    //if (tile.w > 2 && tile.h > 2) {
-                    //    gl::clear_tex_sub_image(
-                    //            hdr.tex.get(),
-                    //            0,
-                    //            tile.x+1, tile.y+1, 0, tile.w-2, tile.h-2, 1,
-                    //            gl::rgba, gl::float_,
-                    //            working_tile_background);
-                    //}
+                    hdr.mark(tile);
                 }
             };
         }
@@ -115,9 +95,9 @@ namespace rt::app
                 scene_type const& scene,
                 view_type view,
                 util::tile tile,
-                hdr_texture const& hdr_combined,
-                hdr_texture const& hdr_depth,
-                hdr_texture const& hdr_normal)
+                hdr_texture& hdr_combined,
+                hdr_texture& hdr_depth,
+                hdr_texture& hdr_normal)
         {
             auto& ctx = context::instance();
             auto& tasks = ctx.tasks;
