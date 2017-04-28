@@ -7,6 +7,7 @@
 #include "../glu/traits.hh"
 #include "../glu/states.hh"
 #include "../glu/cast.hh"
+#include "../glu/shader.hh"
 #include "imgui.hh"
 #include <cstddef>
 #include <stdexcept>
@@ -54,27 +55,10 @@ namespace rt::app::imgui
             }
 
         private:
-            static constexpr char const* shader_sources[2] = {
-                #include "imgui.shader.inl"
-            };
-
             void compile_shader()
             {
                 j() << "compiling shader\n";
-
-                auto vert = glu::vertex_shader_pool::instance().allocate();
-                gl::shader_source(vert, 1, &shader_sources[0], nullptr);
-                gl::compile_shader(vert);
-
-                auto frag = glu::fragment_shader_pool::instance().allocate();
-                gl::shader_source(frag, 1, &shader_sources[1], nullptr);
-                gl::compile_shader(frag);
-
-                program = glu::program_pool::instance().allocate();
-                gl::attach_shader(program, vert);
-                gl::attach_shader(program, frag);
-                gl::link_program(program);
-
+                program = glu::shader_factory::program_from_name("imgui");
                 gl::program_uniform1i(program, 1, 0);      // bind "tex" to unit 0
             }
 
