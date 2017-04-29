@@ -51,10 +51,10 @@ namespace rt::raytracer
             color_type radiance;
         };
 
-        // missed < missed: false
-        // missed < hit   : false
-        //    hit < missed: true
-        //    hit < hit   : (a.extent < b.extent)
+        // returns +inf if missed
+        // returns a.ray_extent otherwise
+        float ray_extent(object_hit_type const& a);
+        // returns ray_extent(a) < ray_extent(b)
         bool less_extent(object_hit_type const& a, object_hit_type const& b);
         object_hit_type extent_lesser_one(object_hit_type a, object_hit_type b);
 
