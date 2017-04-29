@@ -40,14 +40,14 @@ namespace rt::raytracer::raytracer_details
 
                 auto& mat = scene.materials[hit.material_id];
                 if (reflective(mat)) {
-                    ray_type refl{
+                    ray_type refl = biased_ray({
                         hit.shape_info.hit_point,
                         reflect(*ray.dir, *hit.shape_info.normal),
-                    };
+                    }, hit.shape_info);
                     reflected = raytrace(scene, refl, remaining_bounce_count).radiance;
                 }
                 if (refractive(mat)) {
-                    refracted = raytrace(scene, /* refract */ ray, remaining_bounce_count).radiance;
+                    refracted = raytrace(scene, /* refract */ biased_ray(ray, hit.shape_info), remaining_bounce_count).radiance;
                 }
 
                 auto diffuse = shade_diffuse(scene, hit);

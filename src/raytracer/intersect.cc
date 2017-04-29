@@ -8,7 +8,6 @@ namespace rt::raytracer
     namespace
     {
         using namespace scene;
-        static constexpr auto eps = 1e-3f;
 
         inline namespace intersect_shape_details
         {
@@ -21,9 +20,11 @@ namespace rt::raytracer
                             ray.origin, *ray.dir,
                             shape.center, shape.radius,
                             position, normal)) {
+                    auto extent = distance(ray.origin, position);
                     return hits::shape{
                         ray,
-                        distance(ray.origin, position),
+                        extent,
+                        1e-5f * extent,
                         position,
                         normal,
                     };
@@ -43,6 +44,7 @@ namespace rt::raytracer
                     return hits::shape{
                         ray,
                         extent,
+                        1e-5f * extent,
                         ray.at(extent),
                         shape.normal,
                     };
@@ -68,7 +70,9 @@ namespace rt::raytracer
 
         inline namespace intersect_node_details
         {
-            object_hit_type intersect_node(ray_type const& ray, nodes::object const& node)
+            object_hit_type intersect_node(ray_type const& ray, node_type const& node);
+
+            object_hit_type intersect_node_impl(ray_type const& ray, nodes::object const& node)
             {
                 return node.shape.match([&] (auto& shape) {
                         return intersect_shape(ray, shape);
@@ -80,26 +84,28 @@ namespace rt::raytracer
                     );
             }
 
-            object_hit_type intersect_node(ray_type const& ray, nodes::group const& node)
+            object_hit_type intersect_node_impl(ray_type const& ray, nodes::group const& node)
             {
                 return std::accumulate(
                         begin(node.nodes), end(node.nodes),
                         object_hit_type{hits::missed{ray}},
                         [&] (auto hit, auto& node) {
-                            return extent_lesser_one(hit, intersect(node, ray));
+                            return extent_lesser_one(hit, intersect_node(ray, node));
                         });
+            }
+
+            object_hit_type intersect_node(ray_type const& ray, node_type const& node)
+            {
+                return node.match([&] (auto& node) {
+                    return intersect_node_impl(ray, node);
+                });
             }
         }
     }
 
     object_hit_type intersect(scene::node_type const& node, ray_type const& ray)
     {
-        return node.match([&] (auto& node) {
-            return intersect_node({
-                ray.at(eps),
-                ray.dir,
-            }, node);
-        });
+        return intersect_node(ray, node);
     }
 }
 

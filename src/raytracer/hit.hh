@@ -20,6 +20,7 @@ namespace rt::raytracer
         {
             ray_type ray;
             float ray_extent;
+            float ray_max_error;
             point_type hit_point;
             direction_type normal;
         };
@@ -57,6 +58,7 @@ namespace rt::raytracer
         // returns ray_extent(a) < ray_extent(b)
         bool less_extent(object_hit_type const& a, object_hit_type const& b);
         object_hit_type extent_lesser_one(object_hit_type a, object_hit_type b);
+        ray_type biased_ray(ray_type ray, shape shape_info);
 
         using hit_buffer_type = image::image<object_hit_type>;
     }

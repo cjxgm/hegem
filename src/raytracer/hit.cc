@@ -28,6 +28,14 @@ namespace rt::raytracer::hits
             return b;
         }
     }
+
+    ray_type biased_ray(ray_type ray, shape shape_info)
+    {
+        return {
+            ray.origin + *shape_info.normal * shape_info.ray_max_error,
+            ray.dir,
+        };
+    }
 }
 
 namespace rt::image::image_impl
