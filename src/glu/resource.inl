@@ -79,7 +79,8 @@ namespace rt::glu
                     log << " performing clean destruction\n";
                 }
 
-                traits::bulk_delete(resources.size(), &resources[0]);
+                if (resources.size() > 0)
+                    traits::bulk_delete(resources.size(), &resources[0]);
                 log << " resource released\n";
             }
 

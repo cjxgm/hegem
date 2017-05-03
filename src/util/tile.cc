@@ -35,8 +35,8 @@ namespace rt::util::tile_details
 
     bool operator == (tile_iterator const& a, tile_iterator const& b)
     {
-        auto enda = a.iteration_end() || a.is_end_iterator();
-        auto endb = b.iteration_end() || b.is_end_iterator();
+        auto enda = a.is_end_iterator() || a.iteration_end();
+        auto endb = b.is_end_iterator() || b.iteration_end();
         return enda && endb;
     }
 }
