@@ -686,8 +686,10 @@ sub output__variable__bool
     my $val = eval "\$$var";
     die "LOGIC ERROR: variable \$$var is undefined\n" unless defined $val;
     for ($var) {
+        s{::}{: }g;
         s{__}{: }g;
         s{_}{ }g;
+        s{^[: ]+}{}g;
         &output__progress("# $_", $val ? 'enabled' : 'disabled');
     }
 }
