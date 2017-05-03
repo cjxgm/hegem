@@ -19,6 +19,7 @@ my $compiler__flags__standard = "c++14";
 my $compiler__flags__optimization_level = "3";
 my $compiler__flags__architecture = "native";
 my @compiler__flags__extra = qw[-Wall -Wextra];
+my @compiler__sanitizers = ();
 
 my $loader__bin = "g++";
 my @loader__flags__extra = ();
@@ -87,6 +88,7 @@ sub main
 
     # prepare compiler flags
     push @compiler__flags, ("-fno-operator-names");     # Operator name should be fucked off from C++!
+    push @compiler__flags, map { "-fsanitize=$_" } @compiler__sanitizers;
     push @compiler__flags, ("-march=$compiler__flags__architecture");
     push @compiler__flags, ("-std=$compiler__flags__standard");
     push @compiler__flags, ("-O$compiler__flags__optimization_level");
@@ -96,6 +98,7 @@ sub main
 
     # prepare loader flags
     push @loader__flags, @loader__flags__extra;
+    push @loader__flags, map { "-fsanitize=$_" } @compiler__sanitizers;
     push @loader__flags, map { "-l$_" } @library__link;
     push @loader__flags, &system__pkg_config__loader_flags(@library__pkg_config);
 
