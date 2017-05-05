@@ -32,6 +32,7 @@ namespace rt::glu
             vertex_array_pool::instance();
             buffer_pool::instance();
             framebuffer_pool::instance();
+            renderbuffer_pool::instance();
             program_pool::instance();
             texture2d_pool::instance();
             init_shader_pools(traits::shader_types{});

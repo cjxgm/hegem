@@ -39,6 +39,8 @@ namespace rt::app::glfw
                     void const* /*userdata*/)
             {
                 if (id == 131185) return;
+                if (id == 131169) return;
+                if (id == 131140) return;
                 journal{"GL"}
                     << "debug:\n"
                     << severity_to_ansi_escape_sequence(severity)

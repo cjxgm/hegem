@@ -107,6 +107,7 @@ namespace rt::glu
         DEFINE_RESOURCE_DSA(vertex_array, gl::create_vertex_arrays, gl::delete_vertex_arrays);
         DEFINE_RESOURCE_DSA(buffer, gl::create_buffers, gl::delete_buffers);
         DEFINE_RESOURCE_DSA(framebuffer, gl::create_framebuffers, gl::delete_framebuffers);
+        DEFINE_RESOURCE_DSA(renderbuffer, gl::create_renderbuffers, gl::delete_renderbuffers);
         DEFINE_RESOURCE_NON_BULK(program, gl::create_program, gl::delete_program);
 
         DEFINE_RESOURCE_TEMPLATED_DSA(

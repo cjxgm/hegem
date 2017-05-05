@@ -9,9 +9,12 @@
 #include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
+#include "../rasterizer/rasterizer.hh"
+#include "../rasterizer/state.hh"
 #include "app.hh"
 #include "glfw.hh"
 #include "hdr-texture.hh"
+#include "visualization.hh"
 #include <deque>
 #include <array>
 #include <functional>
@@ -36,6 +39,7 @@ namespace rt::app
         struct context
         {
             std::deque<hdr_texture> images;
+            std::deque<visualization> visualizations;
             util::mpsc<std::function<void()>> tasks;
             int tile_size[2] = {64, 64};
             std::array<float, framerate_history_size> framerate_history{};
@@ -148,6 +152,31 @@ namespace rt::app
             }
         }
 
+        void render_combined_job(
+                scene_type const& scene,
+                view_type view,
+                util::tile tile,
+                hdr_texture& hdr)
+        {
+            auto& ctx = context::instance();
+            auto& tasks = ctx.tasks;
+
+            auto result = raytracer::raytrace(scene, view, tile);
+            auto& image = std::get<0>(result);
+            tasks.push(job::upload{ hdr, std::move(image), tile });
+        }
+
+        void render_view_combined_only(scene_type const& scene, view_type view, hdr_texture& hdr, util::spawner& spawner)
+        {
+            auto& ctx = context::instance();
+            auto [tile_w, tile_h] = ctx.tile_size;
+            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+                spawner.spawn([&, view, tile] () {
+                    render_combined_job(scene, view, tile, hdr);
+                });
+            }
+        }
+
         void process_pending_tasks()
         {
             auto& ctx = context::instance();
@@ -161,6 +190,36 @@ namespace rt::app
 
         namespace gui
         {
+            void adjustable_hdr_texture(hdr_texture& image, char const* label="adjustable hdr texture")
+            {
+                ImGui::PushID(label);
+                ImGui::PushItemWidth(-100);
+                imgui_hdr_color("Blackpoint", "Intensity", &image.blackpoint, 0.001, -100, 10000, "%.2f", 10);
+                imgui_hdr_color("Whitepoint", "Intensity", &image.whitepoint, 0.001, -100, 10000, "%.2f", 10);
+                ImGui::SliderFloat("Dithering", &image.dither_amount, 0, 2, "%.2f");
+                ImGui::PopItemWidth();
+                ImGui::Separator();
+                ImGui::BeginChild("image", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+                imgui_hdr_texture(&image);
+                ImGui::EndChild();
+                ImGui::PopID();
+            }
+
+            void visualizer(visualization& vi, util::spawner& spawner)
+            {
+                if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
+                    if (vi.show_raytracing_overlay)
+                        render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, spawner);
+                }
+                ImGui::Separator();
+                ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
+                adjustable_hdr_texture(vi.hdr);
+                ImGui::EndChild();
+
+                if (!vi.show_raytracing_overlay)
+                    rasterizer::rasterize(vi.s);
+            }
+
             void hdr_viewer(int* selected)
             {
                 auto& ctx = context::instance();
@@ -185,16 +244,7 @@ namespace rt::app
 
                 ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
                 if (*selected >= 0 && *selected < (int)images.size()) {
-                    auto& image = images[*selected];
-                    ImGui::PushItemWidth(-100);
-                    imgui_hdr_color("Blackpoint", "Intensity", &image.blackpoint, 0.001, -100, 10000, "%.2f", 10);
-                    imgui_hdr_color("Whitepoint", "Intensity", &image.whitepoint, 0.001, -100, 10000, "%.2f", 10);
-                    ImGui::SliderFloat("Dithering", &image.dither_amount, 0, 2, "%.2f");
-                    ImGui::PopItemWidth();
-                    ImGui::Separator();
-                    ImGui::BeginChild("image", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-                    imgui_hdr_texture(&image);
-                    ImGui::EndChild();
+                    adjustable_hdr_texture(images[*selected]);
                 } else {
                     ImGui::Text("No image selected");
                 }
@@ -207,6 +257,8 @@ namespace rt::app
             template <class SceneList>
             bool scene_list(SceneList& scenes, ImGuiID* selected, util::spawner& spawner)
             {
+                auto& ctx = context::instance();
+                auto& vis = ctx.visualizations;
                 bool render_invoked = false;
                 static bool first_time = true;
 
@@ -252,6 +304,10 @@ namespace rt::app
                             if (ImGui::Button("Render")) {
                                 render_view(loaded_scene, view, spawner);
                                 render_invoked = true;
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::Button("Visualize")) {
+                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view);
                             }
                             ImGui::NextColumn();
                             ImGui::PopID();
@@ -307,6 +363,7 @@ namespace rt::app
             {
                 auto& ctx = context::instance();
                 auto& images = ctx.images;
+                auto& vis = ctx.visualizations;
                 static bool show_test_window = false;
                 static bool show_scene_list = true;
                 static bool show_hdr_viewer = false;
@@ -351,6 +408,14 @@ namespace rt::app
                     ImGui::SetNextWindowSize(ImVec2(1300, 800), ImGuiSetCond_FirstUseEver);
                     ImGui::Begin("HDR Viewer", &show_hdr_viewer);
                     hdr_viewer(&selected_hdr_image);
+                    ImGui::End();
+                }
+
+                for (auto& vi: vis) {
+                    ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
+                    ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
+                    ImGui::Begin(vi.name.data());
+                    visualizer(vi, spawner);
                     ImGui::End();
                 }
 
