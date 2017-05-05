@@ -1,10 +1,11 @@
 #pragma once
 #include "../lib/gl/gl.hh"
+#include "../util/constraints.hh"
 #include <unordered_set>
 
 namespace rt::glu
 {
-    struct states_manager
+    struct states_manager: util::non_transferable
     {
         static states_manager& instance();
 
