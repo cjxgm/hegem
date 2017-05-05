@@ -315,16 +315,19 @@ namespace rt::app
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
                 ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiSetCond_Appearing);
-                ImGui::Begin("Control");
-                if (ImGui::Button("Scenes")) show_scene_list ^= 1;
-                ImGui::SameLine();
-                if (ImGui::Button("HDR Viewer")) show_hdr_viewer ^= 1;
-                ImGui::Separator();
-                ImGui::PushItemWidth(-100);
-                ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
-                ImGui::PopItemWidth();
-                ImGui::Separator();
-                if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
+                ImGui::Begin("Properties");
+                if (ImGui::CollapsingHeader("Windows")) {
+                    if (ImGui::Button("Scenes")) show_scene_list ^= 1;
+                    ImGui::SameLine();
+                    if (ImGui::Button("HDR Viewer")) show_hdr_viewer ^= 1;
+                    ImGui::Separator();
+                    if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
+                }
+                if (ImGui::CollapsingHeader("Render Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    ImGui::PushItemWidth(-100);
+                    ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
+                    ImGui::PopItemWidth();
+                }
                 ImGui::End();
 
                 if (show_test_window) {
@@ -334,7 +337,7 @@ namespace rt::app
 
                 if (show_scene_list) {
                     ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
-                    ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiSetCond_FirstUseEver);
+                    ImGui::SetNextWindowSize(ImVec2(800, 200), ImGuiSetCond_FirstUseEver);
                     ImGui::Begin("Scenes", &show_scene_list);
                     if (scene_list(scenes, &selected_scene_view, spawner)) {
                         selected_hdr_image = images.size() - 1;
@@ -345,7 +348,7 @@ namespace rt::app
 
                 if (show_hdr_viewer) {
                     ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
-                    ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiSetCond_FirstUseEver);
+                    ImGui::SetNextWindowSize(ImVec2(1300, 800), ImGuiSetCond_FirstUseEver);
                     ImGui::Begin("HDR Viewer", &show_hdr_viewer);
                     hdr_viewer(&selected_hdr_image);
                     ImGui::End();
