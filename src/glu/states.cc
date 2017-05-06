@@ -9,6 +9,7 @@ namespace rt::glu
             gl::depth_test,
             gl::scissor_test,
             gl::blend,
+            gl::dither,
             gl::enums::cull_face,
         };
 
