@@ -10,8 +10,8 @@ layout(location=3) out int material;
 void main()
 {
     albedo = sky_color;
-    normal = vec3(0, 0, -1);    // TODO
-    position = vec3(0, 0, 0);   // TODO
+    normal = vec3(0, 0, 0);
+    position = vec3(0, 0, 0);
     material = 0;
 }
 
