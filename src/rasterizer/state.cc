@@ -29,7 +29,13 @@ namespace rt::rasterizer::state_details
             }
 
         private:
-            context() = default;
+            context()
+            {
+                gl::program_uniform1i(prog_shade, 0, 0);
+                gl::program_uniform1i(prog_shade, 1, 1);
+                gl::program_uniform1i(prog_shade, 2, 2);
+                gl::program_uniform1i(prog_shade, 3, 3);
+            }
         };
     }
 

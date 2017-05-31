@@ -32,6 +32,10 @@ namespace rt::rasterizer
         // shading pass
         gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
         gl::bind_vertex_array(s.vao_empty);
+        gl::bind_texture_unit(0, s.albedo);
+        gl::bind_texture_unit(1, s.normal);
+        gl::bind_texture_unit(2, s.position);
+        gl::bind_texture_unit(3, s.material);
         gl::use_program(s.prog_shade);
         sm.enable_only({});
         gl::draw_arrays(gl::points, 0, 1);
