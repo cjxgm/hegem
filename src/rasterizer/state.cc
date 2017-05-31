@@ -36,7 +36,7 @@ namespace rt::rasterizer::state_details
     state::state(scene_type const& scene, view_type view, glu::shared_framebuffer combined)
         : scene{scene}
         , view{view}
-        , sg{sort_geometry(scene)}
+        , geometry{sort_geometry(scene)}
         , fbo_combined{std::move(combined)}
     {
         auto w = view.size.x;

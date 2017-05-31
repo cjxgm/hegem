@@ -15,7 +15,7 @@ namespace rt::rasterizer
         {
             scene_type const& scene;
             view_type view;
-            sorted_geometry sg;
+            sorted_geometry geometry;
 
             glu::shared_framebuffer fbo_combined;
             glu::shared_framebuffer fbo_geometry;
