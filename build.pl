@@ -19,7 +19,7 @@ $::sanitize = exists $opt{"-s"};
     gl
 };
 
-$compiler__bin = "clang++";
+$compiler__bin = "g++";
 $loader__bin = $compiler__bin;
 $build__output_bin = "raytracer";
 

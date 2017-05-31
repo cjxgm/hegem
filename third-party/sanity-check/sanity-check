@@ -12,16 +12,11 @@
 
 // .... per compiler ......................................................
 
-#ifdef __clang__
-    // FIXME: __cpp_nested_namespace_definitions does not exists???
-    #if __clang_major__ < 4
-        #error "Your clang is too old. At least version 4.0 is required."
-    #endif
-#elif __gcc__
-    #if __cpp_nested_namespace_definitions < 201411
-        #error "Nested namespace from C++17 is required."
+#ifdef __GNUC__
+    #if __GNUC__ < 7
+        #error "At least GCC 7 is required."
     #endif
 #else
-    #warning "Your compiler is unsupported and is very unlikely to work."
+    #error "Your compiler is unsupported."
 #endif
 
