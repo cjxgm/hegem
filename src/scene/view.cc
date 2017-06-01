@@ -13,9 +13,9 @@ namespace rt::scene
         float ymax = size.y - 1;
 
         return {
-            2.0f*nw/xmax, 0            , 0,
-            0           , -2.0f*nh/ymax, 0,
-            -nw         , nh           , 1,
+            glm::vec3{2.0f*nw/xmax, 0            , 0},
+            glm::vec3{0           , -2.0f*nh/ymax, 0},
+            glm::vec3{-nw         , nh           , 1},
         };
     }
 }

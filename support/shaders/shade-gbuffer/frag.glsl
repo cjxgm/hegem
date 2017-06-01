@@ -9,9 +9,10 @@ layout(location=0) out vec4 combined;
 
 void main()
 {
-    ivec2 p = ivec2(gl_FragCoord.xy);
-    uint mat = texelFetch(material, p, 0).r;
+    int h = textureSize(albedo, 0).y;
+    ivec2 p = ivec2(gl_FragCoord.x, h - gl_FragCoord.y);    // make sure p is in screen space (top-left origin)
 
+    uint mat = texelFetch(material, p, 0).r;
     if (mat == 0) {
         combined = vec4(texelFetch(albedo, p, 0).rgb, 1);
     } else {

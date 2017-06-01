@@ -1,4 +1,5 @@
 #include "../lib/gl/gl.hh"
+#include "../lib/glm/op/transform.hh"
 #include "../glu/states.hh"
 #include "rasterizer.hh"
 
@@ -19,17 +20,34 @@ namespace rt::rasterizer
         gl::clear_bufferfv(gl::depth, 0, &initial_depth);
 
         // sky geometry pass
+        sm.enable_only({});
         gl::bind_vertex_array(s.vao_empty);
         gl::use_program(s.prog_sky);
         gl::uniform3fv(0, 1, &s.geometry.sky.color[0]);
-        sm.enable_only({});
         gl::draw_arrays(gl::points, 0, 1);
 
         // shapes geometry pass
+        sm.enable_only({ gl::depth_test });
+
+        gl::funcs::polygon_mode(gl::front_and_back, gl::line);
+        gl::bind_vertex_array(s.vao_sphere);
         gl::use_program(s.prog_sphere);
-        sm.enable_only({ gl::depth });
+        float aspect_ratio = float(s.view.size.x) / s.view.size.y;
+        auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
+        gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
+        gl::patch_parameteri(gl::patch_vertices, 4);
+        for (auto& sphere: s.geometry.spheres) {
+            auto& mat = s.geometry.materials[sphere.material_id];
+            auto& shape = sphere.shape;
+            auto model = glm::translate(shape.center) * glm::scale(glm::vec3{shape.radius});
+            gl::uniform_matrix4fv(1, 1, false, &model[0][0]);
+            gl::uniform3fv(2, 1, &mat.albedo[0]);
+            gl::draw_elements(gl::patches, 6*4, gl::unsigned_int, nullptr);
+        }
+        gl::funcs::polygon_mode(gl::front_and_back, gl::fill);
 
         // shading pass
+        sm.enable_only({});
         gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
         gl::bind_vertex_array(s.vao_empty);
         gl::bind_texture_unit(0, s.albedo);
@@ -37,7 +55,6 @@ namespace rt::rasterizer
         gl::bind_texture_unit(2, s.position);
         gl::bind_texture_unit(3, s.material);
         gl::use_program(s.prog_shade);
-        sm.enable_only({});
         gl::draw_arrays(gl::points, 0, 1);
     }
 }

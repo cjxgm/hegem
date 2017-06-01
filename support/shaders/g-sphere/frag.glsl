@@ -1,9 +1,24 @@
 #version 450 core
 
-out vec4 color;
+layout(location=2) uniform vec3 albedo_color;
+
+layout(location=0) out vec3 albedo;
+layout(location=1) out vec3 normal;
+layout(location=2) out vec3 position;
+layout(location=3) out int material;
+
+in eval_frag
+{
+    vec3 pos;
+    vec3 normal;
+}
+prev;
 
 void main()
 {
-    color = vec4(1, 0.6, 0, 1);
+    albedo = albedo_color;
+    normal = normalize(prev.normal);
+    position = prev.pos;
+    material = 1;
 }
 

@@ -30,7 +30,11 @@ namespace rt::rasterizer
             glu::shared_program prog_sphere;
             glu::shared_program prog_shade;
 
+            glu::shared_buffer static_vertices_buffer;
+            glu::shared_buffer static_elements_buffer;
+
             glu::shared_vertex_array vao_empty;
+            glu::shared_vertex_array vao_sphere;
 
             state(scene_type const& scene, view_type view, glu::shared_framebuffer combined);
         };

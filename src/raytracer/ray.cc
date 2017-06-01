@@ -34,13 +34,12 @@ namespace rt::raytracer::ray_details
 
             ray_type impl(cameras::pin_hole const& cam)
             {
-                auto tan_half = std::tan(cam.fov / 2.0f);
-                auto s = 1 + tan_half;
-                auto origin       = c2w * glm::vec4{p  ,  0, 1};
-                auto extent_point = c2w * glm::vec4{p*s, -1, 1};
+                auto t = std::tan(cam.fov / 2.0f);
+                auto origin = c2w * glm::vec4{p  ,  0, 1};
+                auto dir    = c2w * glm::vec4{p*t, -1, 0};
                 return {
                     origin.xyz(),
-                    (extent_point - origin).xyz(),
+                    dir.xyz(),
                 };
             }
         };

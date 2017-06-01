@@ -74,7 +74,7 @@ namespace rt::raytracer::raytracer_details
 
         buf.each([&] (auto& hit, auto pos) {
             auto p = s2cp * glm::vec3{pos + glm::ivec2{tile.x, tile.y}, 1};
-            auto ray = camera_ray_from_camera_plane(p, cam);
+            auto ray = camera_ray_from_camera_plane(p.xy(), cam);
             auto shaded_hit = raytrace(scene, ray, view.bounces);
             hit = shaded_hit.hit;
             img[pos] = shaded_hit.radiance;
