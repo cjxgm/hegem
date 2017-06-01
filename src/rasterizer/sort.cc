@@ -1,4 +1,5 @@
 #include "sort.hh"
+#include "../scene/node.hh"
 #include <algorithm>
 #include <iterator>
 
@@ -7,6 +8,7 @@ namespace rt::rasterizer::sort_details
     namespace
     {
         using scene::material_type;
+        namespace nodes = scene::nodes;
 
         namespace sort_materials
         {
@@ -60,13 +62,52 @@ namespace rt::rasterizer::sort_details
                     apply_visitor(sorter, lamp);
             }
         }
+
+        namespace sort_nodes
+        {
+            struct shape_sorter
+            {
+                sorted_geometry& sg;
+                material_id_type material_id;
+
+                void operator () (shapes::sphere shape) { sg.spheres.emplace_back(shape, material_id); }
+                void operator () (shapes::plane shape) { sg.planes.emplace_back(shape, material_id); }
+                void operator () (shapes::line_segment shape) { sg.line_segments.emplace_back(shape, material_id); }
+                void operator () (shapes::mesh shape) { sg.meshes.emplace_back(shape, material_id); }
+            };
+
+            struct node_sorter
+            {
+                sorted_geometry& sg;
+
+                void operator () (nodes::object const& node)
+                {
+                    shape_sorter sorter{sg, node.material_id};
+                    apply_visitor(sorter, node.shape);
+                }
+
+                void operator () (nodes::group const& group)
+                {
+                    for (auto& node: group.nodes) {
+                        node_sorter sorter{sg};
+                        apply_visitor(sorter, node);
+                    }
+                }
+            };
+
+            void sort(scene_type const& scene, sorted_geometry& sg)
+            {
+                node_sorter sorter{sg};
+                apply_visitor(sorter, scene.root);
+            }
+        }
     }
 
     sorted_geometry sort_geometry(scene_type const& scene)
     {
         sorted_geometry sg;
         sort_materials::sort(scene, sg);
-        // TODO: sort_nodes::sort(scene, sg);
+        sort_nodes::sort(scene, sg);
         sort_lamps::sort(scene, sg);
         return sg;
     }

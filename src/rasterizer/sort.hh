@@ -18,7 +18,12 @@ namespace rt::rasterizer
         template <class Shape>
         struct with_material
         {
-            Shape shape;
+            using shape_type = Shape;
+
+            with_material(shape_type shape, material_id_type id)
+                : shape{shape}, material_id{id} {}
+
+            shape_type shape;
             material_id_type material_id;
         };
 
