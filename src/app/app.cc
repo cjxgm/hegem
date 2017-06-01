@@ -411,10 +411,12 @@ namespace rt::app
                     ImGui::End();
                 }
 
+                int vi_idx = 0;
                 for (auto& vi: vis) {
                     ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
-                    ImGui::Begin(vi.name.data());
+                    auto name = vi.name + "##" + std::to_string(vi_idx++);
+                    ImGui::Begin(name.data());
                     visualizer(vi, spawner);
                     ImGui::End();
                 }
