@@ -30,10 +30,12 @@ namespace rt::scene
 
         glm::mat3 camera_space_to_world_space_rotation_only(camera_type const& cam);
         glm::mat4 camera_space_to_world_space(camera_type const& cam);
+        glm::mat4 world_space_to_clip_space(camera_type const& cam, float aspect_ratio);
     }
 
     using cameras::camera_type;
     using cameras::camera_space_to_world_space_rotation_only;
     using cameras::camera_space_to_world_space;
+    using cameras::world_space_to_clip_space;
 }
 
