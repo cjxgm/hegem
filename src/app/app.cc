@@ -211,13 +211,17 @@ namespace rt::app
                     if (vi.show_raytracing_overlay)
                         render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, spawner);
                 }
+                if (!vi.show_raytracing_overlay) {
+                    ImGui::SameLine();
+                    ImGui::Checkbox("Wireframed", &vi.wireframed);
+                }
                 ImGui::Separator();
                 ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
                 adjustable_hdr_texture(vi.hdr);
                 ImGui::EndChild();
 
                 if (!vi.show_raytracing_overlay)
-                    rasterizer::rasterize(vi.s);
+                    rasterizer::rasterize(vi.s, vi.wireframed);
             }
 
             void hdr_viewer(int* selected)

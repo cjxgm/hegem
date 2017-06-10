@@ -10,7 +10,7 @@ namespace rt::rasterizer
         float const initial_depth = 1;
     }
 
-    void rasterize(state const& s)
+    void rasterize(state const& s, bool wireframed)
     {
         auto& sm = glu::states_manager::instance();
 
@@ -31,7 +31,10 @@ namespace rt::rasterizer
         float aspect_ratio = float(s.view.size.x) / s.view.size.y;
         auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
 
-        gl::funcs::polygon_mode(gl::front_and_back, gl::line);
+        // - mesh based
+        if (wireframed) gl::funcs::polygon_mode(gl::front_and_back, gl::line);
+
+        // -- spheres
         gl::bind_vertex_array(s.vao_sphere);
         gl::use_program(s.prog_sphere);
         gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
@@ -44,7 +47,16 @@ namespace rt::rasterizer
             gl::uniform3fv(2, 1, &mat.albedo[0]);
             gl::draw_elements(gl::patches, 6*4, gl::unsigned_int, nullptr);
         }
-        gl::funcs::polygon_mode(gl::front_and_back, gl::fill);
+
+        // -- triangle meshes
+
+        if (wireframed) gl::funcs::polygon_mode(gl::front_and_back, gl::fill);
+
+        // - non mesh based
+
+        // -- planes
+
+        // -- line segments
 
         // shading pass
         sm.enable_only({});

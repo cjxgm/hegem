@@ -19,6 +19,7 @@ namespace rt::app
             glu::shared_framebuffer fbo;
             rasterizer::state s;
             bool show_raytracing_overlay{false};
+            bool wireframed{false};
 
             visualization(std::string name, scene_type& scene, view_type& view);
         };
