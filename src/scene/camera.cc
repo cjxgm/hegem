@@ -78,5 +78,21 @@ namespace rt::scene::cameras
 
         return proj * w2c;
     }
+
+    glm::vec3 apex_in_world_space(camera_type const& cam, float aspect_ratio)
+    {
+        // aspect corrected normalized height
+        auto nh = aspect_ratio < 1.0f ? 1.0f / aspect_ratio : 1.0f;
+
+        return cam.match(
+            [=] (pin_hole const& cam) {
+                auto s2p = sized_lens_to_pin_hole(nh, cam.fov);
+                auto pos = glm::vec4{cam.center, 1};
+                return (s2p * pos).xyz();
+            },
+            [=] (orthographic const& cam) {
+                return cam.center;
+            });
+    }
 }
 

@@ -4,19 +4,56 @@ layout(location=0) uniform sampler2D albedo;
 layout(location=1) uniform sampler2D normal;
 layout(location=2) uniform sampler2D position;
 layout(location=3) uniform usampler2D material;
+layout(location=4) uniform vec3 camera_apex;
+layout(location=5) uniform vec3 sky_color;
 
 layout(location=0) out vec4 combined;
 
+float fresnel_schlick(float ior, vec3 viewing, vec3 normal)
+{
+    float base = (ior - 1) / (ior + 1);
+    base *= base;
+    float ex = pow(1.0f - abs(dot(viewing, normal)), 5.0f);
+    return base + (1.0f - base) * ex;
+}
+
 void main()
 {
-    int h = textureSize(albedo, 0).y;
-    ivec2 p = ivec2(gl_FragCoord.x, h - gl_FragCoord.y);    // make sure p is in screen space (top-left origin)
+    // make sure p is in screen space (top-left origin)
+    int height = textureSize(albedo, 0).y;
+    ivec2 sp = ivec2(gl_FragCoord.x, height - gl_FragCoord.y);
 
-    uint mat = texelFetch(material, p, 0).r;
+    uint mat = texelFetch(material, sp, 0).r;
     if (mat == 0) {
-        combined = vec4(texelFetch(albedo, p, 0).rgb, 1);
+        combined = vec4(texelFetch(albedo, sp, 0).rgb, 1.0f);
     } else {
-        combined = vec4(10, 0, 10, 1);
+        vec3 a = texelFetch(albedo, sp, 0).rgb;
+        vec3 n = texelFetch(normal, sp, 0).xyz;
+        vec3 p = texelFetch(position, sp, 0).xyz;
+
+        vec3 towards_lamp_dir = normalize(vec3(-2.0f, 2.0f, 1.0f));
+        vec3 lamp_color = vec3(1.0f, 1.0f, 1.0f) * 10.0f;
+        vec3 refl_color = vec3(1.0f, 1.0f, 1.0f);
+        float roughness = 0.2f;
+        float ior = 1.45;
+
+        vec3 viewing = normalize(p - camera_apex);
+
+        // FIXME: Temp. use Blinn-phong
+        float nl = max(dot(n, towards_lamp_dir), 0.0f);
+        vec3 diffuse = a * nl;
+
+        vec3 halfvl = normalize(towards_lamp_dir - viewing);
+        float nh = max(dot(n, halfvl), 0.0f);     // FIXME: is this `max` necessary?
+        float r = (1.0f / (roughness + 1.0f) - 0.5f) * 100.0f;
+        diffuse += refl_color * pow(nh, r) * nl;
+        diffuse *= lamp_color;
+
+        float fresnel = fresnel_schlick(ior, viewing, n);
+        vec3 refl = refl_color * sky_color;
+        vec3 shaded = mix(diffuse, refl, fresnel);
+
+        combined = vec4(shaded, 1.0f);
     }
 }
 

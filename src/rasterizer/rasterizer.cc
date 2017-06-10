@@ -28,12 +28,12 @@ namespace rt::rasterizer
 
         // shapes geometry pass
         sm.enable_only({ gl::depth_test });
+        float aspect_ratio = float(s.view.size.x) / s.view.size.y;
+        auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
 
         gl::funcs::polygon_mode(gl::front_and_back, gl::line);
         gl::bind_vertex_array(s.vao_sphere);
         gl::use_program(s.prog_sphere);
-        float aspect_ratio = float(s.view.size.x) / s.view.size.y;
-        auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
         gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
         gl::patch_parameteri(gl::patch_vertices, 4);
         for (auto& sphere: s.geometry.spheres) {
@@ -48,6 +48,7 @@ namespace rt::rasterizer
 
         // shading pass
         sm.enable_only({});
+        auto cam_apex = apex_in_world_space(s.view.camera, aspect_ratio);
         gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
         gl::bind_vertex_array(s.vao_empty);
         gl::bind_texture_unit(0, s.albedo);
@@ -55,6 +56,8 @@ namespace rt::rasterizer
         gl::bind_texture_unit(2, s.position);
         gl::bind_texture_unit(3, s.material);
         gl::use_program(s.prog_shade);
+        gl::uniform3fv(4, 1, &cam_apex[0]);
+        gl::uniform3fv(5, 1, &s.geometry.sky.color[0]);
         gl::draw_arrays(gl::points, 0, 1);
     }
 }
