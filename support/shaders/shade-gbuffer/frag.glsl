@@ -20,8 +20,8 @@ float fresnel_schlick(float ior, vec3 viewing, vec3 normal)
 void main()
 {
     // make sure p is in screen space (top-left origin)
-    int height = textureSize(albedo, 0).y;
-    ivec2 sp = ivec2(gl_FragCoord.x, height - gl_FragCoord.y);
+    ivec2 tex_size = textureSize(albedo, 0);
+    ivec2 sp = ivec2(gl_FragCoord.x, tex_size.y - gl_FragCoord.y);
 
     uint mat = texelFetch(material, sp, 0).r;
     if (mat == 0) {
