@@ -20,6 +20,7 @@ namespace rt::rasterizer::state_details
         {
             glu::shared_program prog_sky{glu::shader_factory::program_from_name("g-sky")};
             glu::shared_program prog_sphere{glu::shader_factory::program_from_name("g-sphere")};
+            glu::shared_program prog_plane{glu::shader_factory::program_from_name("g-plane")};
             glu::shared_program prog_shade{glu::shader_factory::program_from_name("shade-gbuffer")};
 
             glu::shared_buffer static_vertices_buffer;
@@ -126,6 +127,7 @@ namespace rt::rasterizer::state_details
         auto& ctx = context::instance();
         prog_sky = ctx.prog_sky;
         prog_sphere = ctx.prog_sphere;
+        prog_plane = ctx.prog_plane;
         prog_shade = ctx.prog_shade;
         vao_empty = ctx.vao_empty;
         vao_sphere = ctx.vao_sphere;

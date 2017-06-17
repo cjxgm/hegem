@@ -13,6 +13,9 @@ namespace rt::rasterizer
     void rasterize(state const& s, bool wireframed)
     {
         auto& sm = glu::states_manager::instance();
+        float aspect_ratio = float(s.view.size.x) / s.view.size.y;
+        auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
+        auto cam_apex = apex_in_world_space(s.view.camera, aspect_ratio);
 
         gl::funcs::viewport(0, 0, s.view.size.x, s.view.size.y);
 
@@ -28,8 +31,6 @@ namespace rt::rasterizer
 
         // shapes geometry pass
         sm.enable_only({ gl::depth_test });
-        float aspect_ratio = float(s.view.size.x) / s.view.size.y;
-        auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
 
         // - mesh based
         if (wireframed) gl::funcs::polygon_mode(gl::front_and_back, gl::line);
@@ -55,12 +56,24 @@ namespace rt::rasterizer
         // - non mesh based
 
         // -- planes
+        gl::bind_vertex_array(s.vao_empty);
+        gl::use_program(s.prog_plane);
+        gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
+        gl::uniform3fv(1, 1, &cam_apex[0]);
+        for (auto& plane: s.geometry.planes) {
+            auto& mat = s.geometry.materials[plane.material_id];
+            auto& shape = plane.shape;
+            auto& normal = *shape.normal;
+            gl::uniform3fv(2, 1, &normal[0]);
+            gl::uniform1f(3, shape.offset);
+            gl::uniform3fv(4, 1, &mat.albedo[0]);
+            gl::draw_arrays(gl::points, 0, 1);
+        }
 
         // -- line segments
 
         // shading pass
         sm.enable_only({});
-        auto cam_apex = apex_in_world_space(s.view.camera, aspect_ratio);
         gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
         gl::bind_vertex_array(s.vao_empty);
         gl::bind_texture_unit(0, s.albedo);

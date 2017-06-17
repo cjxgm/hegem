@@ -28,6 +28,7 @@ namespace rt::rasterizer
 
             glu::shared_program prog_sky;
             glu::shared_program prog_sphere;
+            glu::shared_program prog_plane;
             glu::shared_program prog_shade;
 
             glu::shared_buffer static_vertices_buffer;
