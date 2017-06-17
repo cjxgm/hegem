@@ -15,14 +15,18 @@ namespace rt::scene::cameras
         //
         // The raytracer assumes that the "lens" has a size.
         // The rasterizer thinks that the "lens" is just an infinitesimal pin hole.
-        glm::mat4 sized_lens_to_pin_hole(float aspect_corrected_h, float yfov)
+        float sized_lens_to_pin_hole(float aspect_corrected_h, float yfov)
         {
-            auto offset = aspect_corrected_h / std::tan(yfov / 2.0f);
+            return aspect_corrected_h / std::tan(yfov / 2.0f);
+        }
+
+        glm::mat4 zoffset(float offset)
+        {
             return {
                 glm::vec4{1, 0, 0, 0},
                 glm::vec4{0, 1, 0, 0},
                 glm::vec4{0, 0, 1, 0},
-                glm::vec4{0, 0, -offset, 1},
+                glm::vec4{0, 0, offset, 1},
             };
         }
     }
@@ -64,8 +68,9 @@ namespace rt::scene::cameras
             [=] (pin_hole const& cam) {
                 float w = 2.0f * nw;
                 float h = 2.0f * nh;
-                auto s2p = sized_lens_to_pin_hole(nh, cam.fov);
-                return glm::perspectiveFov(cam.fov, w, h, 1e-5f, 1e2f) * s2p;
+                auto s2p_len = sized_lens_to_pin_hole(nh, cam.fov);
+                auto s2p = zoffset(-s2p_len);
+                return glm::perspectiveFov(cam.fov, w, h, s2p_len, 1e2f) * s2p;
             },
             [=] (orthographic const& cam) {
                 float xmax = cam.size / 2.0f * nw;
@@ -86,9 +91,8 @@ namespace rt::scene::cameras
 
         return cam.match(
             [=] (pin_hole const& cam) {
-                auto s2p = sized_lens_to_pin_hole(nh, cam.fov);
-                auto pos = glm::vec4{cam.center, 1};
-                return (s2p * pos).xyz();
+                auto offset = sized_lens_to_pin_hole(nh, cam.fov) * *cam.forward;
+                return cam.center - offset;
             },
             [=] (orthographic const& cam) {
                 return cam.center;
