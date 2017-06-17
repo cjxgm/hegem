@@ -56,18 +56,20 @@ namespace rt::rasterizer
         // - non mesh based
 
         // -- planes
-        gl::bind_vertex_array(s.vao_empty);
-        gl::use_program(s.prog_plane);
-        gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
-        gl::uniform3fv(1, 1, &cam_apex[0]);
-        for (auto& plane: s.geometry.planes) {
-            auto& mat = s.geometry.materials[plane.material_id];
-            auto& shape = plane.shape;
-            auto& normal = *shape.normal;
-            gl::uniform3fv(2, 1, &normal[0]);
-            gl::uniform1f(3, shape.offset);
-            gl::uniform3fv(4, 1, &mat.albedo[0]);
-            gl::draw_arrays(gl::points, 0, 1);
+        if (!wireframed) {
+            gl::bind_vertex_array(s.vao_empty);
+            gl::use_program(s.prog_plane);
+            gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
+            gl::uniform3fv(1, 1, &cam_apex[0]);
+            for (auto& plane: s.geometry.planes) {
+                auto& mat = s.geometry.materials[plane.material_id];
+                auto& shape = plane.shape;
+                auto& normal = *shape.normal;
+                gl::uniform3fv(2, 1, &normal[0]);
+                gl::uniform1f(3, shape.offset);
+                gl::uniform3fv(4, 1, &mat.albedo[0]);
+                gl::draw_arrays(gl::points, 0, 1);
+            }
         }
 
         // -- line segments
