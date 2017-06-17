@@ -14,6 +14,18 @@ views {
     }
 
     view {
+        name "Close-up"
+        dimension 800 450
+        bounces 3
+        perspective-camera {
+            center -1 0 2
+            direction 1 0 -2
+            up 0 1 0
+            angle 60
+        }
+    }
+
+    view {
         name "Main HQ"
         dimension 1920 1080
         bounces 8
