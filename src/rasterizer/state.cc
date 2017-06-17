@@ -70,12 +70,12 @@ namespace rt::rasterizer::state_details
                 };
                 static unsigned int elements[] = {
                     // cube patches
-                    0, 3, 1, 2,         // far
-                    4, 5, 7, 6,         // near
-                    0, 1, 4, 5,         // bottom
-                    3, 7, 2, 6,         // top
-                    0, 4, 3, 7,         // left
-                    1, 2, 5, 6,         // right
+                    0, 3, 2, 1,         // far
+                    4, 5, 6, 7,         // near
+                    0, 1, 5, 4,         // bottom
+                    3, 7, 6, 2,         // top
+                    0, 4, 7, 3,         // left
+                    1, 2, 6, 5,         // right
                 };
                 gl::named_buffer_data(
                     static_vertices_buffer,

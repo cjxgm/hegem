@@ -21,7 +21,7 @@ next;
 void main()
 {
     vec3 p1 = mix(prev[0].pos, prev[1].pos, gl_TessCoord.x);
-    vec3 p2 = mix(prev[2].pos, prev[3].pos, gl_TessCoord.x);
+    vec3 p2 = mix(prev[3].pos, prev[2].pos, gl_TessCoord.x);
     vec3 p = mix(p1, p2, gl_TessCoord.y);
 
     vec3 model_pos = normalize(p);  // model position is also the normal vector
