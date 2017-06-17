@@ -9,9 +9,11 @@ layout(location=5) uniform vec3 sky_color;
 
 layout(location=0) out vec4 combined;
 
+const vec3 ground_color = vec3(0.0f, 0.0f, 0.0f);
+
 float fresnel_schlick(float ior, vec3 viewing, vec3 normal)
 {
-    float base = (ior - 1) / (ior + 1);
+    float base = (ior - 1.0f) / (ior + 1.0f);
     base *= base;
     float ex = pow(1.0f - abs(dot(viewing, normal)), 5.0f);
     return base + (1.0f - base) * ex;
@@ -24,9 +26,15 @@ void main()
     ivec2 sp = ivec2(gl_FragCoord.x, tex_size.y - gl_FragCoord.y);
 
     uint mat = texelFetch(material, sp, 0).r;
+
+    // solid color
     if (mat == 0) {
         combined = vec4(texelFetch(albedo, sp, 0).rgb, 1.0f);
-    } else {
+        return;
+    }
+
+    // PBR
+    if (mat == 1) {
         vec3 a = texelFetch(albedo, sp, 0).rgb;
         vec3 n = texelFetch(normal, sp, 0).xyz;
         vec3 p = texelFetch(position, sp, 0).xyz;
@@ -38,6 +46,11 @@ void main()
         float ior = 1.45;
 
         vec3 viewing = normalize(p - camera_apex);
+        vec3 reflected = reflect(viewing, n);
+
+        float groundness = max(dot(reflected, vec3(0.0f, -1.0f, 0.0f)), 0.0f);
+        vec3 ground_color = vec3(0.0f, 0.0f, 0.0f);
+        vec3 dome_color = mix(sky_color, ground_color, groundness);
 
         // FIXME: Temp. use Blinn-phong
         float nl = max(dot(n, towards_lamp_dir), 0.0f);
@@ -50,10 +63,26 @@ void main()
         diffuse *= lamp_color;
 
         float fresnel = fresnel_schlick(ior, viewing, n);
-        vec3 refl = refl_color * sky_color;
+        vec3 refl = refl_color * dome_color;
         vec3 shaded = mix(diffuse, refl, fresnel);
 
         combined = vec4(shaded, 1.0f);
+        return;
     }
+
+    // sky
+    if (mat == 2) {
+        vec3 a = texelFetch(albedo, sp, 0).rgb;
+        vec3 n = texelFetch(normal, sp, 0).xyz;
+
+        float groundness = max(dot(n, vec3(0.0f, -1.0f, 0.0f)), 0.0f);
+        vec3 dome_color = mix(sky_color, ground_color, groundness);
+
+        combined = vec4(dome_color, 1.0f);
+        return;
+    }
+
+    // invalid material
+    combined = vec4(10.0f, 0.0f, 10.0f, 1.0f);
 }
 

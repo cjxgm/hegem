@@ -27,6 +27,7 @@ namespace rt::rasterizer
         gl::bind_vertex_array(s.vao_empty);
         gl::use_program(s.prog_sky);
         gl::uniform3fv(0, 1, &s.geometry.sky.color[0]);
+        gl::uniform_matrix4fv(1, 1, false, &proj_view[0][0]);
         gl::draw_arrays(gl::points, 0, 1);
 
         // shapes geometry pass
