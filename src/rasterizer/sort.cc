@@ -1,5 +1,6 @@
 #include "sort.hh"
 #include "../scene/node.hh"
+#include "../util/journal.hh"
 #include <algorithm>
 #include <iterator>
 
@@ -9,6 +10,11 @@ namespace rt::rasterizer::sort_details
     {
         using scene::material_type;
         namespace nodes = scene::nodes;
+
+        static constexpr auto sun_lamp_capacity = 32;
+        static constexpr auto omni_lamp_capacity = 32;
+
+        auto j() { return rt::util::journal{"RAST"}; }
 
         namespace sort_materials
         {
@@ -51,8 +57,25 @@ namespace rt::rasterizer::sort_details
             {
                 sorted_geometry& sg;
 
-                void operator () (lamps::sun  lamp) { sg.sun_lamps .emplace_back(lamp); }
-                void operator () (lamps::omni lamp) { sg.omni_lamps.emplace_back(lamp); }
+                void operator () (lamps::sun lamp)
+                {
+                    if (sg.sun_lamp.colors.size() == sun_lamp_capacity) {
+                        j() << "WARNING: sun lamp amount is capped at " << sun_lamp_capacity << "\n";
+                        return;
+                    }
+                    sg.sun_lamp.dirs.emplace_back(lamp.dir);
+                    sg.sun_lamp.colors.emplace_back(lamp.color);
+                }
+
+                void operator () (lamps::omni lamp)
+                {
+                    if (sg.omni_lamp.colors.size() == omni_lamp_capacity) {
+                        j() << "WARNING: omni lamp amount is capped at " << omni_lamp_capacity << "\n";
+                        return;
+                    }
+                    sg.omni_lamp.centers.emplace_back(lamp.center);
+                    sg.omni_lamp.colors.emplace_back(lamp.color);
+                }
             };
 
             void sort(scene_type const& scene, sorted_geometry& sg)

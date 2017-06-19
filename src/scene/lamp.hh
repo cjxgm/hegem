@@ -9,6 +9,7 @@ namespace rt::scene
     namespace lamps
     {
         using direction_type = math::unit<glm::vec3>;
+        using position_type = glm::vec3;
         using color_type = image::color::linear_rgb;
 
         struct sun
@@ -19,7 +20,7 @@ namespace rt::scene
 
         struct omni
         {
-            glm::vec3 center;
+            position_type center;
             color_type color;
         };
 

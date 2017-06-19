@@ -86,6 +86,12 @@ namespace rt::rasterizer
         gl::use_program(s.prog_shade);
         gl::uniform3fv(4, 1, &cam_apex[0]);
         gl::uniform3fv(5, 1, &s.geometry.sky.color[0]);
+        gl::uniform1i(6, s.geometry. sun_lamp.colors.size());
+        gl::uniform1i(7, s.geometry.omni_lamp.colors.size());
+        gl::uniform3fv(32, s.geometry.sun_lamp.dirs.size(), &s.geometry.sun_lamp.dirs[0]->x);
+        gl::uniform3fv(64, s.geometry.sun_lamp.colors.size(), &s.geometry.sun_lamp.colors[0][0]);
+        gl::uniform3fv(96, s.geometry.omni_lamp.centers.size(), &s.geometry.omni_lamp.centers[0][0]);
+        gl::uniform3fv(128, s.geometry.omni_lamp.colors.size(), &s.geometry.omni_lamp.colors[0][0]);
         gl::draw_arrays(gl::points, 0, 1);
     }
 }

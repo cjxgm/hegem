@@ -6,6 +6,12 @@ layout(location=2) uniform sampler2D position;
 layout(location=3) uniform usampler2D material;
 layout(location=4) uniform vec3 camera_apex;
 layout(location=5) uniform vec3 sky_color;
+layout(location=6) uniform int sun_lamp_count;
+layout(location=7) uniform int omni_lamp_count;
+layout(location=32) uniform vec3 sun_lamp_dirs[32];
+layout(location=64) uniform vec3 sun_lamp_colors[32];
+layout(location=96) uniform vec3 omni_lamp_centers[32];
+layout(location=128) uniform vec3 omni_lamp_colors[32];
 
 layout(location=0) out vec4 combined;
 

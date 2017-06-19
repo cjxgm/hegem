@@ -37,8 +37,19 @@ namespace rt::rasterizer
             std::vector<with_material<shapes::line_segment>> line_segments;
             std::vector<with_material<shapes::mesh>> meshes;
 
-            std::vector<lamps::sun> sun_lamps;
-            std::vector<lamps::omni> omni_lamps;
+            struct
+            {
+                std::vector<lamps::direction_type> dirs;
+                std::vector<lamps::color_type> colors;
+            }
+            sun_lamp;
+
+            struct
+            {
+                std::vector<lamps::position_type> centers;
+                std::vector<lamps::color_type> colors;
+            }
+            omni_lamp;
         };
 
         sorted_geometry sort_geometry(scene_type const& scene);
