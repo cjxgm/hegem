@@ -48,6 +48,52 @@ vec3 sample_sky(vec3 towards_sky)
     return dome_color;
 }
 
+vec3 sample_diffuse_for_lamp(
+        vec3 a, vec3 n, vec3 viewing, vec3 refl_color, float roughness,
+        vec3 towards_lamp_dir, vec3 lamp_color)
+{
+    // FIXME: Temp. use Blinn-phong
+    float nl = max(dot(n, towards_lamp_dir), 0.0f);
+    vec3 diffuse = a * nl;
+
+    vec3 halfvl = normalize(towards_lamp_dir - viewing);
+    float nh = max(dot(n, halfvl), 0.0f);     // FIXME: is this `max` necessary?
+    float r = (1.0f / (roughness + 1.0f) - 0.5f) * 100.0f;
+    diffuse += refl_color * pow(nh, r) * nl;
+    diffuse *= lamp_color;
+    return diffuse;
+}
+
+vec3 sample_diffuse(vec3 a, vec3 n, vec3 p, vec3 viewing, vec3 refl_color, float roughness)
+{
+    vec3 diffuse = vec3(0.0f);
+
+    // accumulate diffuse from sun lamps
+    for (int i=0; i<32; i++) {
+        if (i == sun_lamp_count) break;
+        vec3 dir = -sun_lamp_dirs[i];
+        vec3 color = sun_lamp_colors[i];
+
+        diffuse += sample_diffuse_for_lamp(a, n, viewing, refl_color, roughness, dir, color);
+    }
+
+    // accumulate diffuse from omni lamps
+    for (int i=0; i<32; i++) {
+        if (i == omni_lamp_count) break;
+        vec3 center = omni_lamp_centers[i];
+        vec3 color = omni_lamp_colors[i];
+
+        vec3 obj_to_lamp = center - p;
+        float dist = length(obj_to_lamp) + 1;
+        color /= dist * dist;
+        vec3 dir = normalize(obj_to_lamp);
+
+        diffuse += sample_diffuse_for_lamp(a, n, viewing, refl_color, roughness, dir, color);
+    }
+
+    return diffuse;
+}
+
 void main()
 {
     // make sure p is in screen space (top-left origin)
@@ -76,17 +122,9 @@ void main()
 
         vec3 viewing = normalize(p - camera_apex);
         vec3 reflected = reflect(viewing, n);
+
         vec3 dome_color = sample_sky(reflected);
-
-        // FIXME: Temp. use Blinn-phong
-        float nl = max(dot(n, towards_lamp_dir), 0.0f);
-        vec3 diffuse = a * nl;
-
-        vec3 halfvl = normalize(towards_lamp_dir - viewing);
-        float nh = max(dot(n, halfvl), 0.0f);     // FIXME: is this `max` necessary?
-        float r = (1.0f / (roughness + 1.0f) - 0.5f) * 100.0f;
-        diffuse += refl_color * pow(nh, r) * nl;
-        diffuse *= lamp_color;
+        vec3 diffuse = sample_diffuse(a, n, p, viewing, refl_color, roughness);
 
         float fresnel = fresnel_schlick(ior, viewing, n);
         vec3 refl = refl_color * dome_color;
