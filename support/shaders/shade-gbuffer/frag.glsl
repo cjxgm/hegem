@@ -15,6 +15,7 @@ layout(location=128) uniform vec3 omni_lamp_colors[32];
 
 layout(location=0) out vec4 combined;
 
+const vec3 ground_dir = vec3(0.0f, -1.0f, 0.0f);
 const vec3 ground_color = vec3(0.0f, 0.0f, 0.0f);
 
 float fresnel_schlick(float ior, vec3 viewing, vec3 normal)
@@ -23,6 +24,28 @@ float fresnel_schlick(float ior, vec3 viewing, vec3 normal)
     base *= base;
     float ex = pow(1.0f - abs(dot(viewing, normal)), 5.0f);
     return base + (1.0f - base) * ex;
+}
+
+vec3 sample_sky(vec3 towards_sky)
+{
+    vec3 sun_color = vec3(0.0f);
+    for (int i=0; i<32; i++) {
+        if (i == sun_lamp_count) break;
+        vec3 dir = sun_lamp_dirs[i];
+        vec3 color = sun_lamp_colors[i];
+
+        float d = max(-dot(towards_sky, dir), 0.0f);
+        float strength = pow(d, 10.0f) * 0.1f
+            + pow(d, 50.0f) * 0.5f
+            + pow(d, 600.0f) * 3.0f
+            + smoothstep(0.4f, 0.5f, pow(d, 500.0f)) * 3.0f;
+        sun_color += color * strength;
+    }
+
+    float groundness = max(dot(towards_sky, ground_dir), 0.0f);
+    vec3 dome_color = mix(sky_color + sun_color, ground_color, groundness);
+
+    return dome_color;
 }
 
 void main()
@@ -53,10 +76,7 @@ void main()
 
         vec3 viewing = normalize(p - camera_apex);
         vec3 reflected = reflect(viewing, n);
-
-        float groundness = max(dot(reflected, vec3(0.0f, -1.0f, 0.0f)), 0.0f);
-        vec3 ground_color = vec3(0.0f, 0.0f, 0.0f);
-        vec3 dome_color = mix(sky_color, ground_color, groundness);
+        vec3 dome_color = sample_sky(reflected);
 
         // FIXME: Temp. use Blinn-phong
         float nl = max(dot(n, towards_lamp_dir), 0.0f);
@@ -78,12 +98,8 @@ void main()
 
     // sky
     if (mat == 2) {
-        vec3 a = texelFetch(albedo, sp, 0).rgb;
-        vec3 n = texelFetch(normal, sp, 0).xyz;
-
-        float groundness = max(dot(n, vec3(0.0f, -1.0f, 0.0f)), 0.0f);
-        vec3 dome_color = mix(sky_color, ground_color, groundness);
-
+        vec3 towards_sky = texelFetch(normal, sp, 0).xyz;
+        vec3 dome_color = sample_sky(towards_sky);
         combined = vec4(dome_color, 1.0f);
         return;
     }
