@@ -14,6 +14,7 @@ namespace rt::math
         unit(value_type value) : value{normalize(value)} {}
 
         auto& get() const { return value; }
+        const_pointer operator -> () const { return &get(); }
         const_reference operator * () const { return get(); }
         operator const_reference () const { return get(); }
 
