@@ -3,7 +3,7 @@
 #include "../scene/material.hh"
 #include "../scene/shape.hh"
 #include "../scene/lamp.hh"
-#include <deque>
+#include <vector>
 
 namespace rt::rasterizer
 {
@@ -30,15 +30,15 @@ namespace rt::rasterizer
         struct sorted_geometry
         {
             materials::solid_color sky;
-            std::deque<materials::physically_based> materials;
+            std::vector<materials::physically_based> materials;
 
-            std::deque<with_material<shapes::sphere>> spheres;
-            std::deque<with_material<shapes::plane>> planes;
-            std::deque<with_material<shapes::line_segment>> line_segments;
-            std::deque<with_material<shapes::mesh>> meshes;
+            std::vector<with_material<shapes::sphere>> spheres;
+            std::vector<with_material<shapes::plane>> planes;
+            std::vector<with_material<shapes::line_segment>> line_segments;
+            std::vector<with_material<shapes::mesh>> meshes;
 
-            std::deque<lamps::sun> sun_lamps;
-            std::deque<lamps::omni> omni_lamps;
+            std::vector<lamps::sun> sun_lamps;
+            std::vector<lamps::omni> omni_lamps;
         };
 
         sorted_geometry sort_geometry(scene_type const& scene);
