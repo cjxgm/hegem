@@ -12,6 +12,9 @@ namespace rt::raytracer::shading_details
         namespace materials = scene::materials;
         namespace lamps = scene::lamps;
 
+        const auto ground_dir = glm::vec3{0.0f, -1.0f, 0.0f};
+        const auto ground_color = glm::vec3{0.0f, 0.0f, 0.0f};
+
         struct environment_shader
         {
             scene_type const& scene;
@@ -27,6 +30,7 @@ namespace rt::raytracer::shading_details
             color_type impl(materials::solid_color const& mat) const
             {
                 auto color = mat.color;
+
                 for (auto& lamp: scene.lamps) {
                     lamp.match(
                             [&] (lamps::sun const& lamp) {
@@ -39,6 +43,10 @@ namespace rt::raytracer::shading_details
                             },
                             [] (auto&) {});
                 }
+
+                float groundness = glm::max(dot(*ray.dir, ground_dir), 0.0f);
+                color = glm::mix(color, ground_color, groundness);
+
                 return color;
             }
 
