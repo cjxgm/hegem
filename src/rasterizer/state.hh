@@ -20,11 +20,20 @@ namespace rt::rasterizer
             glu::shared_framebuffer fbo_combined;
             glu::shared_framebuffer fbo_geometry;
 
+            // G-Buffer:
+            // - albedo: vec4(vec3(albedo_color), roughness)
+            // - reflection: vec4(vec3(refl_color), ior)
+            // - normal: vec4(vec3(normal_dir), 0.0f)
+            // - position: vec4(vec3(pos_in_world_space), material_enum)
+            //   * material_enum:
+            //     [0.0f] solid color
+            //     [1.0f] pbr
+            //     [2.0f] sky
             glu::shared_renderbuffer depth;
             glu::shared_texture2d albedo;
+            glu::shared_texture2d reflection;
             glu::shared_texture2d normal;
             glu::shared_texture2d position;
-            glu::shared_texture2d material;
 
             glu::shared_program prog_sky;
             glu::shared_program prog_sphere;

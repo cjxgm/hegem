@@ -7,7 +7,7 @@ namespace rt::rasterizer::state_details
 {
     namespace
     {
-        auto default_texture2d(int w, int h, gl::enum_type internal_format=gl::rgb32f)
+        auto default_texture2d(int w, int h, gl::enum_type internal_format=gl::rgba32f)
         {
             auto tex = glu::texture2d_pool::instance().allocate();
             gl::texture_storage2d(tex, 1, internal_format, w, h);
@@ -104,16 +104,16 @@ namespace rt::rasterizer::state_details
         depth = glu::renderbuffer_pool::instance().allocate();
         gl::named_renderbuffer_storage(depth, gl::depth_component32f, w, h);
 
-        albedo = default_texture2d(w, h);
-        normal = default_texture2d(w, h);
-        position = default_texture2d(w, h);
-        material = default_texture2d(w, h, gl::r8ui);
+        albedo     = default_texture2d(w, h);
+        reflection = default_texture2d(w, h);
+        normal     = default_texture2d(w, h);
+        position   = default_texture2d(w, h);
 
         fbo_geometry = glu::framebuffer_pool::instance().allocate();
         gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment0, albedo, 0);
-        gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment1, normal, 0);
-        gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment2, position, 0);
-        gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment3, material, 0);
+        gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment1, reflection, 0);
+        gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment2, normal, 0);
+        gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment3, position, 0);
         gl::named_framebuffer_renderbuffer(fbo_geometry, gl::depth_attachment, gl::renderbuffer, depth);
         gl::enum_type draw_buffers[] = {
             gl::color_attachment0,

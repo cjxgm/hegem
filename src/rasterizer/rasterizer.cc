@@ -47,6 +47,9 @@ namespace rt::rasterizer
             auto model = glm::translate(shape.center) * glm::scale(glm::vec3{shape.radius});
             gl::uniform_matrix4fv(1, 1, false, &model[0][0]);
             gl::uniform3fv(2, 1, &mat.albedo[0]);
+            gl::uniform3fv(3, 1, &mat.reflection[0]);
+            gl::uniform1f(4, mat.roughness);
+            gl::uniform1f(5, mat.ior);
             gl::draw_elements(gl::patches, 6*4, gl::unsigned_int, nullptr);
         }
 
@@ -69,6 +72,9 @@ namespace rt::rasterizer
                 gl::uniform3fv(2, 1, &normal[0]);
                 gl::uniform1f(3, shape.offset);
                 gl::uniform3fv(4, 1, &mat.albedo[0]);
+                gl::uniform3fv(5, 1, &mat.reflection[0]);
+                gl::uniform1f(6, mat.roughness);
+                gl::uniform1f(7, mat.ior);
                 gl::draw_arrays(gl::points, 0, 1);
             }
         }
@@ -80,9 +86,9 @@ namespace rt::rasterizer
         gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
         gl::bind_vertex_array(s.vao_empty);
         gl::bind_texture_unit(0, s.albedo);
-        gl::bind_texture_unit(1, s.normal);
-        gl::bind_texture_unit(2, s.position);
-        gl::bind_texture_unit(3, s.material);
+        gl::bind_texture_unit(1, s.reflection);
+        gl::bind_texture_unit(2, s.normal);
+        gl::bind_texture_unit(3, s.position);
         gl::use_program(s.prog_shade);
         gl::uniform3fv(4, 1, &cam_apex[0]);
         gl::uniform3fv(5, 1, &s.geometry.sky.color[0]);
