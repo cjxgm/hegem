@@ -1,4 +1,5 @@
 #include "../../lib/glm/vec3.hh"
+#include "../../lib/glm/vec4.hh"
 #include "../../lib/glm/mat3.hh"
 #include "../../lib/glm/op/geom.hh"
 #include "../../math/unit.hh"
@@ -34,15 +35,15 @@ namespace rt::raytracer::shading_details
 
     image_type shade_normal(hit_buffer_type const& buf, view_type const& view)
     {
-        auto c2w_rot = scene::camera_space_to_world_space_rotation_only(view.camera);
-        auto w2c_rot = inverse(c2w_rot);
+        auto c2w = scene::camera_space_to_world_space(view.camera);
+        auto w2c = inverse(c2w);
 
         image_type img{buf.size(), color_type{0.5, 0.5, 1}};
         img.each([&] (auto& pixel, auto pos) {
             buf[pos].match(
                     [] (hits::missed) {},
                     [&] (hits::object const& hit) {
-                        direction_type view_normal = w2c_rot * *hit.shape_info.normal;
+                        direction_type view_normal = (w2c * glm::vec4{*hit.shape_info.normal, 0.0f}).xyz();
                         pixel = *view_normal * 0.5f + 0.5f;
                     });
         });

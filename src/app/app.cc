@@ -219,6 +219,11 @@ namespace rt::app
                     ImGui::SameLine();
                     ImGui::Text("Dragging %.1f %.1f", vi.hdr.drag_offset.x, vi.hdr.drag_offset.y);
                     vi.show_raytracing_overlay = false;
+                    vi.s.view.camera.match([&] (auto& cam) {
+                        // TODO: make parameters adjustable
+                        cam.tt.angles += vi.hdr.drag_offset * 0.01f;
+                        cam.tt.zoffset = 5.0f;
+                    });
                 }
                 ImGui::Separator();
                 ImGui::BeginChild("image viewer", ImVec2(0, 0), true);

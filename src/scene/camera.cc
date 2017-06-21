@@ -29,31 +29,32 @@ namespace rt::scene::cameras
                 glm::vec4{0, 0, offset, 1},
             };
         }
-    }
 
-    glm::mat3 camera_space_to_world_space_rotation_only(camera_type const& cam)
-    {
-        return cam.match([] (auto& cam) {
-            direction_type right = cross(*cam.forward, *cam.up);
-            direction_type proper_up = cross(*right, *cam.forward);
-            return glm::mat3{
-                *right,
-                *proper_up,
-                -*cam.forward,
-            };
-        });
+        glm::mat3 camera_space_to_world_space_rotation_only(camera_type const& cam)
+        {
+            return cam.match([] (auto& cam) {
+                direction_type right = cross(*cam.forward, *cam.up);
+                direction_type proper_up = cross(*right, *cam.forward);
+                return glm::mat3{
+                    *right,
+                    *proper_up,
+                    -*cam.forward,
+                };
+            });
+        }
     }
 
     glm::mat4 camera_space_to_world_space(camera_type const& cam)
     {
         return cam.match([&] (auto& cam_alt) {
             auto c2w_rot = camera_space_to_world_space_rotation_only(cam);
+            auto extra_rotation = inverse(rotation(cam_alt.tt));
             return glm::mat4{
                 glm::vec4{c2w_rot[0]    , 0},
                 glm::vec4{c2w_rot[1]    , 0},
                 glm::vec4{c2w_rot[2]    , 0},
                 glm::vec4{cam_alt.center, 1},
-            };
+            } * extra_rotation;
         });
     }
 
@@ -91,11 +92,16 @@ namespace rt::scene::cameras
 
         return cam.match(
             [=] (pin_hole const& cam) {
-                auto offset = sized_lens_to_pin_hole(nh, cam.fov) * *cam.forward;
-                return cam.center - offset;
+                auto c2w = camera_space_to_world_space(cam);
+                auto forward = (c2w * glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}).xyz();
+                auto center  = (c2w * glm::vec4{0.0f, 0.0f,  0.0f, 1.0f}).xyz();
+                auto offset = sized_lens_to_pin_hole(nh, cam.fov) * forward;
+                return center - offset;
             },
             [=] (orthographic const& cam) {
-                return cam.center;
+                auto c2w = camera_space_to_world_space(cam);
+                auto center  = (c2w * glm::vec4{0.0f, 0.0f,  0.0f, 1.0f}).xyz();
+                return center;
             });
     }
 }
