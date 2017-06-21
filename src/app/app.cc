@@ -15,9 +15,11 @@
 #include "glfw.hh"
 #include "hdr-texture.hh"
 #include "visualization.hh"
+#include <list>
 #include <deque>
 #include <array>
 #include <functional>
+#include <algorithm>
 
 namespace rt::app
 {
@@ -39,7 +41,7 @@ namespace rt::app
         struct context
         {
             std::deque<hdr_texture> images;
-            std::deque<visualization> visualizations;
+            std::list<visualization> visualizations;
             util::mpsc<std::function<void()>> tasks;
             int tile_size[2] = {64, 64};
             std::array<float, framerate_history_size> framerate_history{};
@@ -427,13 +429,15 @@ namespace rt::app
 
                 int vi_idx = 0;
                 for (auto& vi: vis) {
+                    if (!vi.show) continue;
                     ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
-                    ImGui::Begin(name.data());
+                    ImGui::Begin(name.data(), &vi.show);
                     visualizer(vi, spawner);
                     ImGui::End();
                 }
+                vis.remove_if([] (auto& vi) { return !vi.show; });
 
                 ImGui::SetNextWindowPos(ImVec2(50, 500), ImGuiSetCond_Appearing);
                 ImGui::Begin("Framerates", nullptr, ImGuiWindowFlags_AlwaysAutoResize);

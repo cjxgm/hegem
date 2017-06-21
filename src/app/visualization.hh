@@ -20,6 +20,7 @@ namespace rt::app
             rasterizer::state s;
             bool show_raytracing_overlay{false};
             bool wireframed{false};
+            bool show{true};
 
             visualization(std::string name, scene_type& scene, view_type& view);
         };

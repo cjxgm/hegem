@@ -51,6 +51,7 @@ namespace rt::app::glfw
                     << ": " << msg
                     << "\e[0m\n";
                 if (id == 131218) return;
+                if (id == 131204) return;
                 if (severity == gl::debug_severity_notification)
                     return;
                 if (severity == gl::debug_severity_high
