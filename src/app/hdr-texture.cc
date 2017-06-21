@@ -59,7 +59,7 @@ namespace rt::app
         };
     }
 
-    void imgui_hdr_texture(hdr_texture* hdr)
+    void imgui_hdr_texture(hdr_texture* hdr, char const* drag_receiver)
     {
         auto& cmd_list = *ImGui::GetWindowDrawList();
         cmd_list.AddDrawCmd();
@@ -72,6 +72,18 @@ namespace rt::app
         ImGui::Image(glu::cast::id_to_ptr(hdr->markers), ImVec2(hdr->w, hdr->h));
         cmd_list.AddDrawCmd();
         cmd_list.AddCallback(general_mode, nullptr);
+
+        // mouse dragging handling
+        ImGui::SetCursorPos(pos);
+        ImGui::InvisibleButton(drag_receiver, ImVec2(hdr->w, hdr->h));
+        if (ImGui::IsItemActive()) {
+            auto offset = ImGui::GetIO().MouseDelta;
+            hdr->dragging = true;
+            hdr->drag_offset = { offset.x, offset.y };
+        } else {
+            hdr->dragging = false;
+            hdr->drag_offset = {};
+        }
     }
 
     void imgui_hdr_color(

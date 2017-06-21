@@ -215,6 +215,11 @@ namespace rt::app
                     ImGui::SameLine();
                     ImGui::Checkbox("Wireframed", &vi.wireframed);
                 }
+                if (vi.hdr.dragging) {
+                    ImGui::SameLine();
+                    ImGui::Text("Dragging %.1f %.1f", vi.hdr.drag_offset.x, vi.hdr.drag_offset.y);
+                    vi.show_raytracing_overlay = false;
+                }
                 ImGui::Separator();
                 ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
                 adjustable_hdr_texture(vi.hdr);

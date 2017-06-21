@@ -1,6 +1,7 @@
 #pragma once
 #include "../lib/gl/gl.hh"
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/vec2.hh"
 #include "../glu/resource.hh"
 #include "../util/tile.hh"
 #include <string>
@@ -18,6 +19,9 @@ namespace rt::app
         float dither_amount{1};
         std::string name{"<unnamed>"};
 
+        bool dragging{false};
+        glm::vec2 drag_offset{};
+
         hdr_texture(int w, int h);
 
         void mark(util::tile tile);
@@ -27,7 +31,7 @@ namespace rt::app
         glu::shared_framebuffer fbo;
     };
 
-    void imgui_hdr_texture(hdr_texture* hdr);
+    void imgui_hdr_texture(hdr_texture* hdr, char const* drag_receiver="drag receiver");
     void imgui_hdr_color(
             char const* color_label,
             char const* intensity_label,
