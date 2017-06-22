@@ -227,9 +227,24 @@ namespace rt::app
                         cam.tt.zoffset = 5.0f;
                     });
                 }
+
                 ImGui::Separator();
                 ImGui::BeginChild("image viewer", ImVec2(0, 0), true);
                 adjustable_hdr_texture(vi.hdr);
+                if (ImGui::IsItemHovered()) {
+                    auto wheel = ImGui::GetIO().MouseWheel;
+                    if (wheel != 0.0f) {
+                        vi.show_raytracing_overlay = false;
+                    }
+                    vi.s.view.camera.match(
+                        [&] (scene::cameras::pin_hole& cam) {
+                            // TODO: make parameters adjustable
+                            cam.fov -= wheel * 0.1f;
+                            if (cam.fov < 0.1f) cam.fov = 0.1f;
+                            if (cam.fov > 3.1f) cam.fov = 3.1f;
+                        },
+                        [&] (auto&) {});
+                }
                 ImGui::EndChild();
 
                 if (!vi.show_raytracing_overlay)
