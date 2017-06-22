@@ -17,23 +17,39 @@ out ctrl_eval
 }
 next[];
 
-const float coverity = 0.001f;
+const float coverity = 0.0015f;
+const vec3 samples[] = {
+    vec3(-1.0f, -1.0f, -1.0f),
+    vec3( 1.0f, -1.0f, -1.0f),
+    vec3(-1.0f,  1.0f, -1.0f),
+    vec3( 1.0f,  1.0f, -1.0f),
+    vec3(-1.0f, -1.0f,  1.0f),
+    vec3( 1.0f, -1.0f,  1.0f),
+    vec3(-1.0f,  1.0f,  1.0f),
+    vec3( 1.0f,  1.0f,  1.0f),
+};
 
 void main()
 {
     next[gl_InvocationID].pos = prev[gl_InvocationID].pos;
 
     if (gl_InvocationID == 0) {
-        vec2 clip_pos[4];
-        for (int i=0; i<4; i++) {
-            vec4 p = proj_view * model * vec4(prev[i].pos, 1.0f);
-            clip_pos[i] = p.xy / p.w;
+        mat4 model2clip = proj_view * model;
+        vec4 pcenter = model2clip * vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        float len_samples[8];
+        for (int i=0; i<8; i++) {
+            vec4 psample = model2clip * vec4(samples[i], 1.0f);
+            vec3 dsample = psample.xyz / psample.w - pcenter.xyz / pcenter.w;
+            len_samples[i] = length(dsample);
         }
-        vec2 min_pos = min(min(clip_pos[0], clip_pos[1]), min(clip_pos[2], clip_pos[3]));
-        vec2 max_pos = max(max(clip_pos[0], clip_pos[1]), max(clip_pos[2], clip_pos[3]));
-        vec2 deltas = max_pos - min_pos;
-        float max_len = max(deltas.x, deltas.y);
-        float subdiv = max(max_len / sqrt(coverity), 2.0f);
+        float max_len = max(
+                max(
+                    max(len_samples[0], len_samples[1]),
+                    max(len_samples[2], len_samples[3])),
+                max(
+                    max(len_samples[4], len_samples[5]),
+                    max(len_samples[6], len_samples[7])));
+        float subdiv = ceil(max(max_len / sqrt(coverity), 3.0f));
 
         gl_TessLevelInner[0] = subdiv;
         gl_TessLevelInner[1] = subdiv;
