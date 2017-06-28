@@ -212,6 +212,10 @@ namespace rt::app
                 if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
                     if (vi.show_raytracing_overlay)
                         render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, spawner);
+
+                    auto res = raytracer::raytrace(vi.s.scene, vi.s.view, glm::vec2{vi.s.view.size} / 2.0f);
+                    for (auto& re: res)
+                        vi.s.segments.emplace_back(re.ray, re.extent, glm::vec3{10.0f, 5.0f, 2.0f}, 10.0f);
                 }
                 if (!vi.show_raytracing_overlay) {
                     ImGui::SameLine();

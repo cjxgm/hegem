@@ -100,10 +100,7 @@ vec3 sample_diffuse(vec3 a, vec3 n, vec3 p, vec3 viewing, vec3 refl_color, float
 
 void main()
 {
-    // make sure p is in screen space (top-left origin)
-    ivec2 tex_size = textureSize(albedo, 0);
-    ivec2 sp = ivec2(gl_FragCoord.x, tex_size.y - gl_FragCoord.y);
-
+    ivec2 sp = ivec2(gl_FragCoord.xy);
     vec4 pos_mat = texelFetch(position, sp, 0);
     vec3 p = pos_mat.xyz;
     float mat = pos_mat.w;

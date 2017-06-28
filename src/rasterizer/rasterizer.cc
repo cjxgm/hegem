@@ -16,6 +16,7 @@ namespace rt::rasterizer
         float aspect_ratio = float(s.view.size.x) / s.view.size.y;
         auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
         auto cam_apex = apex_in_world_space(s.view.camera, aspect_ratio);
+        auto pixel_size = glm::vec2{1.0f} / glm::vec2{s.view.size};
 
         gl::funcs::viewport(0, 0, s.view.size.x, s.view.size.y);
 
@@ -79,8 +80,6 @@ namespace rt::rasterizer
             }
         }
 
-        // -- line segments
-
         // shading pass
         sm.enable_only({});
         gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
@@ -98,6 +97,31 @@ namespace rt::rasterizer
         gl::uniform3fv(64, s.geometry.sun_lamp.colors.size(), &s.geometry.sun_lamp.colors[0][0]);
         gl::uniform3fv(96, s.geometry.omni_lamp.centers.size(), &s.geometry.omni_lamp.centers[0][0]);
         gl::uniform3fv(128, s.geometry.omni_lamp.colors.size(), &s.geometry.omni_lamp.colors[0][0]);
+        gl::draw_arrays(gl::points, 0, 1);
+
+        // forward rendering
+        // - line segments
+        sm.enable_only({ gl::depth_test, gl::blend });
+        gl::depth_mask(false);
+        gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
+        gl::bind_vertex_array(s.vao_empty);
+        gl::use_program(s.prog_line_segment);
+        gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
+        gl::uniform2fv(1, 1, &pixel_size[0]);
+        for (auto& seg: s.segments) {
+            gl::uniform3fv(2, 2, &seg.ends[0][0]);
+            gl::uniform4fv(4, 2, &seg.colors[0][0]);
+            gl::uniform1f(6, seg.width);
+            gl::draw_arrays(gl::points, 0, 1);
+        }
+        gl::depth_mask(true);
+
+        // blit to output
+        sm.enable_only({});
+        gl::bind_framebuffer(gl::framebuffer, s.fbo_blit_target);
+        gl::bind_vertex_array(s.vao_empty);
+        gl::bind_texture_unit(0, s.combined);
+        gl::use_program(s.prog_blit);
         gl::draw_arrays(gl::points, 0, 1);
     }
 }
