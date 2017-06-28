@@ -109,6 +109,8 @@ namespace rt::rasterizer::state_details
         normal     = default_texture2d(w, h);
         position   = default_texture2d(w, h);
 
+        gl::named_framebuffer_renderbuffer(fbo_combined, gl::depth_attachment, gl::renderbuffer, depth);
+
         fbo_geometry = glu::framebuffer_pool::instance().allocate();
         gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment0, albedo, 0);
         gl::named_framebuffer_texture(fbo_geometry, gl::color_attachment1, reflection, 0);
