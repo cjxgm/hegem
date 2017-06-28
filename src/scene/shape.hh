@@ -22,11 +22,6 @@ namespace rt::scene
             float offset;
         };
 
-        struct line_segment
-        {
-            std::array<glm::vec3, 2> points;
-        };
-
         struct mesh
         {
             // TODO
@@ -35,7 +30,6 @@ namespace rt::scene
         using shape_type = mapbox::util::variant<
             sphere,
             plane,
-            line_segment,
             mesh
         >;
     }

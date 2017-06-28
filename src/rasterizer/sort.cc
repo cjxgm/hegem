@@ -95,7 +95,6 @@ namespace rt::rasterizer::sort_details
 
                 void operator () (shapes::sphere shape) { sg.spheres.emplace_back(shape, material_id); }
                 void operator () (shapes::plane shape) { sg.planes.emplace_back(shape, material_id); }
-                void operator () (shapes::line_segment shape) { sg.line_segments.emplace_back(shape, material_id); }
                 void operator () (shapes::mesh shape) { sg.meshes.emplace_back(shape, material_id); }
             };
 

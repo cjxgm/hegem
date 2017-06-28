@@ -34,7 +34,6 @@ namespace rt::rasterizer
 
             std::vector<with_material<shapes::sphere>> spheres;
             std::vector<with_material<shapes::plane>> planes;
-            std::vector<with_material<shapes::line_segment>> line_segments;
             std::vector<with_material<shapes::mesh>> meshes;
 
             struct
