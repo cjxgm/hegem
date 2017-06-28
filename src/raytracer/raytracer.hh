@@ -1,4 +1,5 @@
 #pragma once
+#include "../lib/glm/fwd.hh"
 #include "../image/image.hh"
 #include "../scene/scene.hh"
 #include "../scene/view.hh"
@@ -16,11 +17,23 @@ namespace rt::raytracer
         using scene::scene_type;
         using scene::view_type;
 
-        shaded_object_hit_type raytrace(scene_type const& scene, ray_type const& ray, int remaining_bounce_count);
+        struct ray_extent_type
+        {
+            ray_type ray;
+            float extent;
+
+            ray_extent_type(ray_type ray, float extent)
+                : ray{ray}, extent{extent} {}
+        };
+        using ray_extent_list = std::vector<ray_extent_type>;
+
         raytracing_result_type raytrace(scene_type const& scene, view_type const& view, util::tile const& tile);
+        ray_extent_list raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos);
     }
 
     using raytracer_details::raytrace;
     using raytracer_details::raytracing_result_type;
+    using raytracer_details::ray_extent_type;
+    using raytracer_details::ray_extent_list;
 }
 

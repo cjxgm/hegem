@@ -1,64 +1,102 @@
 #include "../lib/glm/op/geom.hh"
 #include "../lib/glm/mat3.hh"
+#include "../lib/glm/vec2.hh"
+#include "../lib/glm/vec3.hh"
 #include "../image/color.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
 #include "shade.hh"
+#include <limits>
 
 namespace rt::raytracer::raytracer_details
 {
     namespace
     {
         using color_type = image::color::linear_rgb;
-    }
+        static constexpr auto inf = std::numeric_limits<float>::infinity();
 
-    shaded_object_hit_type raytrace(
-            scene_type const& scene,
-            ray_type const& ray,
-            int remaining_bounce_count)
-    {
-        if (remaining_bounce_count < 0) {
-            auto radiance = shade_environment(scene, ray);
-            return shaded_object_hit_type {
-                hits::missed{ray},
-                radiance,
-            };
-        }
-        remaining_bounce_count--;
-
-        return intersect(scene.root, ray).match(
-            [&] (hits::missed m) {
-                auto radiance = shade_environment(scene, m.ray);
+        shaded_object_hit_type raytrace(
+                scene_type const& scene,
+                ray_type const& ray,
+                int remaining_bounce_count)
+        {
+            if (remaining_bounce_count < 0) {
+                auto radiance = shade_environment(scene, ray);
                 return shaded_object_hit_type {
-                    m,
-                    radiance,
-                };
-            },
-            [&] (hits::object hit) {
-                color_type reflected;
-                color_type refracted;
-
-                auto& mat = scene.materials[hit.material_id];
-                if (reflective(mat)) {
-                    ray_type refl = biased_ray({
-                        hit.shape_info.hit_point,
-                        reflect(*ray.dir, *hit.shape_info.normal),
-                    }, hit.shape_info);
-                    reflected = raytrace(scene, refl, remaining_bounce_count).radiance;
-                }
-                if (refractive(mat)) {
-                    refracted = raytrace(scene, /* refract */ biased_ray(ray, hit.shape_info), remaining_bounce_count).radiance;
-                }
-
-                auto diffuse = shade_diffuse(scene, hit);
-                auto radiance = shade_illumination(scene, hit, diffuse, reflected, refracted);
-
-                return shaded_object_hit_type {
-                    hit,
+                    hits::missed{ray},
                     radiance,
                 };
             }
-        );
+            remaining_bounce_count--;
+
+            return intersect(scene.root, ray).match(
+                [&] (hits::missed m) {
+                    auto radiance = shade_environment(scene, m.ray);
+                    return shaded_object_hit_type {
+                        m,
+                        radiance,
+                    };
+                },
+                [&] (hits::object hit) {
+                    color_type reflected;
+                    color_type refracted;
+
+                    auto& mat = scene.materials[hit.material_id];
+                    if (reflective(mat)) {
+                        ray_type refl = biased_ray({
+                            hit.shape_info.hit_point,
+                            reflect(*ray.dir, *hit.shape_info.normal),
+                        }, hit.shape_info);
+                        reflected = raytrace(scene, refl, remaining_bounce_count).radiance;
+                    }
+                    if (refractive(mat)) {
+                        refracted = raytrace(scene, /* refract */ biased_ray(ray, hit.shape_info), remaining_bounce_count).radiance;
+                    }
+
+                    auto diffuse = shade_diffuse(scene, hit);
+                    auto radiance = shade_illumination(scene, hit, diffuse, reflected, refracted);
+
+                    return shaded_object_hit_type {
+                        hit,
+                        radiance,
+                    };
+                }
+            );
+        }
+
+        void raytrace(
+                scene_type const& scene,
+                ray_type const& ray,
+                int remaining_bounce_count,
+                ray_extent_list & res)
+        {
+            if (remaining_bounce_count < 0) {
+                res.emplace_back(ray, +inf);
+                return;
+            }
+            remaining_bounce_count--;
+
+            return intersect(scene.root, ray).match(
+                [&] (hits::missed m) {
+                    res.emplace_back(m.ray, +inf);
+                },
+                [&] (hits::object hit) {
+                    res.emplace_back(ray, hit.shape_info.ray_extent);
+
+                    auto& mat = scene.materials[hit.material_id];
+                    if (reflective(mat)) {
+                        ray_type refl = biased_ray({
+                            hit.shape_info.hit_point,
+                            reflect(*ray.dir, *hit.shape_info.normal),
+                        }, hit.shape_info);
+                        raytrace(scene, refl, remaining_bounce_count, res);
+                    }
+                    if (refractive(mat)) {
+                        raytrace(scene, /* refract */ biased_ray(ray, hit.shape_info), remaining_bounce_count, res);
+                    }
+                }
+            );
+        }
     }
 
     raytracing_result_type raytrace(
@@ -81,6 +119,19 @@ namespace rt::raytracer::raytracer_details
         });
 
         return { img, buf };
+    }
+
+    ray_extent_list raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos)
+    {
+        ray_extent_list res{};
+
+        auto& cam = view.camera;
+        auto s2cp = view.screen_space_to_camera_plane_space();
+        auto p = s2cp * glm::vec3{screen_pos, 1.0f};
+        auto ray = camera_ray_from_camera_plane(p.xy(), cam);
+        raytrace(scene, ray, view.bounces, res);
+
+        return res;
     }
 }
 
