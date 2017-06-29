@@ -61,10 +61,12 @@ namespace rt::app
 
     void imgui_hdr_texture(hdr_texture* hdr, char const* drag_receiver)
     {
+        auto& io = ImGui::GetIO();
         auto& cmd_list = *ImGui::GetWindowDrawList();
         cmd_list.AddDrawCmd();
         cmd_list.AddCallback(hdr_mode, hdr);
         auto pos = ImGui::GetCursorPos();
+        auto spos = ImGui::GetCursorScreenPos();
         ImGui::Image(glu::cast::id_to_ptr(hdr->tex), ImVec2(hdr->w, hdr->h));
         cmd_list.AddDrawCmd();
         cmd_list.AddCallback(ldr_mode, nullptr);
@@ -77,12 +79,21 @@ namespace rt::app
         ImGui::SetCursorPos(pos);
         ImGui::InvisibleButton(drag_receiver, ImVec2(hdr->w, hdr->h));
         if (ImGui::IsItemActive()) {
-            auto offset = ImGui::GetIO().MouseDelta;
-            hdr->dragging = true;
-            hdr->drag_offset = { offset.x, offset.y };
+            if (ImGui::IsMouseDoubleClicked(0)) {
+                hdr->double_clicked = true;
+                auto mpos = ImGui::GetMousePos();
+                hdr->image_local_clicked_pos = { mpos.x - spos.x, mpos.y - spos.y };
+            } else {
+                auto offset = io.MouseDelta;
+                hdr->dragging = true;
+                hdr->drag_offset = { offset.x, offset.y };
+            }
         } else {
             hdr->dragging = false;
             hdr->drag_offset = {};
+
+            hdr->double_clicked = false;
+            hdr->image_local_clicked_pos = {};
         }
     }
 

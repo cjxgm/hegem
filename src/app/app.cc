@@ -212,10 +212,6 @@ namespace rt::app
                 if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
                     if (vi.show_raytracing_overlay)
                         render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, spawner);
-
-                    auto rvs = raytracer::raytrace(vi.s.scene, vi.s.view, glm::vec2{vi.s.view.size} / 2.0f);
-                    for (auto& rv: rvs)
-                        vi.s.segments.emplace_back(rv.ray, rv.extent, rv.color, rv.width);
                 }
                 if (!vi.show_raytracing_overlay) {
                     ImGui::SameLine();
@@ -230,6 +226,11 @@ namespace rt::app
                         cam.tt.angles += vi.hdr.drag_offset * 0.01f;
                         cam.tt.zoffset = 5.0f;
                     });
+                }
+                if (vi.hdr.double_clicked) {
+                    auto rvs = raytracer::raytrace(vi.s.scene, vi.s.view, vi.hdr.image_local_clicked_pos);
+                    for (auto& rv: rvs)
+                        vi.s.segments.emplace_back(rv.ray, rv.extent, rv.color, rv.width);
                 }
 
                 ImGui::Separator();

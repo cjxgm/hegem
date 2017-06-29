@@ -22,6 +22,9 @@ namespace rt::app
         bool dragging{false};
         glm::vec2 drag_offset{};
 
+        bool double_clicked{false};
+        glm::vec2 image_local_clicked_pos{};
+
         hdr_texture(int w, int h);
 
         void mark(util::tile tile);
