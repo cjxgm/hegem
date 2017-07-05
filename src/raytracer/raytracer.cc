@@ -2,6 +2,7 @@
 #include "../lib/glm/mat3.hh"
 #include "../lib/glm/vec2.hh"
 #include "../lib/glm/vec3.hh"
+#include "../lib/std/optional.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
 #include "shade.hh"
@@ -22,107 +23,163 @@ namespace rt::raytracer::raytracer_details
         static constexpr auto width_normal_ray = 10.0f;
         static constexpr auto length_normal_ray = 0.3f;
 
-        shaded_object_hit_type raytrace(
-                scene_type const& scene,
-                ray_type const& ray,
-                int remaining_bounce_count)
+        struct shading_point
         {
-            if (remaining_bounce_count < 0) {
-                auto radiance = shade_environment(scene, ray);
-                return shaded_object_hit_type {
-                    hits::missed{ray},
-                    radiance,
-                };
+            object_hit_type hit;
+            int reflection;
+            int refraction;
+
+            shading_point(hits::missed m)
+                : hit{m}
+                , reflection{0}
+                , refraction{0}
+            {}
+
+            shading_point(hits::object hit, int reflection, int refraction)
+                : hit{hit}
+                , reflection{reflection}
+                , refraction{refraction}
+            {}
+        };
+
+        struct shading_point_pool
+        {
+            using id_type = int;
+
+            shading_point_pool()
+            {
+                // setup guard element
+                push(hits::missed{});
             }
-            remaining_bounce_count--;
 
-            return intersect(scene.root, ray).match(
-                [&] (hits::missed m) {
-                    auto radiance = shade_environment(scene, m.ray);
-                    return shaded_object_hit_type {
-                        m,
-                        radiance,
-                    };
-                },
-                [&] (hits::object hit) {
-                    color_type reflected;
-                    color_type refracted;
+            id_type push(hits::missed m)
+            {
+                return push_sp(m);
+            }
 
-                    auto& mat = scene.materials[hit.material_id];
-                    if (reflective(mat)) {
-                        ray_type refl = biased_ray({
-                            hit.shape_info.hit_point,
-                            reflect(*ray.dir, *hit.shape_info.normal),
-                        }, hit.shape_info);
-                        reflected = raytrace(scene, refl, remaining_bounce_count).radiance;
+            id_type push(
+                hits::object hit,
+                id_type reflection,
+                id_type refraction)
+            {
+                return push_sp(hit, reflection, refraction);
+            }
+
+            auto begin() const { return ++pool.begin(); }
+            auto end() const { return pool.end(); }
+            auto size() const { return pool.size() - 1; }
+            auto& operator [] (int i) const { return pool[i]; }
+
+        private:
+            using pool_type = std::vector<shading_point>;
+            pool_type pool;
+
+            template <class ...Args>
+            id_type push_sp(Args... args)
+            {
+                auto id = static_cast<id_type>(pool.size());
+                pool.emplace_back(std::forward<Args>(args)...);
+                return id;
+            }
+        };
+
+        struct raytracer_impl
+        {
+            scene_type const& scene;
+
+            int trace_ray(
+                ray_type const& ray,
+                int remaining_bounces)
+            {
+                if (remaining_bounces < 0)
+                    return spp.push(hits::missed{ ray });
+                remaining_bounces--;
+
+                return intersect(scene.root, ray).match(
+                    [&] (hits::missed m) {
+                        return spp.push(m);
+                    },
+                    [&] (hits::object hit) {
+                        int reflection{};
+                        int refraction{};
+
+                        auto& mat = scene.materials[hit.material_id];
+                        if (reflective(mat)) {
+                            ray_type refl = biased_ray({
+                                hit.shape_info.hit_point,
+                                reflect(*ray.dir, *hit.shape_info.normal),
+                            }, hit.shape_info);
+                            reflection = trace_ray(refl, remaining_bounces);
+                        }
+                        if (refractive(mat)) {
+                            refraction = trace_ray(/* refract */ biased_ray(ray, hit.shape_info), remaining_bounces);
+                        }
+
+                        return spp.push(hit, reflection, refraction);
                     }
-                    if (refractive(mat)) {
-                        refracted = raytrace(scene, /* refract */ biased_ray(ray, hit.shape_info), remaining_bounce_count).radiance;
-                    }
+                );
+            }
 
-                    auto diffuse = shade_diffuse(scene, hit);
-                    auto radiance = shade_illumination(scene, hit, diffuse, reflected, refracted);
+            shading_point_pool spp{};
+        };
 
-                    return shaded_object_hit_type {
-                        hit,
-                        radiance,
-                    };
-                }
-            );
+        auto shade(shading_point_pool const& spp, scene_type const& scene)
+        {
+            std::vector<color_type> radiances;
+            radiances.reserve(spp.size() + 1);
+            radiances.emplace_back();    // setup guard element
+
+            for (auto& sp: spp) {
+                auto radiance = sp.hit.match(
+                    [&] (hits::missed m) {
+                        return shade_environment(scene, m.viewing);
+                    },
+                    [&] (hits::object hit) {
+                        auto refl = radiances[sp.reflection];
+                        auto refr = radiances[sp.refraction];
+                        auto diffuse = shade_diffuse(scene, hit);
+                        auto radiance = shade_illumination(scene, hit, diffuse, refl, refr);
+                        return radiance;
+                    });
+                radiances.emplace_back(radiance);
+            }
+
+            return radiances;
         }
 
-        void raytrace(
-                scene_type const& scene,
-                ray_type const& ray,
-                int remaining_bounce_count,
-                ray_visualizations & rvs,
-                color_type ray_color,
-                float ray_width)
+        auto visualize(shading_point_pool const& spp)
         {
-            if (remaining_bounce_count < 0) {
-                rvs.emplace_back(ray, +inf, ray_color, ray_width);
-                return;
+            ray_visualizations rvs;
+            rvs.reserve(spp.size() * 2);
+
+            std::vector<char> known(spp.size()+1, false);
+            known[0] = true;    // setup guard element
+
+            auto push_ray_unless_known = [&] (int sp_id, color_type color, float width) {
+                if (known[sp_id]) return;
+                known[sp_id] = true;
+                auto& sp = spp[sp_id];
+                auto viewing = viewing_ray(sp.hit);
+                auto extent = ray_extent(sp.hit);
+                rvs.emplace_back(viewing, extent, color, width);
+            };
+
+            push_ray_unless_known(spp.size(), color_primary_ray, width_primary_ray);
+            for (auto& sp: spp) {
+                sp.hit.match(
+                    [&] (hits::missed) {},
+                    [&] (hits::object hit) {
+                        ray_type normal_ray{
+                            .origin = hit.shape_info.hit_point,
+                            .dir = hit.shape_info.normal,
+                        };
+                        rvs.emplace_back(normal_ray, length_normal_ray, color_normal_ray, width_normal_ray);
+                        push_ray_unless_known(sp.reflection, color_reflective_ray, width_reflective_ray);
+                        push_ray_unless_known(sp.refraction, color_refractive_ray, width_refractive_ray);
+                    });
             }
-            remaining_bounce_count--;
 
-            return intersect(scene.root, ray).match(
-                [&] (hits::missed m) {
-                    rvs.emplace_back(ray, +inf, ray_color, ray_width);
-                },
-                [&] (hits::object hit) {
-                    rvs.emplace_back(ray, hit.shape_info.ray_extent, ray_color, ray_width);
-
-                    ray_type normal_ray{
-                        .origin = hit.shape_info.hit_point,
-                        .dir = hit.shape_info.normal,
-                    };
-                    rvs.emplace_back(normal_ray, length_normal_ray, color_normal_ray, width_normal_ray);
-
-                    auto& mat = scene.materials[hit.material_id];
-                    if (reflective(mat)) {
-                        ray_type refl = biased_ray({
-                            hit.shape_info.hit_point,
-                            reflect(*ray.dir, *hit.shape_info.normal),
-                        }, hit.shape_info);
-                        raytrace(
-                            scene,
-                            refl,
-                            remaining_bounce_count,
-                            rvs,
-                            color_reflective_ray,
-                            width_reflective_ray);
-                    }
-                    if (refractive(mat)) {
-                        raytrace(
-                            scene,
-                            /* refract */ biased_ray(ray, hit.shape_info),
-                            remaining_bounce_count,
-                            rvs,
-                            color_refractive_ray,
-                            width_refractive_ray);
-                    }
-                }
-            );
+            return rvs;
         }
     }
 
@@ -131,18 +188,24 @@ namespace rt::raytracer::raytracer_details
             view_type const& view,
             util::tile const& tile)
     {
+        raytracer_impl impl{scene};
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        image_type img{{tile.w, tile.h}};
-        hit_buffer_type buf{{tile.w, tile.h}};
-
-        buf.each([&] (auto& hit, auto pos) {
+        image::image<int> shading_point_roots{{tile.w, tile.h}};
+        shading_point_roots.each([&] (auto& sp_id, auto pos) {
             auto p = s2cp * glm::vec3{pos + glm::ivec2{tile.x, tile.y}, 1};
             auto ray = camera_ray_from_camera_plane(p.xy(), cam);
-            auto shaded_hit = raytrace(scene, ray, view.bounces);
-            hit = shaded_hit.hit;
-            img[pos] = shaded_hit.radiance;
+            sp_id = impl.trace_ray(ray, view.bounces);
+        });
+
+        auto radiances = shade(impl.spp, scene);
+
+        image_type img{{tile.w, tile.h}};
+        hit_buffer_type buf{{tile.w, tile.h}};
+        shading_point_roots.each([&] (auto& sp_id, auto pos) {
+            buf[pos] = impl.spp[sp_id].hit;
+            img[pos] = radiances[sp_id];
         });
 
         return { img, buf };
@@ -150,13 +213,14 @@ namespace rt::raytracer::raytracer_details
 
     ray_visualizations raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos)
     {
-        ray_visualizations rvs{};
-
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
         auto p = s2cp * glm::vec3{screen_pos, 1.0f};
         auto ray = camera_ray_from_camera_plane(p.xy(), cam);
-        raytrace(scene, ray, view.bounces, rvs, color_primary_ray, width_primary_ray);
+
+        raytracer_impl impl{scene};
+        impl.trace_ray(ray, view.bounces);
+        auto rvs = visualize(impl.spp);
 
         return rvs;
     }

@@ -15,7 +15,7 @@ namespace rt::raytracer
         using scene::scene_type;
         using scene::view_type;
 
-        color_type shade_environment(scene_type const& scene, ray_type const& ray);
+        color_type shade_environment(scene_type const& scene, ray_type const& viewing);
         color_type shade_diffuse(scene_type const& scene, hits::object const& hit);
         color_type shade_illumination(
                 scene_type const& scene,

@@ -25,7 +25,7 @@ namespace rt::raytracer::shading_details
                     [] (hits::missed) {},
                     [&] (hits::object const& hit) {
                         auto depth = hit.shape_info.ray_extent
-                                * dot(*hit.shape_info.ray.dir, *forward);
+                                * dot(*hit.shape_info.viewing.dir, *forward);
                         pixel = color_type{depth};
                     });
         });

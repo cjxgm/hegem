@@ -8,6 +8,13 @@ namespace rt::raytracer::hits
         static constexpr auto inf = std::numeric_limits<float>::infinity();
     }
 
+    ray_type viewing_ray(object_hit_type const& a)
+    {
+        return a.match(
+                [] (missed const& a) { return a.viewing; },
+                [] (object const& a) { return a.shape_info.viewing; });
+    }
+
     float ray_extent(object_hit_type const& a)
     {
         return a.match(

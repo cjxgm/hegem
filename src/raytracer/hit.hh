@@ -18,7 +18,7 @@ namespace rt::raytracer
 
         struct shape
         {
-            ray_type ray;
+            ray_type viewing;
             float ray_extent;
             float ray_max_error;
             point_type hit_point;
@@ -33,7 +33,7 @@ namespace rt::raytracer
 
         struct missed
         {
-            ray_type ray;
+            ray_type viewing;
         };
 
         using shape_hit_type = mapbox::util::variant<
@@ -52,6 +52,8 @@ namespace rt::raytracer
             color_type radiance;
         };
 
+        // returns a.viewing
+        ray_type viewing_ray(object_hit_type const& a);
         // returns +inf if missed
         // returns a.ray_extent otherwise
         float ray_extent(object_hit_type const& a);

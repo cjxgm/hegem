@@ -18,7 +18,7 @@ namespace rt::raytracer::shading_details
         struct environment_shader
         {
             scene_type const& scene;
-            ray_type const& ray;
+            ray_type const& viewing;
 
             template <class Material>
             auto operator () (Material const& mat) const
@@ -34,7 +34,7 @@ namespace rt::raytracer::shading_details
                 for (auto& lamp: scene.lamps) {
                     lamp.match(
                             [&] (lamps::sun const& lamp) {
-                                auto d = glm::max(-dot(*ray.dir, *lamp.dir), 0.0f);
+                                auto d = glm::max(-dot(*viewing.dir, *lamp.dir), 0.0f);
                                 auto strength = glm::pow(d, 10.0f) * 0.1f
                                         + glm::pow(d, 50.0f) * 0.5f
                                         + glm::pow(d, 600.0f) * 3.0f
@@ -44,7 +44,7 @@ namespace rt::raytracer::shading_details
                             [] (auto&) {});
                 }
 
-                float groundness = glm::max(dot(*ray.dir, ground_dir), 0.0f);
+                float groundness = glm::max(dot(*viewing.dir, ground_dir), 0.0f);
                 color = glm::mix(color, ground_color, groundness);
 
                 return color;
@@ -62,9 +62,9 @@ namespace rt::raytracer::shading_details
         };
     }
 
-    color_type shade_environment(scene_type const& scene, ray_type const& ray)
+    color_type shade_environment(scene_type const& scene, ray_type const& viewing)
     {
-        environment_shader shader{scene, ray};
+        environment_shader shader{scene, viewing};
         return apply_visitor(shader, scene.materials[scene.environment]);
     }
 }

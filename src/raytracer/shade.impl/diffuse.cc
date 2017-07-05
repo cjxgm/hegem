@@ -61,7 +61,7 @@ namespace rt::raytracer::shading_details
         struct diffuse_term_extractor
         {
             ray_type const& to_lamp;
-            ray_type const& ray;
+            ray_type const& viewing;
             direction_type const& normal;
 
             template <class Material>
@@ -82,7 +82,7 @@ namespace rt::raytracer::shading_details
                 auto nl = glm::max(dot(*normal, *to_lamp.dir), 0.0f);
                 auto diffuse = mat.diffuse * nl;
 
-                direction_type half = *to_lamp.dir - *ray.dir;
+                direction_type half = *to_lamp.dir - *viewing.dir;
                 auto nh = glm::max(dot(*normal, *half), 0.0f);     // FIXME: is this `max` necessary?
                 auto specular = glm::pow(nh, mat.specular_exp) * mat.specular * nl;
 
@@ -95,7 +95,7 @@ namespace rt::raytracer::shading_details
                 auto nl = glm::max(dot(*normal, *to_lamp.dir), 0.0f);
                 auto diffuse = mat.albedo * nl;
 
-                direction_type half = *to_lamp.dir - *ray.dir;
+                direction_type half = *to_lamp.dir - *viewing.dir;
                 auto nh = glm::max(dot(*normal, *half), 0.0f);     // FIXME: is this `max` necessary?
                 auto exp = (1.0f / (mat.roughness + 1.0f) - 0.5f) * 100.0f;
                 auto specular = glm::pow(nh, exp) * mat.reflection * nl;
@@ -115,7 +115,7 @@ namespace rt::raytracer::shading_details
             apply_visitor(lamp_info, lamp);
             diffuse_term_extractor diffuse_term{
                 lamp_info.towards_lamp,
-                hit.shape_info.ray,
+                hit.shape_info.viewing,
                 hit.shape_info.normal,
             };
 

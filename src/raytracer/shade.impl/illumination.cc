@@ -49,7 +49,7 @@ namespace rt::raytracer::shading_details
 
             color_type impl(materials::physically_based const& mat) const
             {
-                auto fresnel = fresnel_schlick(mat.ior, hit.shape_info.ray.dir, hit.shape_info.normal);
+                auto fresnel = fresnel_schlick(mat.ior, hit.shape_info.viewing.dir, hit.shape_info.normal);
                 auto reflect = mat.reflection * reflected;
                 return mix(diffuse, reflect, fresnel);
             }
