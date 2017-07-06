@@ -100,5 +100,14 @@ namespace rt::raytracer
     {
         return intersect_node(ray, node);
     }
+
+    bool is_intersected_within(scene::node_type const& node, ray_type const& ray, float extent)
+    {
+        return intersect(node, ray).match(
+            [] (hits::missed) { return false; },
+            [&] (hits::object hit) {
+                return (hit.shape_info.ray_extent < extent);
+            });
+    }
 }
 

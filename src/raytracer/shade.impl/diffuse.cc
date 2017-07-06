@@ -119,11 +119,8 @@ namespace rt::raytracer::shading_details
                 hit.shape_info.normal,
             };
 
-            auto shadowed = intersect(scene.root, biased_ray(lamp_info.towards_lamp, hit.shape_info)).match(
-                    [] (hits::missed) { return false; },
-                    [&] (hits::object hit) {
-                        return (hit.shape_info.ray_extent < lamp_info.distance_to_lamp);
-                    });
+            auto shadow_ray = biased_ray(lamp_info.towards_lamp, hit.shape_info);
+            auto shadowed = is_intersected_within(scene.root, shadow_ray, lamp_info.distance_to_lamp);
             if (shadowed) continue;
 
             diffuse += apply_visitor(diffuse_term, mat) * lamp_info.received_radiance;
