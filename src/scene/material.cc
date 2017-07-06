@@ -13,9 +13,18 @@ namespace rt::scene::materials
 
     bool refractive(material_type const& mat)
     {
-        // TODO
-        (void)mat;
-        return false;
+        return mat.match(
+                [] (solid_color const&) { return false; },
+                [] (phong const& mat) { return (mat.ior >= 1.0f); },
+                [] (physically_based const& mat) { return false; });    // TODO: BSDF?
+    }
+
+    float index_of_refraction(material_type const& mat)
+    {
+        return mat.match(
+                [] (solid_color const&) { return 0.0f; },
+                [] (phong const& mat) { return mat.ior; },
+                [] (physically_based const& mat) { return 0.0f; });
     }
 }
 

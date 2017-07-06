@@ -41,6 +41,7 @@ namespace rt::scene
 
         bool reflective(material_type const& mat);
         bool refractive(material_type const& mat);
+        float index_of_refraction(material_type const& mat);
     }
 
     using materials::material_id_type;

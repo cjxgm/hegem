@@ -105,14 +105,32 @@ namespace rt::raytracer::raytracer_details
 
                         auto& mat = scene.materials[hit.material_id];
                         if (reflective(mat)) {
+                            auto into = (dot(*ray.dir, *hit.shape_info.normal) < 0.0f);
+                            auto refl_normal = (into ? 1.0f : -1.0f) * *hit.shape_info.normal;
+                            auto dir = reflect(*ray.dir, refl_normal);
+                            auto shape_info_for_biasing = hit.shape_info;
+                            shape_info_for_biasing.normal = refl_normal;
                             ray_type refl = biased_ray({
                                 hit.shape_info.hit_point,
-                                reflect(*ray.dir, *hit.shape_info.normal),
-                            }, hit.shape_info);
+                                dir,
+                            }, shape_info_for_biasing);
                             reflection = trace_ray(refl, remaining_bounces);
                         }
                         if (refractive(mat)) {
-                            refraction = trace_ray(/* refract */ biased_ray(ray, hit.shape_info), remaining_bounces);
+                            auto into = (dot(*ray.dir, *hit.shape_info.normal) < 0.0f);
+                            auto ior = index_of_refraction(mat);
+                            auto eta = (into ? 1.0f / ior : ior);
+                            auto refr_normal = (into ? 1.0f : -1.0f) * *hit.shape_info.normal;
+                            auto dir = refract(*ray.dir, refr_normal, eta);
+                            if (dir.x != 0.0f || dir.y != 0.0f) {   // perfect reflection
+                                auto shape_info_for_biasing = hit.shape_info;
+                                shape_info_for_biasing.normal = -refr_normal;
+                                ray_type refr = biased_ray({
+                                    hit.shape_info.hit_point,
+                                    dir,
+                                }, shape_info_for_biasing);
+                                refraction = trace_ray(refr, remaining_bounces);
+                            }
                         }
 
                         return spp.push(hit, reflection, refraction);
