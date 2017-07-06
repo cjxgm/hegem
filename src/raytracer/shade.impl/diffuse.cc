@@ -6,6 +6,7 @@
 #include "../../scene/lamp.hh"
 #include "../shade.hh"
 #include "../intersect.hh"
+#include "unified-lamp.hh"
 #include <limits>
 #include <stdexcept>
 
@@ -15,47 +16,6 @@ namespace rt::raytracer::shading_details
     {
         using direction_type = math::unit<glm::vec3>;
         namespace materials = scene::materials;
-        namespace lamps = scene::lamps;
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
-
-        struct lamp_info_extractor
-        {
-            hits::object const& hit;
-
-            color_type received_radiance{};
-            ray_type towards_lamp{};
-            float distance_to_lamp{};
-
-            template <class Lamp>
-            void operator () (Lamp const& lamp)
-            {
-                impl(lamp);
-            }
-
-        private:
-            void impl(lamps::sun const& lamp)
-            {
-                received_radiance = lamp.color;
-                towards_lamp = ray_type {
-                    hit.shape_info.hit_point,
-                    -*lamp.dir,
-                };
-                distance_to_lamp = inf;
-            }
-
-            void impl(lamps::omni const& lamp)
-            {
-                auto obj_to_lamp = lamp.center - hit.shape_info.hit_point;
-                auto dist = length(obj_to_lamp) + 1;    // dist starts from 1
-
-                received_radiance = lamp.color / (dist * dist);
-                towards_lamp = ray_type {
-                    hit.shape_info.hit_point,
-                    obj_to_lamp,
-                };
-                distance_to_lamp = dist - 1;            // distance starts from 0
-            }
-        };
 
         // diffuse AND probably specular terms
         struct diffuse_term_extractor
@@ -107,23 +67,21 @@ namespace rt::raytracer::shading_details
 
     color_type shade_diffuse(scene_type const& scene, hits::object const& hit)
     {
-        lamp_info_extractor lamp_info{hit};
-
         color_type diffuse;
         auto& mat = scene.materials[hit.material_id];
         for (auto& lamp: scene.lamps) {
-            apply_visitor(lamp_info, lamp);
+            auto ulamp = unify_lamp(lamp, hit);
             diffuse_term_extractor diffuse_term{
-                lamp_info.towards_lamp,
+                ulamp.towards_lamp,
                 hit.shape_info.viewing,
                 hit.shape_info.normal,
             };
 
-            auto shadow_ray = biased_ray(lamp_info.towards_lamp, hit.shape_info);
-            auto shadowed = is_intersected_within(scene.root, shadow_ray, lamp_info.distance_to_lamp);
+            auto shadow_ray = biased_ray(ulamp.towards_lamp, hit.shape_info);
+            auto shadowed = is_intersected_within(scene.root, shadow_ray, ulamp.distance_to_lamp);
             if (shadowed) continue;
 
-            diffuse += apply_visitor(diffuse_term, mat) * lamp_info.received_radiance;
+            diffuse += apply_visitor(diffuse_term, mat) * ulamp.received_radiance;
         }
         return diffuse;
     }

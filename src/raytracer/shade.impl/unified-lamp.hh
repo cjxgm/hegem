@@ -1,0 +1,22 @@
+#pragma once
+#include "../../scene/lamp.hh"
+#include "../shade.hh"
+
+namespace rt::raytracer::shading_details
+{
+    namespace unified_lamp_details
+    {
+        struct unified_lamp
+        {
+            color_type received_radiance;
+            ray_type towards_lamp;
+            float distance_to_lamp;
+        };
+
+        unified_lamp unify_lamp(scene::lamp_type const& lamp, hits::object const& hit);
+    }
+
+    using unified_lamp_details::unified_lamp;
+    using unified_lamp_details::unify_lamp;
+}
+
