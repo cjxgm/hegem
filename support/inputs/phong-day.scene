@@ -1,4 +1,4 @@
-name "Phong Day"
+name "Phong Day for Refraction"
 
 views {
     view {
@@ -16,7 +16,7 @@ views {
 
 lights {
     directional-light {
-        direction 2 -2 -1
+        direction 1 -0.1 0
         color 1 0.9 0.8
         strength 10
     }
@@ -50,12 +50,12 @@ materials {
         index-of-refraction 0
     }
     phong-material {
-        diffuse-color 0.2 0.2 0.2
-        reflection-color 0.7 0.6 0.5
-        refraction-color 0 0 0
-        specular-color 0 0 0
-        exponent 0
-        index-of-refraction 0
+        diffuse-color 0.05 0.05 0.05
+        reflection-color 0 0 0
+        refraction-color 0.5 0.8 1
+        specular-color 0.1 0.1 0.1
+        exponent 64
+        index-of-refraction 1.333
     }
     phong-material {
         diffuse-color 0.1 0.3 0.05
@@ -69,7 +69,7 @@ materials {
 
 group {
     object {
-        material-id 0
+        material-id 2
         sphere {
             center 0 0 0
             radius 1
@@ -99,9 +99,9 @@ group {
         }
     }
     object {
-        material-id 2
+        material-id 0
         sphere {
-            center 1 -1 -1
+            center 2 0 0
             radius 0.75
         }
     }
@@ -110,7 +110,7 @@ group {
         material-id 3
         plane {
             normal 0 1 0
-            offset -2
+            offset -10
         }
     }
 }
