@@ -95,7 +95,7 @@ namespace rt::raytracer::raytracer_details
                     return spp.push(hits::missed{ ray });
                 remaining_bounces--;
 
-                return intersect(scene.root, ray).match(
+                return intersect(scene.cache, ray).match(
                     [&] (hits::missed m) {
                         return spp.push(m);
                     },

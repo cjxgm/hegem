@@ -78,7 +78,7 @@ namespace rt::raytracer::shading_details
             };
 
             auto shadow_ray = biased_ray(ulamp.towards_lamp, hit.shape_info);
-            auto shadowed = is_intersected_within(scene.root, shadow_ray, ulamp.distance_to_lamp);
+            auto shadowed = is_intersected_within(scene.cache, shadow_ray, ulamp.distance_to_lamp);
             if (shadowed) continue;
 
             diffuse += apply_visitor(diffuse_term, mat) * ulamp.received_radiance;

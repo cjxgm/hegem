@@ -86,7 +86,7 @@ namespace rt::rasterizer::sort_details
             }
         }
 
-        namespace sort_nodes
+        namespace sort_objects
         {
             struct shape_sorter
             {
@@ -98,36 +98,12 @@ namespace rt::rasterizer::sort_details
                 void operator () (shapes::mesh shape) { sg.meshes.emplace_back(shape, material_id); }
             };
 
-            struct node_sorter
-            {
-                sorted_geometry& sg;
-
-                void operator () (nodes::object const& node)
-                {
-                    shape_sorter sorter{sg, node.material_id};
-                    apply_visitor(sorter, node.shape);
-                }
-
-                void operator () (nodes::group const& group)
-                {
-                    for (auto& node: group.nodes) {
-                        node_sorter sorter{sg};
-                        apply_visitor(sorter, node);
-                    }
-                }
-
-                void operator () (nodes::xform const& xform)
-                {
-                    // TODO: apply the transformation
-                    node_sorter sorter{sg};
-                    apply_visitor(sorter, xform.node);
-                }
-            };
-
             void sort(scene_type const& scene, sorted_geometry& sg)
             {
-                node_sorter sorter{sg};
-                apply_visitor(sorter, scene.root);
+                for (auto& obj: scene.cache.objects) {
+                    shape_sorter sorter{sg, obj.material_id};
+                    apply_visitor(sorter, obj.shape);
+                }
             }
         }
     }
@@ -136,7 +112,7 @@ namespace rt::rasterizer::sort_details
     {
         sorted_geometry sg;
         sort_materials::sort(scene, sg);
-        sort_nodes::sort(scene, sg);
+        sort_objects::sort(scene, sg);
         sort_lamps::sort(scene, sg);
         return sg;
     }

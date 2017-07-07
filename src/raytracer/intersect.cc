@@ -61,54 +61,36 @@ namespace rt::raytracer
             }
         }
 
-        inline namespace intersect_node_details
+        shape_hit_type intersect(ray_type const& ray, shape_type const& shape)
         {
-            object_hit_type intersect_node(ray_type const& ray, node_type const& node);
+            return shape.match([&] (auto& shape) {
+                return intersect_shape(ray, shape);
+            });
+        }
 
-            object_hit_type intersect_node_impl(ray_type const& ray, nodes::object const& node)
-            {
-                return node.shape.match([&] (auto& shape) {
-                        return intersect_shape(ray, shape);
-                    }).match(
-                        [] (hits::missed m) -> object_hit_type { return m; },
-                        [&] (hits::shape shape_info) -> object_hit_type {
-                            return hits::object{ node.material_id, shape_info };
-                        }
-                    );
-            }
-
-            object_hit_type intersect_node_impl(ray_type const& ray, nodes::group const& node)
-            {
-                return std::accumulate(
-                        begin(node.nodes), end(node.nodes),
-                        object_hit_type{hits::missed{ray}},
-                        [&] (auto hit, auto& node) {
-                            return extent_lesser_one(hit, intersect_node(ray, node));
-                        });
-            }
-
-            object_hit_type intersect_node_impl(ray_type const& ray, nodes::xform const& node)
-            {
-                return intersect_node(ray, node.node);
-            }
-
-            object_hit_type intersect_node(ray_type const& ray, node_type const& node)
-            {
-                return node.match([&] (auto& node) {
-                    return intersect_node_impl(ray, node);
+        object_hit_type intersect(ray_type const& ray, cached_object const& obj)
+        {
+            return intersect(ray, obj.shape).match(
+                [] (hits::missed m) -> object_hit_type { return m; },
+                [&] (hits::shape shape_info) -> object_hit_type {
+                    return hits::object{ obj.material_id, shape_info };
                 });
-            }
         }
     }
 
-    object_hit_type intersect(scene::node_type const& node, ray_type const& ray)
+    object_hit_type intersect(scene::scene_cache const& sc, ray_type const& ray)
     {
-        return intersect_node(ray, node);
+        return std::accumulate(
+            begin(sc.objects), end(sc.objects),
+            object_hit_type{hits::missed{ray}},
+            [&] (auto hit, auto& obj) {
+                return extent_lesser_one(hit, intersect(ray, obj));
+            });
     }
 
-    bool is_intersected_within(scene::node_type const& node, ray_type const& ray, float extent)
+    bool is_intersected_within(scene::scene_cache const& sc, ray_type const& ray, float extent)
     {
-        return intersect(node, ray).match(
+        return intersect(sc, ray).match(
             [] (hits::missed) { return false; },
             [&] (hits::object hit) {
                 return (hit.shape_info.ray_extent < extent);
