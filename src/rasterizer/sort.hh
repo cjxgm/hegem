@@ -1,4 +1,5 @@
 #pragma once
+#include "../lib/glm/mat4.hh"
 #include "../scene/scene.hh"
 #include "../scene/material.hh"
 #include "../scene/shape.hh"
@@ -16,15 +17,25 @@ namespace rt::rasterizer
         namespace lamps = scene::lamps;
 
         template <class Shape>
-        struct with_material
+        struct with_material_xform
         {
             using shape_type = Shape;
 
-            with_material(shape_type shape, material_id_type id)
-                : shape{shape}, material_id{id} {}
+            with_material_xform(
+                shape_type shape,
+                material_id_type id,
+                glm::mat4 model_to_world,
+                glm::mat4 world_to_model)
+                : shape{shape}
+                , material_id{id}
+                , model_to_world{model_to_world}
+                , world_to_model{world_to_model}
+            {}
 
             shape_type shape;
             material_id_type material_id;
+            glm::mat4 model_to_world;
+            glm::mat4 world_to_model;
         };
 
         struct sorted_geometry
@@ -32,9 +43,9 @@ namespace rt::rasterizer
             materials::solid_color sky;
             std::vector<materials::physically_based> materials;
 
-            std::vector<with_material<shapes::sphere>> spheres;
-            std::vector<with_material<shapes::plane>> planes;
-            std::vector<with_material<shapes::mesh>> meshes;
+            std::vector<with_material_xform<shapes::sphere>> spheres;
+            std::vector<with_material_xform<shapes::plane>> planes;
+            std::vector<with_material_xform<shapes::mesh>> meshes;
 
             struct
             {
@@ -55,7 +66,7 @@ namespace rt::rasterizer
     }
 
     template <class Shape>
-    using geometry_with_material = sort_details::with_material<Shape>;
+    using geometry_with_material_and_xform = sort_details::with_material_xform<Shape>;
 
     using sort_details::sorted_geometry;
     using sort_details::sort_geometry;

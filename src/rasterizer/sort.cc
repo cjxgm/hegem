@@ -92,16 +92,18 @@ namespace rt::rasterizer::sort_details
             {
                 sorted_geometry& sg;
                 material_id_type material_id;
+                glm::mat4 const& model_to_world;
+                glm::mat4 const& world_to_model;
 
-                void operator () (shapes::sphere shape) { sg.spheres.emplace_back(shape, material_id); }
-                void operator () (shapes::plane shape) { sg.planes.emplace_back(shape, material_id); }
-                void operator () (shapes::mesh shape) { sg.meshes.emplace_back(shape, material_id); }
+                void operator () (shapes::sphere shape) { sg.spheres.emplace_back(shape, material_id, model_to_world, world_to_model); }
+                void operator () (shapes::plane shape) { sg.planes.emplace_back(shape, material_id, model_to_world, world_to_model); }
+                void operator () (shapes::mesh shape) { sg.meshes.emplace_back(shape, material_id, model_to_world, world_to_model); }
             };
 
             void sort(scene_type const& scene, sorted_geometry& sg)
             {
                 for (auto& obj: scene.cache.objects) {
-                    shape_sorter sorter{sg, obj.material_id};
+                    shape_sorter sorter{sg, obj.material_id, obj.model_to_world, obj.world_to_model};
                     apply_visitor(sorter, obj.shape);
                 }
             }

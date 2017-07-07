@@ -1,5 +1,6 @@
 #include "../lib/gl/gl.hh"
 #include "../lib/glm/op/transform.hh"
+#include "../lib/glm/op/geom.hh"
 #include "../glu/states.hh"
 #include "rasterizer.hh"
 
@@ -45,7 +46,7 @@ namespace rt::rasterizer
         for (auto& sphere: s.geometry.spheres) {
             auto& mat = s.geometry.materials[sphere.material_id];
             auto& shape = sphere.shape;
-            auto model = glm::translate(shape.center) * glm::scale(glm::vec3{shape.radius});
+            auto model = sphere.model_to_world * glm::translate(shape.center) * glm::scale(glm::vec3{shape.radius});
             gl::uniform_matrix4fv(1, 1, false, &model[0][0]);
             gl::uniform3fv(2, 1, &mat.albedo[0]);
             gl::uniform3fv(3, 1, &mat.reflection[0]);
@@ -69,9 +70,12 @@ namespace rt::rasterizer
             for (auto& plane: s.geometry.planes) {
                 auto& mat = s.geometry.materials[plane.material_id];
                 auto& shape = plane.shape;
-                auto& normal = *shape.normal;
+                auto normal = (transpose(plane.world_to_model) * glm::vec4{*shape.normal, 0.0f}).xyz();
+                auto nlen = length(normal);
+                auto offset = shape.offset / nlen;
+                normal /= nlen;
                 gl::uniform3fv(2, 1, &normal[0]);
-                gl::uniform1f(3, shape.offset);
+                gl::uniform1f(3, offset);
                 gl::uniform3fv(4, 1, &mat.albedo[0]);
                 gl::uniform3fv(5, 1, &mat.reflection[0]);
                 gl::uniform1f(6, mat.roughness);
