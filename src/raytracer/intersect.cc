@@ -8,6 +8,25 @@ namespace rt::raytracer
     namespace
     {
         using namespace scene;
+        using hits::direction_type;
+
+        glm::vec3 operator * (glm::mat4 const& xform, glm::vec3 const& p)
+        {
+            return (xform * glm::vec4{p, 1.0f}).xyz();
+        }
+
+        direction_type operator * (glm::mat4 const& xform, direction_type const& d)
+        {
+            return (xform * glm::vec4{*d, 0.0f}).xyz();
+        }
+
+        ray_type operator * (glm::mat4 const& xform, ray_type const& ray)
+        {
+            return {
+                xform * ray.origin,
+                xform * ray.dir,
+            };
+        }
 
         inline namespace intersect_shape_details
         {
@@ -70,10 +89,23 @@ namespace rt::raytracer
 
         object_hit_type intersect(ray_type const& ray, cached_object const& obj)
         {
-            return intersect(ray, obj.shape).match(
-                [] (hits::missed m) -> object_hit_type { return m; },
+            auto model_ray = obj.world_to_model * ray;
+            return intersect(model_ray, obj.shape).match(
+                [&] (hits::missed m) -> object_hit_type {
+                    return hits::missed{ ray };
+                },
                 [&] (hits::shape shape_info) -> object_hit_type {
-                    return hits::object{ obj.material_id, shape_info };
+                    auto extent_scale = length((obj.model_to_world * glm::vec4{*model_ray.dir, 0.0f}).xyz());
+                    return hits::object{
+                        obj.material_id,
+                        hits::shape {
+                            ray,
+                            shape_info.ray_extent * extent_scale,
+                            shape_info.ray_max_error * extent_scale,
+                            obj.model_to_world * shape_info.hit_point,
+                            transpose(obj.world_to_model) * shape_info.normal,
+                        },
+                    };
                 });
         }
     }
