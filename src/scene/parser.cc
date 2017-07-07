@@ -397,7 +397,9 @@ namespace rt::scene
 
     scene_type from_istream(std::istream & ist)
     {
-        return parse<scene_type>(ist, "scene");
+        auto scene = parse<scene_type>(ist, "scene");
+        scene.rebuild_cache();
+        return scene;
     }
 
     scene_type from_path(util::as_czstring path)

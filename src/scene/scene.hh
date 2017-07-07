@@ -4,6 +4,7 @@
 #include "view.hh"
 #include "lamp.hh"
 #include "material.hh"
+#include "cache.hh"
 #include <deque>
 #include <string>
 
@@ -23,6 +24,9 @@ namespace rt::scene
             material_container_type materials;
             node_type root;
             material_id_type environment;
+            scene_cache cache;
+
+            void rebuild_cache();
         };
 
         using filename_type = std::string;

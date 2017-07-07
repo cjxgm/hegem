@@ -50,5 +50,10 @@ namespace rt::scene::scene_details
     {
         return apply_visitor(get_name{}, loadable);
     }
+
+    void scene_type::rebuild_cache()
+    {
+        cache = build_scene_cache(*this);
+    }
 }
 
