@@ -115,6 +115,13 @@ namespace rt::rasterizer::sort_details
                         apply_visitor(sorter, node);
                     }
                 }
+
+                void operator () (nodes::xform const& xform)
+                {
+                    // TODO: apply the transformation
+                    node_sorter sorter{sg};
+                    apply_visitor(sorter, xform.node);
+                }
             };
 
             void sort(scene_type const& scene, sorted_geometry& sg)

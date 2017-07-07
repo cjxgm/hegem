@@ -87,6 +87,11 @@ namespace rt::raytracer
                         });
             }
 
+            object_hit_type intersect_node_impl(ray_type const& ray, nodes::xform const& node)
+            {
+                return intersect_node(ray, node.node);
+            }
+
             object_hit_type intersect_node(ray_type const& ray, node_type const& node)
             {
                 return node.match([&] (auto& node) {

@@ -1,4 +1,5 @@
 #pragma once
+#include "../lib/glm/mat4.hh"
 #include "../lib/mapbox/variant.hh"
 #include "shape.hh"
 #include "material.hh"
@@ -18,8 +19,15 @@ namespace rt::scene
 
         using node_type = mapbox::util::variant<
             object,
+            recursive_wrapper<struct xform>,
             recursive_wrapper<struct group>
         >;
+
+        struct xform
+        {
+            glm::mat4 model;
+            node_type node;
+        };
 
         struct group
         {

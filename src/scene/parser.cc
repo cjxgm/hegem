@@ -1,5 +1,7 @@
 #include "../lib/glm/vec2.hh"
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/vec4.hh"
+#include "../lib/glm/mat4.hh"
 #include "../lib/glm/op/trig.hh"
 #include "../lib/glm/op/common.hh"
 #include "../lib/glm/op/geom.hh"
@@ -154,6 +156,14 @@ namespace rt::scene
                     throw std::runtime_error{"failed to parse " + name};
                 }
 
+                FN_PARSE(glm::ivec2)
+                {
+                    return {
+                        PARSE(int, ivec2.x),
+                        PARSE(int, ivec2.y),
+                    };
+                }
+
                 FN_PARSE(glm::vec3)
                 {
                     return {
@@ -163,11 +173,23 @@ namespace rt::scene
                     };
                 }
 
-                FN_PARSE(glm::ivec2)
+                FN_PARSE(glm::vec4)
                 {
                     return {
-                        PARSE(int, ivec2.x),
-                        PARSE(int, ivec2.y),
+                        PARSE(float, vec4.x),
+                        PARSE(float, vec4.y),
+                        PARSE(float, vec4.z),
+                        PARSE(float, vec4.w),
+                    };
+                }
+
+                FN_PARSE(glm::mat4)
+                {
+                    return {
+                        PARSE(glm::vec4, mat4.x),
+                        PARSE(glm::vec4, mat4.y),
+                        PARSE(glm::vec4, mat4.z),
+                        PARSE(glm::vec4, mat4.w),
                     };
                 }
             }
@@ -319,10 +341,18 @@ namespace rt::scene
                 });
 
                 FN_PARSE(nodes::group);
+                FN_PARSE(nodes::xform);
 
                 FN_PARSE_VARIANT_LIST(group_node_container_type, node, {
                     RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(nodes::group, group);
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(nodes::xform, xform);
                     RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(nodes::object, object);
+                });
+
+                FN_PARSE_VARIANT(node_type, node, {
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(nodes::group, group);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(nodes::xform, xform);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(nodes::object, object);
                 });
 
                 FN_PARSE(nodes::group)
@@ -331,6 +361,11 @@ namespace rt::scene
                         PARSE(group_node_container_type, nodes),
                     };
                 }
+
+                FN_PARSE_BLOCK(nodes::xform, {
+                    PARSE_KV(glm::mat4, model),
+                    PARSE(node_type, node),
+                });
             }
 
             PARSE_FOR(scene)
