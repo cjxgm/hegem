@@ -2,8 +2,8 @@ name "PBR Night"
 
 views {
     view {
-        name "High Quality"
-        dimension 1920 1080
+        name "Xform"
+        dimension 800 450
         bounces 8
         perspective-camera {
             center -0.2 -0.5 5
@@ -14,14 +14,14 @@ views {
     }
 
     view {
-        name "Low Quality"
-        dimension 800 400
-        bounces 0
-        orthographic-camera {
-            center -0.5 1 5
-            direction 0.2 -0.2 -1
+        name "Large"
+        dimension 1920 1080
+        bounces 8
+        perspective-camera {
+            center -0.2 -0.5 5
+            direction 0.2 0 -1
             up 0.1 1 0
-            size 5
+            angle 60
         }
     }
 }
@@ -95,26 +95,49 @@ group {
         }
     }
 
-    object {
-        material-id 2
-        sphere {
-            center -1 1 -1
-            radius 0.75
-        }
-    }
-    object {
-        material-id 2
-        sphere {
-            center 1 -1 -1
-            radius 0.75
+    xform {
+        model
+            2 0 0 0
+            0 1 0 0
+            0 0 1 0
+            0 0 -1 1
+        group {
+            object {
+                material-id 2
+                sphere {
+                    center -1 1 -1
+                    radius 0.75
+                }
+            }
+            xform {
+                model
+                    1 0 0 0
+                    0 2 0 0
+                    0 0 2 0
+                    0 1 0 1
+                object {
+                    material-id 2
+                    sphere {
+                        center 1 -1 -1
+                        radius 0.75
+                    }
+                }
+            }
         }
     }
 
-    object {
-        material-id 3
-        plane {
-            normal 0 1 0
-            offset -2
+    xform {
+        model
+            0.5 0 0 0
+            0 1 0 0
+            0 0 1 0
+            0 0 0 1
+        object {
+            material-id 3
+            plane {
+                normal 0.1 1 0
+                offset -2
+            }
         }
     }
 }
