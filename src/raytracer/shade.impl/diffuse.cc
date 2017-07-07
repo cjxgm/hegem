@@ -9,6 +9,7 @@
 #include "unified-lamp.hh"
 #include <limits>
 #include <stdexcept>
+#include <cmath>
 
 namespace rt::raytracer::shading_details
 {
@@ -16,6 +17,20 @@ namespace rt::raytracer::shading_details
     {
         using direction_type = math::unit<glm::vec3>;
         namespace materials = scene::materials;
+
+        float dot_clamp(glm::vec3 const& a, glm::vec3 const& b)
+        {
+            return glm::max(0.0f, dot(a, b));
+        }
+
+        float fresnel_schlick(float ior, direction_type const& viewing, direction_type const& normal)
+        {
+            auto base = (ior - 1) / (ior + 1);
+            base *= base;
+            auto exp = 1 - glm::abs(dot(*viewing, *normal));
+            exp = exp*exp*exp*exp*exp;
+            return base + (1-base)*exp;
+        }
 
         // diffuse AND probably specular terms
         struct diffuse_term_extractor
@@ -51,14 +66,30 @@ namespace rt::raytracer::shading_details
 
             color_type impl(materials::physically_based const& mat) const
             {
-                // FIXME: Temp. use Blinn-phong
-                auto nl = glm::max(dot(*normal, *to_lamp.dir), 0.0f);
-                auto diffuse = mat.albedo * nl;
+                direction_type v = -*viewing.dir;
+                direction_type half = *to_lamp.dir + *v;
+                auto nl = dot_clamp(*normal, *to_lamp.dir);
+                auto nv = dot_clamp(*normal, *v);
+                auto nh = dot_clamp(*normal, *half);
+                auto vh = dot_clamp(*v, *half);
+                auto nh2 = nh * nh;
+                auto nh4 = nh2 * nh2;
+                auto roughness = glm::max(glm::min(mat.roughness, 0.99f), 0.01f);
+                auto slope = std::tan(roughness * float(M_PI) / 2.0f);
+                auto slope2 = slope * slope;
 
-                direction_type half = *to_lamp.dir - *viewing.dir;
-                auto nh = glm::max(dot(*normal, *half), 0.0f);     // FIXME: is this `max` necessary?
-                auto exp = (1.0f / (mat.roughness + 1.0f) - 0.5f) * 100.0f;
-                auto specular = glm::pow(nh, exp) * mat.reflection * nl;
+                // Lambertian
+                auto diffuse = mat.albedo / float(M_PI) * nl;
+
+                // Beckmann distribution
+                float distribution = glm::exp((nh2 - 1.0f) / (slope2 * nh2)) / (slope2 * nh4 * M_PI);
+
+                // Cook Torrance geometry
+                float geometry = glm::min(1.0f, 2.0f * nh / vh * glm::min(nv, nl));
+
+                auto microfacet_fresnel = fresnel_schlick(mat.ior, v, half);
+                auto spec = distribution * geometry * microfacet_fresnel / (4.0f * nv);
+                auto specular = mat.reflection * spec;
 
                 return diffuse + specular;
             }
