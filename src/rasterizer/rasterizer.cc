@@ -56,6 +56,20 @@ namespace rt::rasterizer
         }
 
         // -- triangle meshes
+        gl::use_program(s.prog_mesh);
+        gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
+        for (auto& mesh: s.geometry.meshes) {
+            auto& mat = s.geometry.materials[mesh.material_id];
+            auto& shape = mesh.shape;
+            auto model = mesh.model_to_world;
+            gl::uniform_matrix4fv(1, 1, false, &model[0][0]);
+            gl::uniform3fv(2, 1, &mat.albedo[0]);
+            gl::uniform3fv(3, 1, &mat.reflection[0]);
+            gl::uniform1f(4, mat.roughness);
+            gl::uniform1f(5, mat.ior);
+            gl::bind_vertex_array(shape.vao);
+            gl::draw_elements(gl::triangles, shape.element_count, gl::unsigned_int, nullptr);
+        }
 
         if (wireframed) gl::funcs::polygon_mode(gl::front_and_back, gl::fill);
 
