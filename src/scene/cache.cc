@@ -29,6 +29,14 @@ namespace rt::scene::cache_details
         , world_to_model{glm::inverse(model_to_world)}
     {}
 
+    cached_object::cached_object(material_id_type material_id, shape_type shape, glm::mat4 const& model_to_world, mesh_bvh_type bvh)
+        : material_id{material_id}
+        , shape{std::move(shape)}
+        , model_to_world{model_to_world}
+        , world_to_model{glm::inverse(model_to_world)}
+        , bvh{std::move(bvh)}
+    {}
+
     scene_cache build_scene_cache(scene_type const& scene)
     {
         scene_cache sc;
@@ -41,7 +49,20 @@ namespace rt::scene::cache_details
 
             node->match(
                 [&] (nodes::object const& node) {
-                    sc.objects.emplace_back(node.material_id, node.shape, xform);
+                    node.shape.match(
+                        [&] (shapes::mesh& m) {
+                            mesh_bvh_type::face_soup_type face_ids;
+                            auto face_count = static_cast<int>(m.faces.size());
+                            face_ids.reserve(face_count);
+                            for (int i=0; i<face_count; i++)
+                                face_ids.emplace_back(i);
+
+                            mesh_bvh_type bvh{mesh_face_trait{m}, std::move(face_ids)};
+                            sc.objects.emplace_back(node.material_id, std::move(m), xform, std::move(bvh));
+                        },
+                        [&] (auto& shape) {
+                            sc.objects.emplace_back(node.material_id, std::move(shape), xform);
+                        });
                 },
                 [&] (nodes::xform const& node) {
                     pending_nodes.emplace_back(&node.node);
@@ -59,14 +80,23 @@ namespace rt::scene::cache_details
         }
 
         // inject test mesh
-        auto test_mesh = build_test_mesh(37);
-        glm::mat4 test_xform{
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 3.0f, 1.0f,
-        };
-        sc.objects.emplace_back(0, std::move(test_mesh), std::move(test_xform));
+        {
+            auto test_mesh = build_test_mesh(37);
+            glm::mat4 test_xform{
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 3.0f, 1.0f,
+            };
+            mesh_bvh_type::face_soup_type face_ids;
+            auto face_count = static_cast<int>(test_mesh.faces.size());
+            face_ids.reserve(face_count);
+            for (int i=0; i<face_count; i++)
+                face_ids.emplace_back(i);
+
+            mesh_bvh_type bvh{mesh_face_trait{test_mesh}, std::move(face_ids)};
+            sc.objects.emplace_back(0, std::move(test_mesh), std::move(test_xform), std::move(bvh));
+        }
 
         return sc;
     }

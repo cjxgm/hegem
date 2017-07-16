@@ -1,0 +1,214 @@
+// Bounding Volume Hierarchy
+#pragma once
+#include "../lib/mapbox/variant.hh"
+#include "../lib/glm/vec3.hh"
+#include "../lib/glm/relational.hh"
+#include "../lib/glm/op/common.hh"
+#include "../lib/glm/op/intersect.hh"
+#include "../raytracer/ray.hh"
+#include "../raytracer/hit.hh"
+#include <utility>      // for std::move
+#include <stdexcept>
+#include <algorithm>
+#include <numeric>
+#include <limits>
+#include <iostream>     // DEBUG TODO: use journal?
+
+namespace rt::util
+{
+    namespace bvh_details
+    {
+        using raytracer::shape_hit_type;
+        using raytracer::ray_type;
+        namespace hits = raytracer::hits;
+
+        static constexpr auto inf = std::numeric_limits<float>::infinity();
+
+        struct bounding_sphere
+        {
+            glm::vec3 center;
+            float radius;
+        };
+
+        template <class FaceTrait>
+        struct bvh
+        {
+            struct node;
+            using face_trait = FaceTrait;
+            using face_id_type = typename face_trait::identifier_type;
+            using face_soup_type = std::vector<face_id_type>;
+            using node_soup_type = std::vector<node>;
+            using partitioned_face_soup_type = std::vector<face_soup_type>;
+            using bound_type = bounding_sphere;
+            using storage_type = mapbox::util::variant<face_soup_type, node_soup_type>;
+
+            struct node
+            {
+                bound_type bound;
+                storage_type storage;
+            };
+
+            bvh(face_trait state, face_soup_type face_soup)
+                : face_trait_state{std::move(state)}
+                , root{build_node(std::move(face_soup))}
+            {}
+
+            shape_hit_type intersect(ray_type const& ray) const { return intersect(root, ray); }
+
+            void debug() const { debug(root, 0); }
+
+        private:
+            face_trait face_trait_state;
+            node root;
+
+            static constexpr int face_capacity() { return face_trait::capacity(); }
+            auto face_minmax(face_id_type id) const { return face_trait_state.minmax(id); }
+            glm::vec3 face_pivot(face_id_type id) const { return face_trait_state.pivot(id); }
+
+            node build_node(face_soup_type faces) const
+            {
+                auto bound = bound_of(faces);
+                auto partition_pivot = center_of_mass(faces);
+                auto storage = build_storage(std::move(faces), partition_pivot);
+                return {
+                    std::move(bound),
+                    std::move(storage),
+                };
+            }
+
+            storage_type build_storage(face_soup_type faces, glm::vec3 const& partition_pivot) const
+            {
+                if (faces.size() == 0)
+                    throw std::logic_error{"unreachable: assert(faces.size() > 0)"};
+
+                if (static_cast<int>(faces.size()) < face_capacity())
+                    return std::move(faces);
+
+                auto face_soups = partition(std::move(faces), partition_pivot);
+                if (face_soups.size() == 1)
+                    return std::move(face_soups[0]);
+
+                node_soup_type nodes;
+                for (auto& faces: face_soups)
+                    nodes.emplace_back(build_node(std::move(faces)));
+
+                return nodes;
+            }
+
+            bound_type bound_of(face_soup_type const& faces) const
+            {
+                auto min_pos = glm::vec3{+inf};
+                auto max_pos = glm::vec3{-inf};
+                for (auto face: faces) {
+                    auto [face_min_pos, face_max_pos] = face_minmax(face);
+                    min_pos = glm::min(min_pos, face_min_pos);
+                    max_pos = glm::max(max_pos, face_max_pos);
+                }
+
+                auto center = (min_pos + max_pos) / 2.0f;
+                auto radius = length(max_pos - min_pos) / 2.0f;
+                return {
+                    center,
+                    radius,
+                };
+            }
+
+            glm::vec3 center_of_mass(face_soup_type const& faces) const
+            {
+                glm::vec3 sum{};
+                for (auto face: faces)
+                    sum += face_pivot(face);
+
+                return sum / float(faces.size());
+            }
+
+            partitioned_face_soup_type partition(face_soup_type faces, glm::vec3 const& partition_pivot) const
+            {
+                partitioned_face_soup_type face_soups(8);
+                for (auto face: faces) {
+                    auto index = partition_index_of(face, partition_pivot);
+                    face_soups[index].emplace_back(face);
+                }
+
+                face_soups.erase(
+                    std::remove_if(
+                        begin(face_soups),
+                        end(face_soups),
+                        [] (auto& faces) { return faces.empty(); }),
+                    end(face_soups));
+                return face_soups;
+            }
+
+            int partition_index_of(face_id_type face, glm::vec3 const& partition_pivot) const
+            {
+                auto pivot = face_pivot(face);
+                auto address = glm::ivec3{greaterThan(pivot, partition_pivot)};
+                auto index = (address[2] << 2) | (address[1] << 1) | (address[0] << 0);
+                return index;
+            }
+
+            shape_hit_type intersect(node const& n, ray_type const& ray) const
+            {
+                {
+                    float unused_;
+                    bool intersected = glm::intersectRaySphere(
+                        ray.origin, *ray.dir,
+                        n.bound.center, n.bound.radius * n.bound.radius,
+                        unused_);
+                    if (!intersected) return hits::missed{ray};
+                }
+
+                return n.storage.match(
+                    [&] (auto& soup) {
+                        return std::accumulate(
+                            begin(soup), end(soup),
+                            shape_hit_type{hits::missed{ray}},
+                            [&] (auto hit, auto& obj) {
+                                return extent_lesser_one(hit, intersect(obj, ray));
+                            });
+                    });
+            }
+
+            shape_hit_type intersect(face_id_type face, ray_type const& ray) const
+            {
+                return face_trait_state.intersect(face, ray);
+            }
+
+            void debug(node const& n, int indent) const
+            {
+                indent += 4;
+                n.storage.match(
+                    [] (face_soup_type const& faces) {
+                        std::cerr << "# " << faces.size() << "\n";
+                    },
+                    [&] (node_soup_type const& nodes) {
+                        std::cerr << "-\n";
+                        int nid = 0;
+                        for (auto& n: nodes) {
+                            for (int i=0; i<indent; i++) std::cerr << " ";
+                            std::cerr << "[" << nid++ << "] ";
+                            debug(n, indent);
+                        }
+                    });
+            }
+
+            int count(node const& n) const
+            {
+                return n.storage.match(
+                    [] (face_soup_type const& faces) {
+                        return faces.size();
+                    },
+                    [&] (node_soup_type const& nodes) {
+                        int sum = 0;
+                        for (auto& n: nodes)
+                            sum += count(n);
+                        return sum;
+                    });
+            }
+        };
+    }
+
+    template <class FaceTrait>
+    using bvh = bvh_details::bvh<FaceTrait>;
+}
+
