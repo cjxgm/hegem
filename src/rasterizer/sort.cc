@@ -1,4 +1,5 @@
 #include "sort.hh"
+#include "../lib/gl/gl.hh"
 #include "../scene/node.hh"
 #include "../util/journal.hh"
 #include <algorithm>
@@ -95,9 +96,56 @@ namespace rt::rasterizer::sort_details
                 glm::mat4 const& model_to_world;
                 glm::mat4 const& world_to_model;
 
-                void operator () (shapes::sphere shape) { sg.spheres.emplace_back(shape, material_id, model_to_world, world_to_model); }
-                void operator () (shapes::plane shape) { sg.planes.emplace_back(shape, material_id, model_to_world, world_to_model); }
-                void operator () (shapes::mesh shape) { sg.meshes.emplace_back(shape, material_id, model_to_world, world_to_model); }
+                void operator () (shapes::sphere shape)
+                {
+                    sg.spheres.emplace_back(shape, material_id, model_to_world, world_to_model);
+                }
+
+                void operator () (shapes::plane shape)
+                {
+                    sg.planes.emplace_back(shape, material_id, model_to_world, world_to_model);
+                }
+
+                void operator () (shapes::mesh shape)
+                {
+                    auto& vao_pool = glu::vertex_array_pool::instance();
+                    auto& buf_pool = glu::buffer_pool::instance();
+                    auto vao = vao_pool.allocate();
+                    auto vertices_buffer = buf_pool.allocate();
+                    auto elements_buffer = buf_pool.allocate();
+
+                    gl::enable_vertex_array_attrib(vao, 0);  // vec3 pos
+                    gl::enable_vertex_array_attrib(vao, 1);  // vec3 normal
+                    gl::vertex_array_attrib_format(
+                        vao, 0,
+                        3, gl::float_, false,
+                        0);
+                    gl::vertex_array_attrib_format(
+                        vao, 1,
+                        3, gl::float_, false,
+                        0);
+                    gl::vertex_array_vertex_buffer(vao, 0, vertices_buffer, 0,                 sizeof(shapes::vert_attributes));
+                    gl::vertex_array_vertex_buffer(vao, 1, vertices_buffer, sizeof(glm::vec3), sizeof(shapes::vert_attributes));
+                    gl::vertex_array_element_buffer(vao, elements_buffer);
+
+                    gl::named_buffer_data(
+                        vertices_buffer,
+                        sizeof(decltype(shape.verts)::value_type) * shape.verts.size(),
+                        shape.verts.data(),
+                        gl::static_draw);
+                    gl::named_buffer_data(
+                        elements_buffer,
+                        sizeof(decltype(shape.faces)::value_type) * shape.faces.size(),
+                        shape.faces.data(),
+                        gl::static_draw);
+
+                    sg.meshes.emplace_back(uploaded_mesh{
+                        vertices_buffer,
+                        elements_buffer,
+                        vao,
+                        static_cast<int>(shape.faces.size()) * 3,
+                    }, material_id, model_to_world, world_to_model);
+                }
             };
 
             void sort(scene_type const& scene, sorted_geometry& sg)

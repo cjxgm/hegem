@@ -4,6 +4,7 @@
 #include "../scene/material.hh"
 #include "../scene/shape.hh"
 #include "../scene/lamp.hh"
+#include "../glu/resource.hh"
 #include <vector>
 
 namespace rt::rasterizer
@@ -38,6 +39,14 @@ namespace rt::rasterizer
             glm::mat4 world_to_model;
         };
 
+        struct uploaded_mesh
+        {
+            glu::shared_buffer vertices_buffer;
+            glu::shared_buffer elements_buffer;
+            glu::shared_vertex_array vao;
+            int element_count;
+        };
+
         struct sorted_geometry
         {
             materials::solid_color sky;
@@ -45,7 +54,7 @@ namespace rt::rasterizer
 
             std::vector<with_material_xform<shapes::sphere>> spheres;
             std::vector<with_material_xform<shapes::plane>> planes;
-            std::vector<with_material_xform<shapes::mesh>> meshes;
+            std::vector<with_material_xform<uploaded_mesh>> meshes;
 
             struct
             {
