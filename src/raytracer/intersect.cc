@@ -2,6 +2,7 @@
 #include "../scene/shape.hh"
 #include "intersect.hh"
 #include <numeric>
+#include <iostream>
 
 namespace rt::raytracer
 {
@@ -30,7 +31,7 @@ namespace rt::raytracer
 
         inline namespace intersect_shape_details
         {
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::sphere const& shape)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::sphere const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
             {
                 hits::point_type position;
                 glm::vec3 normal;
@@ -52,7 +53,7 @@ namespace rt::raytracer
                 }
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::plane const& shape)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::plane const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
             {
                 auto p = ray.origin - *shape.normal * shape.offset;
                 auto pn = dot( p      , *shape.normal);
@@ -72,25 +73,27 @@ namespace rt::raytracer
                 }
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& shape)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& /*shape*/, optional_mesh_bvh_type const& opt_bvh)
             {
-                // TODO
-                (void)shape;
-                return hits::missed{ray};
+                if (!opt_bvh) {
+                    std::cerr << "logic error: BVH not available\n";
+                    std::abort();
+                }
+                return opt_bvh->intersect(ray);
             }
         }
 
-        shape_hit_type intersect(ray_type const& ray, shape_type const& shape)
+        shape_hit_type intersect(ray_type const& ray, shape_type const& shape, optional_mesh_bvh_type const& opt_bvh)
         {
             return shape.match([&] (auto& shape) {
-                return intersect_shape(ray, shape);
+                return intersect_shape(ray, shape, opt_bvh);
             });
         }
 
         object_hit_type intersect(ray_type const& ray, cached_object const& obj)
         {
             auto model_ray = obj.world_to_model * ray;
-            return intersect(model_ray, obj.shape).match(
+            return intersect(model_ray, obj.shape, obj.opt_bvh).match(
                 [&] (hits::missed m) -> object_hit_type {
                     return hits::missed{ ray };
                 },

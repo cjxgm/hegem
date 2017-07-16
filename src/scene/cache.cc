@@ -34,7 +34,7 @@ namespace rt::scene::cache_details
         , shape{std::move(shape)}
         , model_to_world{model_to_world}
         , world_to_model{glm::inverse(model_to_world)}
-        , bvh{std::move(bvh)}
+        , opt_bvh{std::move(bvh)}
     {}
 
     scene_cache build_scene_cache(scene_type const& scene)
