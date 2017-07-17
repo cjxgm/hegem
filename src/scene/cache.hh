@@ -1,7 +1,6 @@
 #pragma once
 #include "../lib/glm/mat4.hh"
 #include "../lib/std/optional.hh"
-#include "../util/bvh.hh"
 #include "../raytracer/face-trait.hh"
 #include "shape.hh"
 #include "material.hh"
