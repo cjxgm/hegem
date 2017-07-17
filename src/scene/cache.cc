@@ -8,16 +8,46 @@ namespace rt::scene::cache_details
 {
     namespace
     {
-        shapes::mesh build_test_mesh(int subdivision)
+        shapes::mesh build_test_mesh(int subdivision, float thickness)
         {
+            auto half_thickness = thickness * 0.5f;
+            auto center_pos_index = subdivision * 4;
+            auto center_neg_index = center_pos_index + 1;
             shapes::mesh m;
-            shapes::direction_type normal = glm::vec3{0.0f, 0.0f, 1.0f};
+
+            shapes::direction_type normal_pos = glm::vec3{0.0f, 0.0f, 1.0f};
+            shapes::direction_type normal_neg = glm::vec3{0.0f, 0.0f,-1.0f};
             for (int i=0; i<subdivision; i++) {
-                float a = M_PI * 2 / subdivision * i;
-                m.verts.push_back({ glm::vec3{std::cos(a), std::sin(a), 0.0f}, normal });
-                m.faces.emplace_back(i, (i+1) % subdivision, subdivision);
+                auto this_pos_index = i * 4;
+                auto next_pos_index = ((i + 1) % subdivision) * 4;
+                auto this_pos_rim_index = this_pos_index + 1;
+                auto next_pos_rim_index = next_pos_index + 1;
+                auto this_neg_rim_index = this_pos_index + 2;
+                auto next_neg_rim_index = next_pos_index + 2;
+                auto this_neg_index = this_pos_index + 3;
+                auto next_neg_index = next_pos_index + 3;
+
+                auto a = static_cast<float>(M_PI * 2 / subdivision * i);
+                auto p = glm::vec2{ std::cos(a), std::sin(a) };
+                auto p_pos = glm::vec3{ p, half_thickness };
+                auto p_neg = glm::vec3{ p,-half_thickness };
+                shapes::direction_type normal_rim = glm::vec3{p, 0.0f};
+
+                m.verts.push_back({ p_pos, normal_pos });
+                m.verts.push_back({ p_pos, normal_rim });
+                m.verts.push_back({ p_neg, normal_rim });
+                m.verts.push_back({ p_neg, normal_neg });
+
+                m.faces.emplace_back(center_pos_index, this_pos_index, next_pos_index);
+                m.faces.emplace_back(center_neg_index, next_neg_index, this_neg_index);
+                m.faces.emplace_back(this_pos_rim_index, this_neg_rim_index, next_neg_rim_index);
+                m.faces.emplace_back(next_neg_rim_index, next_pos_rim_index, this_pos_rim_index);
             }
-            m.verts.push_back({ glm::vec3{0.0f, 0.0f, 0.0f}, normal });
+            auto p_pos = glm::vec3{ 0.0f, 0.0f, half_thickness };
+            auto p_neg = glm::vec3{ 0.0f, 0.0f,-half_thickness };
+            m.verts.push_back({ p_pos, normal_pos });
+            m.verts.push_back({ p_neg, normal_neg });
+
             return m;
         }
     }
@@ -81,7 +111,7 @@ namespace rt::scene::cache_details
 
         // inject test mesh
         {
-            auto test_mesh = build_test_mesh(37);
+            auto test_mesh = build_test_mesh(37, 0.05f);
             glm::mat4 test_xform{
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
