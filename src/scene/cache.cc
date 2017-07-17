@@ -88,6 +88,7 @@ namespace rt::scene::cache_details
                                 face_ids.emplace_back(i);
 
                             mesh_bvh_type bvh{mesh_face_trait{m}, std::move(face_ids)};
+                            bvh.debug();
                             sc.objects.emplace_back(node.material_id, std::move(m), xform, std::move(bvh));
                         },
                         [&] (auto& shape) {
@@ -125,6 +126,7 @@ namespace rt::scene::cache_details
                 face_ids.emplace_back(i);
 
             mesh_bvh_type bvh{mesh_face_trait{test_mesh}, std::move(face_ids)};
+            bvh.debug();
             sc.objects.emplace_back(0, std::move(test_mesh), std::move(test_xform), std::move(bvh));
         }
 
