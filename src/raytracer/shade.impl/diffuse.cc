@@ -74,7 +74,7 @@ namespace rt::raytracer::shading_details
                 auto vh = dot_clamp(*v, *half);
                 auto nh2 = nh * nh;
                 auto nh4 = nh2 * nh2;
-                auto roughness = glm::max(glm::min(mat.roughness, 0.99f), 0.01f);
+                auto roughness = glm::max(glm::min(mat.roughness, 0.99999f), 0.00001f);
                 auto slope = std::tan(roughness * float(M_PI) / 2.0f);
                 auto slope2 = slope * slope;
 
