@@ -22,12 +22,19 @@ const float solid_color_material = 0.0f;
 const float pbr_material = 1.0f;
 const float sky_material = 2.0f;
 
+const float pi = 3.14159265358979f;
+const float clamp_eps = 1e-7f;
+
 float fresnel_schlick(float ior, vec3 viewing, vec3 normal)
 {
-    float base = (ior - 1.0f) / (ior + 1.0f);
-    base *= base;
+    float f0 = pow((ior - 1.0f) / (ior + 1.0f), 2.0f);
     float ex = pow(1.0f - abs(dot(viewing, normal)), 5.0f);
-    return base + (1.0f - base) * ex;
+    return f0 + (1.0f - f0) * ex;
+}
+
+float dot_clamp(vec3 a, vec3 b)
+{
+    return clamp(dot(a, b), clamp_eps, 1.0f - clamp_eps);
 }
 
 vec3 sample_sky(vec3 towards_sky)
@@ -53,22 +60,42 @@ vec3 sample_sky(vec3 towards_sky)
 }
 
 vec3 sample_diffuse_for_lamp(
-        vec3 a, vec3 n, vec3 viewing, vec3 refl_color, float roughness,
-        vec3 towards_lamp_dir, vec3 lamp_color)
+        vec3 a, vec3 n, vec3 viewing, vec3 refl_color,
+        float roughness, float ior,
+        vec3 towards_lamp_dir)
 {
-    // FIXME: Temp. use Blinn-phong
-    float nl = max(dot(n, towards_lamp_dir), 0.0f);
-    vec3 diffuse = a * nl;
+    vec3 v = -viewing;
+    vec3 halfvl = normalize(towards_lamp_dir + v);
+    float nl = dot_clamp(n, towards_lamp_dir);
+    float nv = dot_clamp(n, v);
+    float nh = dot_clamp(n, halfvl);
+    float vh = dot_clamp(v, halfvl);
+    float nh2 = nh * nh;
+    float nh4 = nh2 * nh2;
+    float sane_roughness = clamp(roughness, 0.00001f, 0.99999f);
+    float slope = tan(sane_roughness * (pi / 2.0f));
+    float slope2 = slope * slope;
 
-    vec3 halfvl = normalize(towards_lamp_dir - viewing);
-    float nh = max(dot(n, halfvl), 0.0f);     // FIXME: is this `max` necessary?
-    float r = (1.0f / (roughness + 1.0f) - 0.5f) * 100.0f;
-    diffuse += refl_color * pow(nh, r) * nl;
-    diffuse *= lamp_color;
-    return diffuse;
+    // Lambertian
+    vec3 diffuse = a / pi * nl;
+
+    // Beckmann distribution
+    float distribution = exp((nh2 - 1.0f) / (slope2 * nh2)) / (slope2 * nh4 * pi);
+
+    // Cook Torrance geometry
+    float geometry = min(1.0f, 2.0f * nh / vh * min(nv, nl));
+
+    float microfacet_fresnel = fresnel_schlick(ior, v, halfvl);
+    float spec = distribution * geometry * microfacet_fresnel / (4.0f * nv);
+    vec3 specular = refl_color * spec;
+
+    return diffuse + specular;
 }
 
-vec3 sample_diffuse(vec3 a, vec3 n, vec3 p, vec3 viewing, vec3 refl_color, float roughness)
+vec3 sample_diffuse(
+    vec3 a, vec3 n, vec3 p,
+    vec3 viewing, vec3 refl_color,
+    float roughness, float ior)
 {
     vec3 diffuse = vec3(0.0f);
 
@@ -78,7 +105,7 @@ vec3 sample_diffuse(vec3 a, vec3 n, vec3 p, vec3 viewing, vec3 refl_color, float
         vec3 dir = -sun_lamp_dirs[i];
         vec3 color = sun_lamp_colors[i];
 
-        diffuse += sample_diffuse_for_lamp(a, n, viewing, refl_color, roughness, dir, color);
+        diffuse += sample_diffuse_for_lamp(a, n, viewing, refl_color, roughness, ior, dir) * color;
     }
 
     // accumulate diffuse from omni lamps
@@ -92,7 +119,7 @@ vec3 sample_diffuse(vec3 a, vec3 n, vec3 p, vec3 viewing, vec3 refl_color, float
         color /= dist * dist;
         vec3 dir = normalize(obj_to_lamp);
 
-        diffuse += sample_diffuse_for_lamp(a, n, viewing, refl_color, roughness, dir, color);
+        diffuse += sample_diffuse_for_lamp(a, n, viewing, refl_color, roughness, ior, dir) * color;
     }
 
     return diffuse;
@@ -126,7 +153,7 @@ void main()
         vec3 reflected = reflect(viewing, n);
 
         vec3 dome_color = sample_sky(reflected);
-        vec3 diffuse = sample_diffuse(a, n, p, viewing, refl_color, roughness);
+        vec3 diffuse = sample_diffuse(a, n, p, viewing, refl_color, roughness, ior);
 
         float fresnel = fresnel_schlick(ior, viewing, n);
         vec3 refl = refl_color * dome_color;
