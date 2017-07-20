@@ -17,10 +17,11 @@ namespace rt::raytracer::shading_details
     {
         using direction_type = math::unit<glm::vec3>;
         namespace materials = scene::materials;
+        static constexpr auto clamp_eps = 1e-7f;
 
         float dot_clamp(glm::vec3 const& a, glm::vec3 const& b)
         {
-            return glm::max(0.0f, dot(a, b));
+            return glm::clamp(dot(a, b), clamp_eps, 1.0f - clamp_eps);
         }
 
         float fresnel_schlick(float ior, direction_type const& viewing, direction_type const& normal)
