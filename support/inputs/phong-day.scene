@@ -125,5 +125,17 @@ group {
             mesh support/models/suzanne.obj
         }
     }
+
+    xform {
+        model
+            1 0 0 0
+            0 1 0 0
+            0 0 1 0
+            0 0 3 1
+        object {
+            material-id 2
+            mesh support/models/lens.obj
+        }
+    }
 }
 
