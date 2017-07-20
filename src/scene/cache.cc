@@ -80,7 +80,7 @@ namespace rt::scene::cache_details
             node->match(
                 [&] (nodes::object const& node) {
                     node.shape.match(
-                        [&] (shapes::mesh& m) {
+                        [&] (shapes::mesh m) {
                             mesh_bvh_type::face_soup_type face_ids;
                             auto face_count = static_cast<int>(m.faces.size());
                             face_ids.reserve(face_count);
