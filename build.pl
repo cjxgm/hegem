@@ -10,6 +10,7 @@ $::sanitize = exists $opt{"-s"};
     'gsl/include',              # guideline support library
     'glm',                      # opengl mathematics
     'stb',                      # single header libraries for game-dev
+    'tinyobjloader',            # single header library for loading wavefront obj file
     'variant/include',          # variant and optional
     'observer-ptr/include',     # observer_ptr<T>
     'cxxpool/src',              # thread pool
