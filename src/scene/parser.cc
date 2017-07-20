@@ -12,6 +12,7 @@
 #include "shape.hh"
 #include "node.hh"
 #include "lamp.hh"
+#include "mesh-loader.hh"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -327,9 +328,16 @@ namespace rt::scene
                     PARSE_KV(float, offset),
                 });
 
+                FN_PARSE(shapes::mesh)
+                {
+                    auto path = PARSE(std::string, path);
+                    return mesh_loader::from_path(path);
+                }
+
                 FN_PARSE_VARIANT(shape_type, shape, {
                     RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::sphere, sphere);
                     RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::plane, plane);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::mesh, mesh);
                 });
             }
 
