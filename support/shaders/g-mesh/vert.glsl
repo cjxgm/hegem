@@ -18,7 +18,7 @@ void main()
     vec4 world_pos = model * vec4(pos, 1.0f);
     vec4 clip_pos = proj_view * world_pos;
     next.pos = world_pos.xyz;
-    next.normal = normal;
+    next.normal = (vec4(normal, 0.0f) * inverse(model)).xyz;
     gl_Position = clip_pos;
 }
 
