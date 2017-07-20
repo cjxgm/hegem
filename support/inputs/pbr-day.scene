@@ -143,6 +143,17 @@ group {
             radius 0.75
         }
     }
+    xform {
+        model
+            0 0 1 0
+            0 1 0 0
+            -1 0 0 0
+            -2 0 0 1
+        object {
+            material-id 1
+            mesh support/models/suzanne.obj
+        }
+    }
 
     object {
         material-id 2

@@ -35,8 +35,8 @@ background {
 materials {
     phong-material {
         diffuse-color 0.1 0.1 0.1
-        reflection-color 0.2 0.2 0.2
-        refraction-color 0.7 0.7 0.7
+        reflection-color 0 0 0
+        refraction-color 0.88 0.88 0.88
         specular-color 1 1 1
         exponent 32
         index-of-refraction 1.45
@@ -111,6 +111,18 @@ group {
         plane {
             normal 0 1 0
             offset -10
+        }
+    }
+
+    xform {
+        model
+            0 0 1 0
+            0 1 0 0
+            -1 0 0 0
+            -2 0 0 1
+        object {
+            material-id 2
+            mesh support/models/suzanne.obj
         }
     }
 }
