@@ -4,6 +4,7 @@
 #include "../../math/unit.hh"
 #include "../../scene/material.hh"
 #include "../../scene/lamp.hh"
+#include "../../global/counter.hh"
 #include "../shade.hh"
 #include "../intersect.hh"
 #include "unified-lamp.hh"
@@ -15,6 +16,7 @@ namespace rt::raytracer::shading_details
 {
     namespace
     {
+        using global::counter;
         using direction_type = math::unit<glm::vec3>;
         namespace materials = scene::materials;
         static constexpr auto clamp_eps = 1e-7f;
@@ -109,6 +111,8 @@ namespace rt::raytracer::shading_details
                 hit.shape_info.normal,
             };
 
+            counter.ray++;
+            counter.ray_shadow++;
             auto shadow_ray = biased_ray(ulamp.towards_lamp, hit.shape_info);
             auto shadowed = is_intersected_within(scene.cache, shadow_ray, ulamp.distance_to_lamp);
             if (shadowed) continue;

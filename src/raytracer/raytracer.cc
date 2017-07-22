@@ -3,6 +3,7 @@
 #include "../lib/glm/vec2.hh"
 #include "../lib/glm/vec3.hh"
 #include "../lib/std/optional.hh"
+#include "../global/counter.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
 #include "shade.hh"
@@ -12,6 +13,8 @@ namespace rt::raytracer::raytracer_details
 {
     namespace
     {
+        using global::counter;
+
         static constexpr auto inf = std::numeric_limits<float>::infinity();
         static constexpr auto color_primary_ray = color_type{10.0f, 5.0f, 2.0f};
         static constexpr auto width_primary_ray = 10.0f;
@@ -91,6 +94,7 @@ namespace rt::raytracer::raytracer_details
                 ray_type const& ray,
                 int remaining_bounces)
             {
+                counter.ray++;
                 if (remaining_bounces < 0)
                     return spp.push(hits::missed{ ray });
                 remaining_bounces--;
@@ -114,6 +118,8 @@ namespace rt::raytracer::raytracer_details
                                 hit.shape_info.hit_point,
                                 dir,
                             }, shape_info_for_biasing);
+
+                            counter.ray_refl++;
                             reflection = trace_ray(refl, remaining_bounces);
                         }
                         if (refractive(mat)) {
@@ -122,13 +128,16 @@ namespace rt::raytracer::raytracer_details
                             auto eta = (into ? 1.0f / ior : ior);
                             auto refr_normal = (into ? 1.0f : -1.0f) * *hit.shape_info.normal;
                             auto dir = refract(*ray.dir, refr_normal, eta);
-                            if (dir.x != 0.0f || dir.y != 0.0f) {   // perfect reflection
+
+                            if (dir.x != 0.0f || dir.y != 0.0f) {   // not perfect reflection
                                 auto shape_info_for_biasing = hit.shape_info;
                                 shape_info_for_biasing.normal = -refr_normal;
                                 ray_type refr = biased_ray({
                                     hit.shape_info.hit_point,
                                     dir,
                                 }, shape_info_for_biasing);
+
+                                counter.ray_refr++;
                                 refraction = trace_ray(refr, remaining_bounces);
                             }
                         }
@@ -212,6 +221,7 @@ namespace rt::raytracer::raytracer_details
 
         image::image<int> shading_point_roots{{tile.w, tile.h}};
         shading_point_roots.each([&] (auto& sp_id, auto pos) {
+            counter.pixel++;
             auto p = s2cp * glm::vec3{pos + glm::ivec2{tile.x, tile.y}, 1};
             auto ray = camera_ray_from_camera_plane(p.xy(), cam);
             sp_id = impl.trace_ray(ray, view.bounces);
@@ -231,6 +241,7 @@ namespace rt::raytracer::raytracer_details
 
     ray_visualizations raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos)
     {
+        counter.pixel++;
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
         auto p = s2cp * glm::vec3{screen_pos, 1.0f};

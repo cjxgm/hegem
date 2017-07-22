@@ -7,6 +7,7 @@
 #include "../lib/glm/op/intersect.hh"
 #include "../raytracer/ray.hh"
 #include "../raytracer/hit.hh"
+#include "../global/counter.hh"
 #include <utility>      // for std::move
 #include <stdexcept>
 #include <algorithm>
@@ -18,6 +19,7 @@ namespace rt::util
 {
     namespace bvh_details
     {
+        using global::counter;
         using raytracer::shape_hit_type;
         using raytracer::ray_type;
         namespace hits = raytracer::hits;
@@ -46,6 +48,7 @@ namespace rt::util
             {
                 bound_type bound;
                 storage_type storage;
+                int face_count;
             };
 
             bvh(face_trait state, face_soup_type face_soup)
@@ -53,7 +56,11 @@ namespace rt::util
                 , root{build_node(std::move(face_soup))}
             {}
 
-            shape_hit_type intersect(ray_type const& ray) const { return intersect(root, ray); }
+            shape_hit_type intersect(ray_type const& ray) const
+            {
+                counter.ray_bvh_incoming++;
+                return intersect(root, ray);
+            }
 
             void debug() const { debug(root, 0); }
 
@@ -70,9 +77,11 @@ namespace rt::util
                 auto bound = bound_of(faces);
                 auto partition_pivot = center_of_mass(faces);
                 auto storage = build_storage(std::move(faces), partition_pivot);
+                auto face_count = count_face(storage);
                 return {
                     std::move(bound),
                     std::move(storage),
+                    face_count,
                 };
             }
 
@@ -155,8 +164,23 @@ namespace rt::util
                         ray.origin, *ray.dir,
                         n.bound.center, n.bound.radius * n.bound.radius,
                         unused_);
-                    if (!intersected) return hits::missed{ray};
+                    if (!intersected) {
+                        counter.ix_bvh_face_skip += n.face_count;
+                        return hits::missed{ray};
+                    }
                 }
+
+                n.storage.match(
+                    [] (face_soup_type const& faces) {
+                        counter.ix += faces.size();
+                        counter.ix_bvh += faces.size();
+                        counter.ix_bvh_face += faces.size();
+                    },
+                    [&] (node_soup_type const& nodes) {
+                        counter.ix += nodes.size();
+                        counter.ix_bvh += nodes.size();
+                        counter.ix_bvh_bound += nodes.size();
+                    });
 
                 return n.storage.match(
                     [&] (auto& soup) {
@@ -192,16 +216,16 @@ namespace rt::util
                     });
             }
 
-            int count(node const& n) const
+            int count_face(storage_type const& storage) const
             {
-                return n.storage.match(
+                return storage.match(
                     [] (face_soup_type const& faces) {
                         return faces.size();
                     },
                     [&] (node_soup_type const& nodes) {
                         int sum = 0;
                         for (auto& n: nodes)
-                            sum += count(n);
+                            sum += n.face_count;
                         return sum;
                     });
             }

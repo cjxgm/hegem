@@ -1,5 +1,6 @@
 #include "../lib/glm/op/intersect.hh"
 #include "../scene/shape.hh"
+#include "../global/counter.hh"
 #include "intersect.hh"
 #include <numeric>
 #include <iostream>
@@ -10,6 +11,7 @@ namespace rt::raytracer
     {
         using namespace scene;
         using hits::direction_type;
+        using global::counter;
 
         glm::vec3 operator * (glm::mat4 const& xform, glm::vec3 const& p)
         {
@@ -85,6 +87,7 @@ namespace rt::raytracer
 
         shape_hit_type intersect(ray_type const& ray, shape_type const& shape, optional_mesh_bvh_type const& opt_bvh)
         {
+            counter.ix++;
             return shape.match([&] (auto& shape) {
                 return intersect_shape(ray, shape, opt_bvh);
             });
