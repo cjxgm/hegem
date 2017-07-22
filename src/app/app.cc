@@ -15,6 +15,7 @@
 #include "glfw.hh"
 #include "hdr-texture.hh"
 #include "visualization.hh"
+#include "statistics.hh"
 #include <list>
 #include <deque>
 #include <array>
@@ -403,6 +404,7 @@ namespace rt::app
                 static bool show_test_window = false;
                 static bool show_scene_list = true;
                 static bool show_hdr_viewer = false;
+                static bool show_statistics = true;
                 static int selected_hdr_image = 0;
                 static ImGuiID selected_scene_view = 0;
 
@@ -463,6 +465,14 @@ namespace rt::app
                 ImGui::Begin("Framerates", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                 framerates();
                 ImGui::End();
+
+                if (show_statistics) {
+                    ImGui::SetNextWindowPos(ImVec2(50, 600), ImGuiSetCond_FirstUseEver);
+                    ImGui::SetNextWindowSize(ImVec2(425, 295), ImGuiSetCond_FirstUseEver);
+                    ImGui::Begin("Statistics", &show_statistics);
+                    view::statistics("statistics");
+                    ImGui::End();
+                }
 
                 process_pending_tasks();
             }
