@@ -41,6 +41,7 @@ namespace rt::raytracer::shading_details
             ray_type const& to_lamp;
             ray_type const& viewing;
             direction_type const& normal;
+            glm::vec3 const& hit_point;
 
             template <class Material>
             auto operator () (Material const& mat) const
@@ -82,7 +83,8 @@ namespace rt::raytracer::shading_details
                 auto slope2 = slope * slope;
 
                 // Lambertian
-                auto diffuse = mat.albedo / float(M_PI) * nl;
+                auto albedo = sample_albedo(mat.texture_pack, mat.albedo, hit_point);
+                auto diffuse = albedo / float(M_PI) * nl;
 
                 // Beckmann distribution
                 float distribution = glm::exp((nh2 - 1.0f) / (slope2 * nh2)) / (slope2 * nh4 * M_PI);
@@ -109,6 +111,7 @@ namespace rt::raytracer::shading_details
                 ulamp.towards_lamp,
                 hit.shape_info.viewing,
                 hit.shape_info.normal,
+                hit.shape_info.hit_point,
             };
 
             counter.ray++;
