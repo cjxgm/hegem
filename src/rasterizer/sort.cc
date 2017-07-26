@@ -11,6 +11,7 @@ namespace rt::rasterizer::sort_details
     {
         using scene::material_type;
         namespace nodes = scene::nodes;
+        namespace texture_packs = scene::texture_packs;
 
         static constexpr auto sun_lamp_capacity = 32;
         static constexpr auto omni_lamp_capacity = 32;
@@ -24,6 +25,7 @@ namespace rt::rasterizer::sort_details
                 return m.match(
                     [] (materials::solid_color m) {
                         return materials::physically_based{
+                            .texture_pack = texture_packs::pure{},
                             .albedo = m.color,
                             .reflection = glm::vec3{0},
                             .roughness = 1,
@@ -33,6 +35,7 @@ namespace rt::rasterizer::sort_details
                     [] (materials::phong m) {
                         // FIXME: find a better coercion for Phong -> PBR
                         return materials::physically_based{
+                            .texture_pack = texture_packs::pure{},
                             .albedo = m.diffuse,
                             .reflection = m.reflection,
                             .roughness = 0,

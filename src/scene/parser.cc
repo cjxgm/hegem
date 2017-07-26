@@ -284,8 +284,24 @@ namespace rt::scene
                     PARSE_KV(float, index-of-refraction),
                 });
 
+                FN_PARSE(texture_packs::pure)
+                {
+                    return {};
+                }
+
+                FN_PARSE_BLOCK(texture_packs::checkerboard, {
+                    PARSE_KV(glm::vec3, accent),
+                    PARSE_KV(float, size),
+                });
+
+                FN_PARSE_VARIANT(texture_pack_type, texture-pack, {
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::pure, pure);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::checkerboard, checkerboard);
+                });
+
                 struct pbr_material
                 {
+                    texture_pack_type texture_pack;
                     glm::vec3 color;
                     float roughness;
                     float metalness;
@@ -293,6 +309,7 @@ namespace rt::scene
                 };
 
                 FN_PARSE_BLOCK(pbr_material, {
+                    PARSE(texture_pack_type, texture-pack),
                     PARSE_KV(glm::vec3, color),
                     PARSE_KV(float, roughness),
                     PARSE_KV(float, metalness),
@@ -303,6 +320,7 @@ namespace rt::scene
                 {
                     auto pbr = PARSE(pbr_material, pbr);
                     return {
+                        std::move(pbr.texture_pack),
                         mix(pbr.color, glm::vec3{0, 0, 0}, pbr.metalness),
                         mix(glm::vec3{1, 1, 1}, pbr.color, pbr.metalness),
                         pbr.roughness,

@@ -1,6 +1,7 @@
 #pragma once
 #include "../lib/mapbox/variant.hh"
 #include "../image/color.hh"
+#include "texture-pack.hh"
 #include <cstddef>
 
 namespace rt::scene
@@ -26,6 +27,7 @@ namespace rt::scene
 
         struct physically_based
         {
+            texture_pack_type texture_pack;
             color_type albedo;
             color_type reflection;
             float roughness;
