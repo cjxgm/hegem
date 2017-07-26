@@ -1,4 +1,5 @@
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/op/common.hh"
 #include "texture-pack.hh"
 
 namespace rt::scene::texture_packs
@@ -10,9 +11,9 @@ namespace rt::scene::texture_packs
                 return albedo;
             },
             [&] (texture_packs::checkerboard const& tpack) {
-                // TODO
-                (void)pos;
-                return albedo;
+                auto q = glm::floor(pos / tpack.size + glm::vec3{0.01});
+                float a = (int(q.x + q.y + q.z) % 2 + 2) % 2;
+                return glm::mix(albedo, tpack.accent, a);
             });
     }
 }
