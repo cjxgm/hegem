@@ -23,7 +23,7 @@ namespace rt::app
             bool wireframed{false};
             bool show{true};
 
-            visualization(std::string name, scene_type& scene, view_type& view);
+            visualization(std::string name, scene_type& scene, view_type& view, bool raytrace);
         };
     }
 

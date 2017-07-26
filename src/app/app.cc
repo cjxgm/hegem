@@ -358,7 +358,11 @@ namespace rt::app
                             }
                             ImGui::SameLine();
                             if (ImGui::Button("Visualize")) {
-                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view);
+                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, false);
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::Button("Raytrace")) {
+                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
                             }
                             ImGui::NextColumn();
                             ImGui::PopID();
