@@ -18,6 +18,7 @@ namespace rt::app
             hdr_texture hdr;
             glu::shared_framebuffer fbo;
             rasterizer::state s;
+            int suppress_raytracing{};
             bool show_raytracing_overlay{false};
             bool wireframed{false};
             bool show{true};

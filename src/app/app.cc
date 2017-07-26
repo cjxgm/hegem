@@ -126,7 +126,7 @@ namespace rt::app
             tasks.push(job::upload{ hdr_normal, std::move(normal), tile });
         }
 
-        void render_view(scene_type const& scene, view_type view, util::spawner& spawner)
+        void render_view(scene_type const& scene, view_type view, util::task_manager& tman)
         {
             auto& ctx = context::instance();
             auto& images = ctx.images;
@@ -149,7 +149,7 @@ namespace rt::app
 
             auto [tile_w, tile_h] = ctx.tile_size;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                spawner.spawn([&, view, tile] () {
+                tman.spawn("raytrace", [&, view, tile] () {
                     render_job(scene, view, tile, hdr_combined, hdr_depth, hdr_normal);
                 });
             }
@@ -169,12 +169,12 @@ namespace rt::app
             tasks.push(job::upload{ hdr, std::move(image), tile });
         }
 
-        void render_view_combined_only(scene_type const& scene, view_type view, hdr_texture& hdr, util::spawner& spawner)
+        void render_view_combined_only(scene_type const& scene, view_type view, hdr_texture& hdr, util::task_manager& tman)
         {
             auto& ctx = context::instance();
             auto [tile_w, tile_h] = ctx.tile_size;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                spawner.spawn([&, view, tile] () {
+                tman.spawn("raytrace", [&, view, tile] () {
                     render_combined_job(scene, view, tile, hdr);
                 });
             }
@@ -208,11 +208,15 @@ namespace rt::app
                 ImGui::PopID();
             }
 
-            void visualizer(visualization& vi, util::spawner& spawner)
+            void visualizer(visualization& vi, util::task_manager& tman)
             {
                 if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
-                    if (vi.show_raytracing_overlay)
-                        render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, spawner);
+                    if (vi.show_raytracing_overlay) {
+                        render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, tman);
+                    }
+                    else {
+                        tman.cancel("raytrace");
+                    }
                 }
                 if (!vi.show_raytracing_overlay) {
                     ImGui::SameLine();
@@ -221,7 +225,10 @@ namespace rt::app
                 if (vi.hdr.dragging) {
                     ImGui::SameLine();
                     ImGui::Text("Dragging %.1f %.1f", vi.hdr.drag_offset.x, vi.hdr.drag_offset.y);
-                    vi.show_raytracing_overlay = false;
+                    if (vi.show_raytracing_overlay) {
+                        tman.cancel("raytrace");
+                        vi.suppress_raytracing = 10;
+                    }
                     vi.s.view.camera.match([&] (auto& cam) {
                         // TODO: make parameters adjustable
                         cam.tt.angles += vi.hdr.drag_offset * 0.01f;
@@ -229,6 +236,8 @@ namespace rt::app
                     });
                 }
                 if (vi.hdr.double_clicked) {
+                    vi.show_raytracing_overlay = false;
+                    tman.cancel("raytrace");
                     auto rvs = raytracer::raytrace(vi.s.scene, vi.s.view, vi.hdr.image_local_clicked_pos);
                     for (auto& rv: rvs)
                         vi.s.segments.emplace_back(rv.ray, rv.extent, rv.color, rv.width);
@@ -240,7 +249,8 @@ namespace rt::app
                 if (ImGui::IsItemHovered()) {
                     auto wheel = ImGui::GetIO().MouseWheel;
                     if (wheel != 0.0f) {
-                        vi.show_raytracing_overlay = false;
+                        tman.cancel("raytrace");
+                        vi.suppress_raytracing = 10;
                     }
                     vi.s.view.camera.match(
                         [&] (scene::cameras::pin_hole& cam) {
@@ -253,7 +263,11 @@ namespace rt::app
                 }
                 ImGui::EndChild();
 
-                if (!vi.show_raytracing_overlay)
+                if (vi.suppress_raytracing >= 0) vi.suppress_raytracing--;
+                if (vi.suppress_raytracing == 0 && vi.show_raytracing_overlay)
+                    render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, tman);
+
+                if (!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
                     rasterizer::rasterize(vi.s, vi.wireframed);
             }
 
@@ -292,7 +306,7 @@ namespace rt::app
 
             // returns true when "Render" is invoked
             template <class SceneList>
-            bool scene_list(SceneList& scenes, ImGuiID* selected, util::spawner& spawner)
+            bool scene_list(SceneList& scenes, ImGuiID* selected, util::task_manager& tman)
             {
                 auto& ctx = context::instance();
                 auto& vis = ctx.visualizations;
@@ -339,7 +353,7 @@ namespace rt::app
                             ImGui::NextColumn();
 
                             if (ImGui::Button("Render")) {
-                                render_view(loaded_scene, view, spawner);
+                                render_view(loaded_scene, view, tman);
                                 render_invoked = true;
                             }
                             ImGui::SameLine();
@@ -396,7 +410,7 @@ namespace rt::app
             }
 
             template <class SceneList>
-            void main(SceneList& scenes, util::spawner& spawner)
+            void main(SceneList& scenes, util::task_manager& tman)
             {
                 auto& ctx = context::instance();
                 auto& images = ctx.images;
@@ -434,7 +448,7 @@ namespace rt::app
                     ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(800, 200), ImGuiSetCond_FirstUseEver);
                     ImGui::Begin("Scenes", &show_scene_list);
-                    if (scene_list(scenes, &selected_scene_view, spawner)) {
+                    if (scene_list(scenes, &selected_scene_view, tman)) {
                         selected_hdr_image = images.size() - 1;
                         show_hdr_viewer = true;
                     }
@@ -456,7 +470,7 @@ namespace rt::app
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
                     ImGui::Begin(name.data(), &vi.show);
-                    visualizer(vi, spawner);
+                    visualizer(vi, tman);
                     ImGui::End();
                 }
                 vis.remove_if([] (auto& vi) { return !vi.show; });
@@ -482,15 +496,16 @@ namespace rt::app
     void run_once(options opts)
     {
         j() << "run\n";
-        util::spawner spawner{4};   // TODO: auto detect threads? allow customization?
+        util::task_manager tman{4};   // TODO: auto detect threads? allow customization?
         glfw::init_once("Raytracer");
         glu::init_all_resource_pools_once();
 
         glfw::mainloop_once([&] () {
             glu::states_manager::instance().enable_only({});
             gl::clear_bufferfv(gl::color, 0, background);
-            gui::main(opts.scenes, spawner);
+            gui::main(opts.scenes, tman);
             glu::resource_recycler::instance().try_recycle();
+            tman.gc();
         });
     }
 }
