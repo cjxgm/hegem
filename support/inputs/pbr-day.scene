@@ -116,7 +116,10 @@ materials {
         index-of-refraction 10
     }
     pbr-material {
-        pure
+        checkerboard {
+            accent 1 0.5 0.01
+            size 1
+        }
         color 0.1 0.3 0.05
         roughness 0.95
         metalness 0
@@ -189,7 +192,7 @@ group {
             0 0 1 0
             0 0 3 1
         object {
-            material-id 2
+            material-id 3
             mesh support/models/lens.obj
         }
     }
