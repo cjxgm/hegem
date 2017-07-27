@@ -265,6 +265,7 @@ namespace rt::scene
                     PARSE_KV(std::string, name),
                     PARSE_KV(glm::ivec2, dimension),
                     PARSE_KV(int, bounces),
+                    PARSE_KV(int, samples),
                     PARSE(camera_type, camera),
                 });
 

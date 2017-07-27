@@ -14,6 +14,7 @@ namespace rt::scene
         std::string name;
         dimension_type size;
         int bounces;
+        int samples;
         camera_type camera;
 
         glm::mat3 screen_space_to_camera_plane_space() const;

@@ -211,12 +211,8 @@ namespace rt::app
             void visualizer(visualization& vi, util::task_manager& tman)
             {
                 if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
-                    if (vi.show_raytracing_overlay) {
-                        render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, tman);
-                    }
-                    else {
-                        tman.cancel("raytrace");
-                    }
+                    tman.cancel("raytrace");
+                    vi.suppress_raytracing = 0;
                 }
                 if (!vi.show_raytracing_overlay) {
                     ImGui::SameLine();
@@ -264,8 +260,13 @@ namespace rt::app
                 ImGui::EndChild();
 
                 if (vi.suppress_raytracing >= 0) vi.suppress_raytracing--;
-                if (vi.suppress_raytracing == 0 && vi.show_raytracing_overlay)
+                if (vi.suppress_raytracing == 0 && vi.show_raytracing_overlay) {
+                    auto samples = vi.s.view.samples;
+                    vi.s.view.samples = 1;
                     render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, tman);
+                    vi.s.view.samples = samples;
+                    render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, tman);
+                }
 
                 if (!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
                     rasterizer::rasterize(vi.s, vi.wireframed);
@@ -313,7 +314,7 @@ namespace rt::app
                 bool render_invoked = false;
                 static bool first_time = true;
 
-                ImGui::Columns(5, "scene list");
+                ImGui::Columns(6, "scene list");
                 if (first_time) {
                     first_time = false;
                     ImGui::SetColumnOffset(1, 300);
@@ -322,6 +323,7 @@ namespace rt::app
                 ImGui::Text("View"); ImGui::NextColumn();
                 ImGui::Text("Dimension"); ImGui::NextColumn();
                 ImGui::Text("Bounces"); ImGui::NextColumn();
+                ImGui::Text("Samples"); ImGui::NextColumn();
                 ImGui::Text("Action"); ImGui::NextColumn();
                 ImGui::Separator();
 
@@ -352,6 +354,11 @@ namespace rt::app
                             ImGui::PopItemWidth();
                             ImGui::NextColumn();
 
+                            ImGui::PushItemWidth(-1);
+                            ImGui::DragInt("##samples", &view.samples, 0.1, 1, 32);
+                            ImGui::PopItemWidth();
+                            ImGui::NextColumn();
+
                             if (ImGui::Button("Render")) {
                                 render_view(loaded_scene, view, tman);
                                 render_invoked = true;
@@ -375,6 +382,7 @@ namespace rt::app
                             *selected = id;
                         }
                         ImGui::NextColumn();
+                        ImGui::Text(""); ImGui::NextColumn();
                         ImGui::Text(""); ImGui::NextColumn();
                         ImGui::Text(""); ImGui::NextColumn();
                         ImGui::Text(""); ImGui::NextColumn();

@@ -4,6 +4,7 @@
 #include "../lib/glm/vec3.hh"
 #include "../lib/std/optional.hh"
 #include "../global/counter.hh"
+#include "../math/sampler.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
 #include "shade.hh"
@@ -219,21 +220,34 @@ namespace rt::raytracer::raytracer_details
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        image::image<int> shading_point_roots{{tile.w, tile.h}};
-        shading_point_roots.each([&] (auto& sp_id, auto pos) {
-            counter.pixel++;
-            auto p = s2cp * glm::vec3{pos + glm::ivec2{tile.x, tile.y}, 1};
-            auto ray = camera_ray_from_camera_plane(p.xy(), cam);
-            sp_id = impl.trace_ray(ray, view.bounces);
+        math::uniform_sampler usamp{-0.5, 0.5};
+        const int max_samples = view.samples > 0 ? view.samples : 1;
+
+        image::image<std::vector<int>> shading_point_roots{{tile.w, tile.h}};
+        shading_point_roots.each([&] (auto& sp_ids, auto pos) {
+            float sum_extent{};
+            float sum_extent2{};
+            for (int i=0; i<max_samples; i++) {
+                counter.pixel++;
+                auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
+                screen_pos.x += usamp();
+                screen_pos.y += usamp();
+                auto p = s2cp * glm::vec3{screen_pos, 1};
+                auto ray = camera_ray_from_camera_plane(p.xy(), cam);
+                auto sp_id = impl.trace_ray(ray, view.bounces);
+                sp_ids.emplace_back(sp_id);
+            }
         });
 
         auto radiances = shade(impl.spp, scene);
 
         image_type img{{tile.w, tile.h}};
         hit_buffer_type buf{{tile.w, tile.h}};
-        shading_point_roots.each([&] (auto& sp_id, auto pos) {
-            buf[pos] = impl.spp[sp_id].hit;
-            img[pos] = radiances[sp_id];
+        shading_point_roots.each([&] (auto& sp_ids, auto pos) {
+            buf[pos] = impl.spp[sp_ids[0]].hit;
+            color_type sum{};
+            for (auto sp_id: sp_ids) sum += radiances[sp_id];
+            img[pos] = sum / float(sp_ids.size());
         });
 
         return { img, buf };
