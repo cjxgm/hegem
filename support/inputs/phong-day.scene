@@ -5,6 +5,7 @@ views {
         name "Main View"
         dimension 800 480
         bounces 3
+        samples 4
         perspective-camera {
             center -0.2 -0.5 5
             direction 0.2 0 -1

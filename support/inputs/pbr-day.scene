@@ -5,6 +5,7 @@ views {
         name "Main View"
         dimension 800 480
         bounces 3
+        samples 4
         perspective-camera {
             center -0.2 -0.5 5
             direction 0.2 0 -1
@@ -17,6 +18,7 @@ views {
         name "Centered"
         dimension 800 480
         bounces 3
+        samples 4
         perspective-camera {
             center 0 0 5
             direction 0 0 -1
@@ -30,6 +32,7 @@ views {
         name "Close-up"
         dimension 800 450
         bounces 3
+        samples 4
         perspective-camera {
             center -1 0 2
             direction 1 0 -2
@@ -42,6 +45,7 @@ views {
         name "Main HQ"
         dimension 1920 1080
         bounces 8
+        samples 4
         perspective-camera {
             center -0.2 -0.5 5
             direction 0.2 0 -1
@@ -54,6 +58,7 @@ views {
         name "Ortho View"
         dimension 800 400
         bounces 0
+        samples 4
         orthographic-camera {
             center -0.5 1 5
             direction 0.2 -0.2 -1
@@ -66,6 +71,7 @@ views {
         name "Ortho Bounced"
         dimension 800 400
         bounces 1
+        samples 4
         orthographic-camera {
             center -0.5 1 5
             direction 0.2 -0.2 -1

@@ -5,6 +5,7 @@ views {
         name "Preview"
         dimension 800 450
         bounces 8
+        samples 4
         perspective-camera {
             center 0 0 5
             direction 0 0 -1
@@ -17,6 +18,7 @@ views {
         name "HD"
         dimension 1920 1080
         bounces 16
+        samples 4
         perspective-camera {
             center 0 0 5
             direction 0 0 -1
