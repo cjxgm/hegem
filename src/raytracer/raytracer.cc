@@ -220,7 +220,8 @@ namespace rt::raytracer::raytracer_details
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        math::uniform_sampler usamp{-0.5, 0.5};
+        math::normal_sampler nsampx{0, 0.2};
+        math::normal_sampler nsampy{0, 0.2};
         const int max_samples = view.samples > 0 ? view.samples : 1;
 
         image::image<std::vector<int>> shading_point_roots{{tile.w, tile.h}};
@@ -230,8 +231,8 @@ namespace rt::raytracer::raytracer_details
             for (int i=0; i<max_samples; i++) {
                 counter.pixel++;
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
-                screen_pos.x += usamp();
-                screen_pos.y += usamp();
+                screen_pos.x += nsampx();
+                screen_pos.y += nsampy();
                 auto p = s2cp * glm::vec3{screen_pos, 1};
                 auto ray = camera_ray_from_camera_plane(p.xy(), cam);
                 auto sp_id = impl.trace_ray(ray, view.bounces);

@@ -17,5 +17,20 @@ namespace rt::math
         std::minstd_rand gen;
         std::uniform_real_distribution<float> dist;
     };
+
+    struct normal_sampler
+    {
+        normal_sampler(float mean, float stddev)
+            : gen{(std::random_device{})()}
+            , dist{mean, stddev}
+        {}
+
+        float sample() { return dist(gen); }
+        float operator () () { return sample(); }
+
+    private:
+        std::minstd_rand gen;
+        std::normal_distribution<float> dist;
+    };
 }
 
