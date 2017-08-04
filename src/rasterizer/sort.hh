@@ -54,6 +54,7 @@ namespace rt::rasterizer
 
             std::vector<with_material_xform<shapes::sphere>> spheres;
             std::vector<with_material_xform<shapes::plane>> planes;
+            std::vector<with_material_xform<shapes::voxel>> voxels;
             std::vector<with_material_xform<uploaded_mesh>> meshes;
 
             struct

@@ -83,6 +83,13 @@ namespace rt::raytracer
                 }
                 return opt_bvh->intersect(ray);
             }
+
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::voxel const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
+            {
+                // TODO
+                (void)shape;
+                return hits::missed{ray};
+            }
         }
 
         shape_hit_type intersect(ray_type const& ray, shape_type const& shape, optional_mesh_bvh_type const& opt_bvh)

@@ -109,6 +109,11 @@ namespace rt::rasterizer::sort_details
                     sg.planes.emplace_back(shape, material_id, model_to_world, world_to_model);
                 }
 
+                void operator () (shapes::voxel shape)
+                {
+                    sg.voxels.emplace_back(shape, material_id, model_to_world, world_to_model);
+                }
+
                 void operator () (shapes::mesh shape)
                 {
                     auto& vao_pool = glu::vertex_array_pool::instance();

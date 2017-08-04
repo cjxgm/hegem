@@ -67,3 +67,8 @@ namespace rt::util::bvh_details
     template struct bvh<raytracer::face_trait::mesh>;
 }
 
+namespace rt::util::grid_details
+{
+    template struct grid<raytracer::face_trait::mesh>;
+}
+

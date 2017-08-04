@@ -1,7 +1,8 @@
 #pragma once
 #include "../lib/glm/vec3.hh"
-#include "../scene/shape.hh"
+#include "../scene/shape/mesh.hh"
 #include "../util/bvh.hh"
+#include "../util/grid.hh"
 #include "ray.hh"
 #include "hit.hh"
 #include <vector>
@@ -41,5 +42,10 @@ namespace rt::raytracer
 namespace rt::util::bvh_details
 {
     extern template struct bvh<raytracer::face_trait::mesh>;
+}
+
+namespace rt::util::grid_details
+{
+    extern template struct grid<raytracer::face_trait::mesh>;
 }
 
