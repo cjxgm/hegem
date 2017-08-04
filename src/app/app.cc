@@ -269,7 +269,7 @@ namespace rt::app
                 }
 
                 if (!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
-                    rasterizer::rasterize(vi.s, vi.wireframed);
+                    rasterizer::rasterize(vi.s, vi.wireframed, ImGui::GetTime());
             }
 
             void hdr_viewer(int* selected)

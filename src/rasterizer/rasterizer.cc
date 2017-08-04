@@ -11,7 +11,7 @@ namespace rt::rasterizer
         float const initial_depth = 1;
     }
 
-    void rasterize(state const& s, bool wireframed)
+    void rasterize(state const& s, bool wireframed, float time)
     {
         auto& sm = glu::states_manager::instance();
         float aspect_ratio = float(s.view.size.x) / s.view.size.y;
@@ -120,6 +120,8 @@ namespace rt::rasterizer
         // forward rendering
         // - line segments
         sm.enable_only({ gl::depth_test, gl::blend });
+        gl::blend_equation(gl::func_add);
+        gl::blend_func(gl::src_alpha, gl::one_minus_src_alpha);
         gl::depth_mask(false);
         gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
         gl::bind_vertex_array(s.vao_empty);
@@ -131,6 +133,33 @@ namespace rt::rasterizer
             gl::uniform4fv(4, 2, &seg.colors[0][0]);
             gl::uniform1f(6, seg.width);
             gl::draw_arrays(gl::points, 0, 1);
+        }
+        gl::depth_mask(true);
+
+        // - voxel boxes
+        sm.enable_only({ gl::depth_test, gl::blend });
+        gl::blend_equation(gl::func_add);
+        gl::blend_func(gl::src_alpha, gl::one);
+        gl::depth_mask(false);
+        gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
+        gl::bind_vertex_array(s.vao_empty);
+        gl::use_program(s.prog_box);
+        gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
+        for (auto& voxel: s.geometry.voxels) {
+            auto& shape = voxel.shape;
+            auto model = voxel.model_to_world;
+            auto cell_size = shape.voxelized.cell_size();
+            shape.voxelized.each([&] (auto& cell, auto& pos) {
+                if (cell.size() == 0) return;
+
+                auto world_pos = shape.voxelized.cell_center_pos_to_world_pos(pos);
+                auto model = voxel.model_to_world * glm::translate(world_pos) * glm::scale(cell_size);
+                auto hotness = cell.size() / 100.0f;
+
+                gl::uniform_matrix4fv(1, 1, false, &model[0][0]);
+                gl::uniform1f(2, hotness);
+                gl::draw_arrays(gl::points, 0, 1);
+            });
         }
         gl::depth_mask(true);
 

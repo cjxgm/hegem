@@ -25,6 +25,7 @@ namespace rt::rasterizer::state_details
             glu::shared_program prog_sphere{glu::shader_factory::program_from_name("g-sphere")};
             glu::shared_program prog_plane{glu::shader_factory::program_from_name("g-plane")};
             glu::shared_program prog_mesh{glu::shader_factory::program_from_name("g-mesh")};
+            glu::shared_program prog_box{glu::shader_factory::program_from_name("g-box")};
             glu::shared_program prog_shade{glu::shader_factory::program_from_name("shade-gbuffer")};
             glu::shared_program prog_line_segment{glu::shader_factory::program_from_name("line-segment")};
             glu::shared_program prog_blit{glu::shader_factory::program_from_name("blit")};
@@ -163,6 +164,7 @@ namespace rt::rasterizer::state_details
         prog_sphere = ctx.prog_sphere;
         prog_plane = ctx.prog_plane;
         prog_mesh = ctx.prog_mesh;
+        prog_box = ctx.prog_box;
         prog_shade = ctx.prog_shade;
         prog_line_segment = ctx.prog_line_segment;
         prog_blit = ctx.prog_blit;

@@ -5,6 +5,6 @@
 
 namespace rt::rasterizer
 {
-    void rasterize(state const& s, bool wireframed);
+    void rasterize(state const& s, bool wireframed, float time);
 }
 

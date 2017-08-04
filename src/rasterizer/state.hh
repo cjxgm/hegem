@@ -59,6 +59,7 @@ namespace rt::rasterizer
             glu::shared_program prog_sphere;
             glu::shared_program prog_plane;
             glu::shared_program prog_mesh;
+            glu::shared_program prog_box;
             glu::shared_program prog_shade;
             glu::shared_program prog_line_segment;
             glu::shared_program prog_blit;
