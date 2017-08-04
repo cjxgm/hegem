@@ -353,10 +353,43 @@ namespace rt::scene
                     return mesh_loader::from_path(path);
                 }
 
+                struct voxel_metadata
+                {
+                    shapes::mesh mesh;
+                    int subdivision;
+                };
+
+                FN_PARSE_BLOCK(voxel_metadata, {
+                    PARSE_KV(shapes::mesh, mesh),
+                    PARSE_KV(int, subdivision),
+                });
+
+                FN_PARSE(shapes::voxel)
+                {
+                    using mesh_face_trait = raytracer::face_trait::mesh;
+                    using mesh_grid_type = util::grid<mesh_face_trait>;
+
+                    auto md = PARSE(voxel_metadata, voxel);
+                    auto& m = md.mesh;
+
+                    mesh_grid_type::face_soup_type face_ids;
+                    auto face_count = static_cast<int>(m.faces.size());
+                    face_ids.reserve(face_count);
+                    for (int i=0; i<face_count; i++)
+                        face_ids.emplace_back(i);
+
+                    mesh_grid_type grid{mesh_face_trait{m}, md.subdivision, std::move(face_ids)};
+                    return {
+                        std::move(m),
+                        std::move(grid),
+                    };
+                }
+
                 FN_PARSE_VARIANT(shape_type, shape, {
                     RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::sphere, sphere);
                     RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::plane, plane);
                     RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::mesh, mesh);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(shapes::voxel, voxel);
                 });
             }
 
