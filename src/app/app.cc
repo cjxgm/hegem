@@ -212,7 +212,7 @@ namespace rt::app
             {
                 if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
                     tman.cancel("raytrace");
-                    vi.suppress_raytracing = 0;
+                    vi.suppress_raytracing = 1;
                 }
                 if (!vi.show_raytracing_overlay) {
                     ImGui::SameLine();
