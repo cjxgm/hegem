@@ -1,55 +1,66 @@
 #pragma once
-#include "../lib/cxxpool.hh"
-#include <functional>
+#include "channel.hh"
+#include <memory>
 #include <atomic>
 #include <vector>
-#include <string>
+#include <utility>      // for std::move
 
 namespace rt::util
 {
-    struct task_identity
+    using shared_canceled_type = std::shared_ptr<std::atomic_bool>;
+
+    template <class Message>
+    using task_type = std::function<void (transmitter<Message>, shared_canceled_type canceled)>;
+
+    struct task_io
     {
-        task_identity()
-            : canceling{std::make_unique<std::atomic_bool>()}
-            , dead{std::make_unique<std::atomic_bool>()}
+        void cancel() { canceled->store(true); }
+
+    private:
+        shared_canceled_type canceled;
+
+        template <class Scheduler>
+        friend struct task_manager;
+
+        task_io(
+            shared_canceled_type canceled)
+            : canceled{std::move(canceled)}
         {}
-        bool is_dead() const { return dead->load(); }
-
-    private:
-        std::unique_ptr<std::atomic_bool> canceling;
-        std::unique_ptr<std::atomic_bool> dead;
-
-        friend struct spawner;
     };
 
-    struct spawner
-    {
-        using task_id_type = task_identity;
-
-        spawner(int thread_count) : pool(thread_count) {}
-        task_id_type spawn(std::function<void()> f);
-        void cancel(task_id_type& id);
-
-    private:
-        cxxpool::thread_pool pool;
-    };
-
-    struct tagged_task
-    {
-        std::string tag;
-        task_identity id;
-    };
-
+    template <class Scheduler>
     struct task_manager
     {
-        task_manager(int thread_count): sp{thread_count} {}
-        void spawn(std::string tag, std::function<void()> f);   // can only be called on GL thread
-        void cancel(std::string const& tag);
-        void gc();      // should be called every frame
+        using scheduler_type = Scheduler;
+
+        task_manager(scheduler_type scheduler)
+            : scheduler{std::move(scheduler)}
+        {}
+
+        template <class Message>
+        auto group(transmitter<Message> tx, std::vector<task_type<Message>> tasks) -> task_io
+        {
+            auto canceled = std::make_shared<std::atomic_bool>(false);
+
+            for (auto t: tasks) {
+                scheduler.push([t = std::move(t), tx = tx.clone(canceled), canceled] () mutable {
+                    if (canceled->load()) return;
+                    t(std::move(tx), std::move(canceled));
+                });
+            }
+
+            auto io = task_io{std::move(canceled)};
+            return io;
+        }
+
+        template <class Message>
+        auto task(transmitter<Message> tx, task_type<Message> t) -> task_io
+        {
+            return group(std::move(tx), { std::move(t) });
+        }
 
     private:
-        spawner sp;
-        std::vector<tagged_task> tasks;
+        scheduler_type scheduler;
     };
 }
 

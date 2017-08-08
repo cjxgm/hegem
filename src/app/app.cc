@@ -5,7 +5,7 @@
 #include "../util/journal.hh"
 #include "../util/mpsc.hh"
 #include "../util/tile.hh"
-#include "../util/task-manager.hh"
+#include "../util/old-task-manager.hh"
 #include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
