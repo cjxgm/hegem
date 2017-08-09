@@ -3,9 +3,9 @@
 #include "../scene/view.hh"
 #include "../image/image.hh"
 #include "../util/journal.hh"
-#include "../util/mpsc.hh"
 #include "../util/tile.hh"
-#include "../util/old-task-manager.hh"
+#include "../util/task-manager.hh"
+#include "../util/scheduler.hh"
 #include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
@@ -19,6 +19,7 @@
 #include <list>
 #include <deque>
 #include <array>
+#include <utility>      // for std::forward and std::move
 #include <functional>
 #include <algorithm>
 
@@ -39,11 +40,29 @@ namespace rt::app
         static constexpr auto framerate_history_size = 60*2;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
 
+        struct gl_job
+        {
+            template <class Fn>
+            gl_job(util::shared_canceled_type shared_canceled, Fn&& fn)
+                : shared_canceled{std::move(shared_canceled)}
+                , fn{std::forward<Fn>(fn)}
+            {}
+
+            bool canceled() const { return shared_canceled->load(); }
+            void run_blindly() const { fn(); }
+            void run() const { if (!canceled()) run_blindly(); }
+
+        private:
+            util::shared_canceled_type shared_canceled;
+            std::function<void ()> fn;
+        };
+
         struct context
         {
             std::deque<hdr_texture> images;
             std::list<visualization> visualizations;
-            util::mpsc<std::function<void()>> tasks;
+            util::receiver<gl_job> rx_gl;
+            util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{4}};   // TODO: auto detect threads?
             int tile_size[2] = {64, 64};
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
@@ -98,38 +117,12 @@ namespace rt::app
             };
         }
 
-        void render_job(
-                scene_type const& scene,
-                view_type view,
-                util::tile tile,
-                hdr_texture& hdr_combined,
-                hdr_texture& hdr_depth,
-                hdr_texture& hdr_normal)
+        util::task_io render_view(scene_type const& scene, view_type view)
         {
-            auto& ctx = context::instance();
-            auto& tasks = ctx.tasks;
-
-            tasks.push(job::mark_as_working_tile{ hdr_combined, tile });
-            tasks.push(job::mark_as_working_tile{ hdr_depth, tile });
-            tasks.push(job::mark_as_working_tile{ hdr_normal, tile });
-
-            auto result = raytracer::raytrace(scene, view, tile);
-            auto& image = std::get<0>(result);
-            auto& buf = std::get<1>(result);
-
-            tasks.push(job::upload{ hdr_combined, std::move(image), tile });
-
-            auto depth = raytracer::shade_depth(buf, view);
-            tasks.push(job::upload{ hdr_depth, std::move(depth), tile });
-
-            auto normal = raytracer::shade_normal(buf, view);
-            tasks.push(job::upload{ hdr_normal, std::move(normal), tile });
-        }
-
-        void render_view(scene_type const& scene, view_type view, util::task_manager& tman)
-        {
+            using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& images = ctx.images;
+            auto& tman = ctx.tman;
             auto name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
 
             images.emplace_back(view.size.x, view.size.y);
@@ -147,47 +140,85 @@ namespace rt::app
             auto& hdr_combined = images.back();
             hdr_combined.name = std::move(name);
 
+            auto make_task = [&] (auto view, auto tile) {
+                return [&, view, tile] (auto tx, auto shared_canceled) {
+                    auto send_job = [&] (auto&& job) {
+                        tx.send(gl_job{
+                            shared_canceled,
+                            std::move(job),
+                        });
+                    };
+
+                    send_job(job::mark_as_working_tile{ hdr_combined, tile });
+                    send_job(job::mark_as_working_tile{ hdr_depth, tile });
+                    send_job(job::mark_as_working_tile{ hdr_normal, tile });
+
+                    auto result = raytracer::raytrace(scene, view, tile);
+                    auto& image = std::get<0>(result);
+                    auto& buf = std::get<1>(result);
+
+                    send_job(job::upload{ hdr_combined, std::move(image), tile });
+
+                    auto depth = raytracer::shade_depth(buf, view);
+                    send_job(job::upload{ hdr_depth, std::move(depth), tile });
+
+                    auto normal = raytracer::shade_normal(buf, view);
+                    send_job(job::upload{ hdr_normal, std::move(normal), tile });
+                };
+            };
+
             auto [tile_w, tile_h] = ctx.tile_size;
+            std::vector<task_type> tasks;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                tman.spawn("raytrace", [&, view, tile] () {
-                    render_job(scene, view, tile, hdr_combined, hdr_depth, hdr_normal);
-                });
+                tasks.emplace_back(make_task(view, tile));
             }
+
+            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        void render_combined_job(
-                scene_type const& scene,
-                view_type view,
-                util::tile tile,
-                hdr_texture& hdr)
+        util::task_io render_combined_view_progressively(scene_type const& scene, view_type view, hdr_texture& hdr)
         {
+            using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
-            auto& tasks = ctx.tasks;
+            auto& tman = ctx.tman;
 
-            auto result = raytracer::raytrace(scene, view, tile);
-            auto& image = std::get<0>(result);
-            tasks.push(job::upload{ hdr, std::move(image), tile });
-        }
+            auto make_task = [&] (int samples, auto view, auto tile) {
+                view.samples = samples;
+                return [&, view, tile] (auto tx, auto shared_canceled) {
+                    auto result = raytracer::raytrace(scene, view, tile);
+                    auto& image = std::get<0>(result);
+                    tx.send(gl_job{
+                        shared_canceled,
+                        job::upload{ hdr, std::move(image), tile },
+                    });
+                };
+            };
 
-        void render_view_combined_only(scene_type const& scene, view_type view, hdr_texture& hdr, util::task_manager& tman)
-        {
-            auto& ctx = context::instance();
             auto [tile_w, tile_h] = ctx.tile_size;
+            std::vector<task_type> tasks;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                tman.spawn("raytrace", [&, view, tile] () {
-                    render_combined_job(scene, view, tile, hdr);
-                });
+                tasks.emplace_back(make_task(1, view, tile));
             }
+            if (view.samples > 1) {
+                for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+                    tasks.emplace_back(make_task(view.samples, view, tile));
+                }
+            }
+
+            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        void process_pending_tasks()
+        void process_pending_gl_jobs()
         {
             auto& ctx = context::instance();
-            auto& tasks = ctx.tasks;
+            auto& rx = ctx.rx_gl;
 
-            for (int i=0; i < frame_task_capacity && tasks; i++) {
-                auto task = tasks.pop();
-                task();
+            for (int i=0; i < frame_task_capacity; i++) {
+                if (auto gl_job = rx.try_recv()) {
+                    gl_job->run();
+                } else {
+                    break;
+                }
             }
         }
 
@@ -208,10 +239,10 @@ namespace rt::app
                 ImGui::PopID();
             }
 
-            void visualizer(visualization& vi, util::task_manager& tman)
+            void visualizer(visualization& vi)
             {
                 if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
-                    tman.cancel("raytrace");
+                    vi.reset_raytracing_task_io();
                     vi.suppress_raytracing = 1;
                 }
                 if (!vi.show_raytracing_overlay) {
@@ -222,7 +253,7 @@ namespace rt::app
                     ImGui::SameLine();
                     ImGui::Text("Dragging %.1f %.1f", vi.hdr.drag_offset.x, vi.hdr.drag_offset.y);
                     if (vi.show_raytracing_overlay) {
-                        tman.cancel("raytrace");
+                        vi.reset_raytracing_task_io();
                         vi.suppress_raytracing = 10;
                     }
                     vi.s.view.camera.match([&] (auto& cam) {
@@ -233,7 +264,7 @@ namespace rt::app
                 }
                 if (vi.hdr.double_clicked) {
                     vi.show_raytracing_overlay = false;
-                    tman.cancel("raytrace");
+                    vi.reset_raytracing_task_io();
                     auto rvs = raytracer::raytrace(vi.s.scene, vi.s.view, vi.hdr.image_local_clicked_pos);
                     for (auto& rv: rvs)
                         vi.s.segments.emplace_back(rv.ray, rv.extent, rv.color, rv.width);
@@ -245,7 +276,7 @@ namespace rt::app
                 if (ImGui::IsItemHovered()) {
                     auto wheel = ImGui::GetIO().MouseWheel;
                     if (wheel != 0.0f) {
-                        tman.cancel("raytrace");
+                        vi.reset_raytracing_task_io();
                         vi.suppress_raytracing = 10;
                     }
                     vi.s.view.camera.match(
@@ -261,11 +292,8 @@ namespace rt::app
 
                 if (vi.suppress_raytracing >= 0) vi.suppress_raytracing--;
                 if (vi.suppress_raytracing == 0 && vi.show_raytracing_overlay) {
-                    auto samples = vi.s.view.samples;
-                    vi.s.view.samples = 1;
-                    render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, tman);
-                    vi.s.view.samples = samples;
-                    render_view_combined_only(vi.s.scene, vi.s.view, vi.hdr, tman);
+                    auto io = render_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr);
+                    vi.reset_raytracing_task_io(std::move(io));
                 }
 
                 if (!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
@@ -307,7 +335,7 @@ namespace rt::app
 
             // returns true when "Render" is invoked
             template <class SceneList>
-            bool scene_list(SceneList& scenes, ImGuiID* selected, util::task_manager& tman)
+            bool scene_list(SceneList& scenes, ImGuiID* selected)
             {
                 auto& ctx = context::instance();
                 auto& vis = ctx.visualizations;
@@ -360,7 +388,7 @@ namespace rt::app
                             ImGui::NextColumn();
 
                             if (ImGui::Button("Render")) {
-                                render_view(loaded_scene, view, tman);
+                                render_view(loaded_scene, view);
                                 render_invoked = true;
                             }
                             ImGui::SameLine();
@@ -422,7 +450,7 @@ namespace rt::app
             }
 
             template <class SceneList>
-            void main(SceneList& scenes, util::task_manager& tman)
+            void main(SceneList& scenes)
             {
                 auto& ctx = context::instance();
                 auto& images = ctx.images;
@@ -460,7 +488,7 @@ namespace rt::app
                     ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(800, 200), ImGuiSetCond_FirstUseEver);
                     ImGui::Begin("Scenes", &show_scene_list);
-                    if (scene_list(scenes, &selected_scene_view, tman)) {
+                    if (scene_list(scenes, &selected_scene_view)) {
                         selected_hdr_image = images.size() - 1;
                         show_hdr_viewer = true;
                     }
@@ -482,7 +510,7 @@ namespace rt::app
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
                     ImGui::Begin(name.data(), &vi.show);
-                    visualizer(vi, tman);
+                    visualizer(vi);
                     ImGui::End();
                 }
                 vis.remove_if([] (auto& vi) { return !vi.show; });
@@ -500,7 +528,7 @@ namespace rt::app
                     ImGui::End();
                 }
 
-                process_pending_tasks();
+                process_pending_gl_jobs();
             }
         }
     }
@@ -508,16 +536,14 @@ namespace rt::app
     void run_once(options opts)
     {
         j() << "run\n";
-        util::task_manager tman{4};   // TODO: auto detect threads? allow customization?
         glfw::init_once("Raytracer");
         glu::init_all_resource_pools_once();
 
         glfw::mainloop_once([&] () {
             glu::states_manager::instance().enable_only({});
             gl::clear_bufferfv(gl::color, 0, background);
-            gui::main(opts.scenes, tman);
+            gui::main(opts.scenes);
             glu::resource_recycler::instance().try_recycle();
-            tman.gc();
         });
     }
 }

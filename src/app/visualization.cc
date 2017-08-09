@@ -18,5 +18,19 @@ namespace rt::app::visualization_details
             suppress_raytracing = 10;
         }
     }
+
+    void visualization::reset_raytracing_task_io()
+    {
+        if (raytracing_task_io)
+            raytracing_task_io->cancel();
+        raytracing_task_io.reset();
+    }
+
+    void visualization::reset_raytracing_task_io(util::task_io io)
+    {
+        if (raytracing_task_io)
+            raytracing_task_io->cancel();
+        raytracing_task_io = std::move(io);
+    }
 }
 
