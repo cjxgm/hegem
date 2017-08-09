@@ -2,16 +2,24 @@
 #pragma once
 #include "../lib/glm/vec3.hh"
 #include "../lib/glm/op/common.hh"
+#include "../lib/glm/relational.hh"
 #include "../global/counter.hh"
+#include "../math/ray-aabb.hh"
+#include "../raytracer/ray.hh"
+#include "../raytracer/hit.hh"
 #include <utility>      // for std::move
 #include <vector>
 #include <limits>
+#include <numeric>
 
 namespace rt::util
 {
     namespace grid_details
     {
         using global::counter;
+        using raytracer::shape_hit_type;
+        using raytracer::ray_type;
+        namespace hits = raytracer::hits;
 
         static constexpr auto inf = std::numeric_limits<float>::infinity();
 
@@ -61,6 +69,16 @@ namespace rt::util
                 return (glm::vec3{p} + glm::vec3{0.5f}) * cell_size() + bound.min;
             }
 
+            shape_hit_type intersect(ray_type const& ray) const
+            {
+                auto extent = math::ray_intersect_aabb_from_far(ray, bound.min, bound.max);
+                if (extent < inf) {
+                    return intersect(ray, extent);
+                } else {
+                    return hits::missed{ray};
+                }
+            }
+
         private:
             face_trait face_trait_state;
             int subdivision;
@@ -72,11 +90,13 @@ namespace rt::util
 
             auto cell_count() const { return subdivision * subdivision * subdivision; }
             int index_of(int x, int y, int z) const { return (z * subdivision + y) * subdivision + x; }
+            int index_of(glm::ivec3 cell_pos) const { return index_of(cell_pos.x, cell_pos.y, cell_pos.z); }
 
             glm::ivec3 world_pos_to_cell_pos(glm::vec3 p) const
             {
                 auto model_pos = p - bound.min;
-                return glm::ivec3{glm::floor(model_pos / cell_size())};
+                auto cell_pos = glm::ivec3{glm::floor(model_pos / cell_size())};
+                return glm::clamp(cell_pos, glm::ivec3{0}, glm::ivec3{subdivision-1});
             }
 
             bound_type bound_of(face_soup_type const& faces) const
@@ -104,14 +124,105 @@ namespace rt::util
                 auto [min_pos, max_pos] = face_minmax(face);
                 auto cell_from = world_pos_to_cell_pos(min_pos);
                 auto cell_to   = world_pos_to_cell_pos(max_pos);
-                for (int z=cell_from.z; z<=cell_from.z; z++) {
-                    for (int y=cell_from.y; y<=cell_from.y; y++) {
-                        for (int x=cell_from.x; x<=cell_from.x; x++) {
+
+                for (int z=cell_from.z; z<=cell_to.z; z++) {
+                    for (int y=cell_from.y; y<=cell_to.y; y++) {
+                        for (int x=cell_from.x; x<=cell_to.x; x++) {
                             auto index = index_of(x, y, z);
                             cells[index].emplace_back(face);
                         }
                     }
                 }
+            }
+
+            template <class T>
+            static bool in_bound(T const& pos, T const& bmin, T const& bmax)
+            {
+                if (any(lessThan(pos, bmin))) return false;
+                if (any(greaterThan(pos, bmax))) return false;
+                return true;
+            }
+
+            bool in_bound(glm::vec3 const& pos) const
+            {
+                return in_bound(pos, bound.min, bound.max);
+            }
+
+            shape_hit_type intersect(ray_type const& ray, float hit_extent) const
+            {
+                auto local_pos = ray.origin - bound.min;
+                if (!in_bound(ray.origin)) local_pos += *ray.dir * hit_extent;
+
+                auto cs = cell_size();
+                auto cell_pos = glm::ivec3{local_pos / cs};
+                if (cell_pos[0] < 0) cell_pos[0] = 0;
+                if (cell_pos[1] < 0) cell_pos[1] = 0;
+                if (cell_pos[2] < 0) cell_pos[2] = 0;
+                if (cell_pos[0] >= subdivision) cell_pos[0] = subdivision - 1;
+                if (cell_pos[1] >= subdivision) cell_pos[1] = subdivision - 1;
+                if (cell_pos[2] >= subdivision) cell_pos[2] = subdivision - 1;
+
+                auto delta = cs / *ray.dir;
+                auto extent = (glm::vec3{cell_pos} * cs - local_pos + cs) / *ray.dir;
+                auto step = glm::ivec3{1};
+
+                if (ray.dir->x < 0) {
+                    delta[0] = -delta[0];
+                    step[0] = -1;
+                    extent[0] += delta[0];
+                }
+                if (ray.dir->y < 0) {
+                    delta[1] = -delta[1];
+                    step[1] = -1;
+                    extent[1] += delta[1];
+                }
+                if (ray.dir->z < 0) {
+                    delta[2] = -delta[2];
+                    step[2] = -1;
+                    extent[2] += delta[2];
+                }
+
+                auto cell_pos_min = glm::ivec3{0};
+                auto cell_pos_max = glm::ivec3{subdivision - 1};
+                while (in_bound(cell_pos, cell_pos_min, cell_pos_max)) {
+                    auto index = index_of(cell_pos);
+                    auto& cell = cells[index];
+
+                    auto hit = intersect(cell, ray);
+                    if (!hit.template is<hits::missed>()) {
+                        return hit;
+                    }
+
+                    if (extent.x < extent.y && extent.x < extent.z) {
+                        extent[0] += delta[0];
+                        cell_pos[0] += step[0];
+                    }
+                    else if (extent.y < extent.z) {
+                        extent[1] += delta[1];
+                        cell_pos[1] += step[1];
+                    }
+                    else {
+                        extent[2] += delta[2];
+                        cell_pos[2] += step[2];
+                    }
+                }
+
+                return hits::missed{ray};
+            }
+
+            shape_hit_type intersect(face_id_type face, ray_type const& ray) const
+            {
+                return face_trait_state.intersect(face, ray);
+            }
+
+            shape_hit_type intersect(face_soup_type const& faces, ray_type const& ray) const
+            {
+                return std::accumulate(
+                    begin(faces), end(faces),
+                    shape_hit_type{hits::missed{ray}},
+                    [&] (auto hit, auto& obj) {
+                        return extent_lesser_one(hit, intersect(obj, ray));
+                    });
             }
         };
     }
