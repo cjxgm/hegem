@@ -86,9 +86,7 @@ namespace rt::raytracer
 
             shape_hit_type intersect_shape(ray_type const& ray, shapes::voxel const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
             {
-                // TODO
-                (void)shape;
-                return hits::missed{ray};
+                return shape.voxelized.intersect(ray);
             }
         }
 
