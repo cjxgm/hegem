@@ -505,13 +505,13 @@ namespace rt::app
 
                 int vi_idx = 0;
                 for (auto& vi: vis) {
-                    if (!vi.show) continue;
                     ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
                     ImGui::Begin(name.data(), &vi.show);
                     visualizer(vi);
                     ImGui::End();
+                    if (!vi.show) vi.reset_raytracing_task_io();
                 }
                 vis.remove_if([] (auto& vi) { return !vi.show; });
 
