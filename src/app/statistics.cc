@@ -60,6 +60,8 @@ namespace rt::app::view
         row("Ix BVH", counter.ix_bvh, "Number of intersection tests performed on BVH");
         row("Ix BVH Bounds", counter.ix_bvh_bound, "Number of intersection tests performed on bounds of BVH internal nodes");
         row("Ix BVH Faces", counter.ix_bvh_face, "Number of intersection tests against faces performed on BVH leaf nodes");
+        row("Ix Grid", counter.ix_grid, "Number of intersection tests performed on grid");
+        row("Ix Grid Faces", counter.ix_grid_face, "Number of intersection tests against faces performed on grid");
     }
 }
 
