@@ -16,7 +16,6 @@ namespace rt::global::counter_details
         ix_bvh = 0;
         ix_bvh_bound = 0;
         ix_bvh_face = 0;
-        ix_bvh_face_skip = 0;
     }
 }
 

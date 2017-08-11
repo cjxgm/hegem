@@ -160,7 +160,6 @@ namespace rt::util
                 {
                     float extent = math::ray_intersect_aabb_from_far(ray, n.bound.min, n.bound.max);
                     if (extent == inf) {
-                        counter.ix_bvh_face_skip += n.face_count;
                         return hits::missed{ray};
                     }
                 }

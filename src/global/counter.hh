@@ -19,7 +19,6 @@ namespace rt::global
             counter_type ix_bvh;                // Number of intersection tests performed on BVH
             counter_type ix_bvh_bound;          // Number of intersection tests performed on BVH internal nodes bounds
             counter_type ix_bvh_face;           // Number of intersection tests against faces performed on BVH leaf nodes
-            counter_type ix_bvh_face_skip;      // Number of intersection tests against faces skipped on BVH leaf nodes
 
             void reset();
         };
