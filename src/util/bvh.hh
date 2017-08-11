@@ -8,6 +8,7 @@
 #include "../raytracer/ray.hh"
 #include "../raytracer/hit.hh"
 #include "../global/counter.hh"
+#include "../math/ray-aabb.hh"
 #include <utility>      // for std::move
 #include <stdexcept>
 #include <algorithm>
@@ -26,10 +27,10 @@ namespace rt::util
 
         static constexpr auto inf = std::numeric_limits<float>::infinity();
 
-        struct bounding_sphere
+        struct bounding_box
         {
-            glm::vec3 center;
-            float radius;
+            glm::vec3 min;
+            glm::vec3 max;
         };
 
         template <class FaceTrait>
@@ -41,7 +42,7 @@ namespace rt::util
             using face_soup_type = std::vector<face_id_type>;
             using node_soup_type = std::vector<node>;
             using partitioned_face_soup_type = std::vector<face_soup_type>;
-            using bound_type = bounding_sphere;
+            using bound_type = bounding_box;
             using storage_type = mapbox::util::variant<face_soup_type, node_soup_type>;
 
             struct node
@@ -114,11 +115,9 @@ namespace rt::util
                     max_pos = glm::max(max_pos, face_max_pos);
                 }
 
-                auto center = (min_pos + max_pos) / 2.0f;
-                auto radius = length(max_pos - min_pos) / 2.0f;
                 return {
-                    center,
-                    radius,
+                    min_pos,
+                    max_pos,
                 };
             }
 
@@ -159,12 +158,8 @@ namespace rt::util
             shape_hit_type intersect(node const& n, ray_type const& ray) const
             {
                 {
-                    float unused_;
-                    bool intersected = glm::intersectRaySphere(
-                        ray.origin, *ray.dir,
-                        n.bound.center, n.bound.radius * n.bound.radius,
-                        unused_);
-                    if (!intersected) {
+                    float extent = math::ray_intersect_aabb_from_far(ray, n.bound.min, n.bound.max);
+                    if (extent == inf) {
                         counter.ix_bvh_face_skip += n.face_count;
                         return hits::missed{ray};
                     }
