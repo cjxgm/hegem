@@ -16,6 +16,8 @@ prev[];
 out geom_frag
 {
     vec4 color;
+    vec3 normal;
+    vec3 pos;
     vec2 uv;
 }
 next;
@@ -42,6 +44,15 @@ const int fs[6][4] = {
     { 2, 6, 0, 4 },
 };
 
+const vec3 ns[6] = {
+    vec3( 0,  0, +1),
+    vec3(+1,  0,  0),
+    vec3( 0,  0, -1),
+    vec3(-1,  0,  0),
+    vec3( 0, +1,  0),
+    vec3( 0, -1,  0),
+};
+
 const vec2 uvs[4] = {
     vec2(0, 0),
     vec2(0, 1),
@@ -51,12 +62,14 @@ const vec2 uvs[4] = {
 
 void main()
 {
-    mat4 pvm = proj_view * model;
     next.color = prev[0].color;
     for (int face=0; face<6; face++) {
+        next.normal = ns[face];
         for (int vert=0; vert<4; vert++) {
             vec3 p = ps[fs[face][vert]];
-            gl_Position = pvm * vec4(p, 1.0f);
+            vec4 world_pos = model * vec4(p, 1.0f);
+            gl_Position = proj_view * world_pos;
+            next.pos = world_pos.xyz;
             next.uv = uvs[vert];
             EmitVertex();
         }

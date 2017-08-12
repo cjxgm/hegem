@@ -145,6 +145,7 @@ namespace rt::rasterizer
         gl::bind_vertex_array(s.vao_empty);
         gl::use_program(s.prog_box);
         gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
+        gl::uniform3fv(3, 1, &cam_apex[0]);
         for (auto& voxel: s.geometry.voxels) {
             auto& shape = voxel.shape;
             auto model = voxel.model_to_world;

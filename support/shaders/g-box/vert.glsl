@@ -8,9 +8,9 @@ out vert_geom
 }
 next;
 
-const vec4 cold_color = vec4(7.0f, 8.0f, 10.0f, 0.005);
-const vec4 warm_color = vec4(10.0f, 4.0f, 1.0f, 0.01);
-const vec4 hot_color = vec4(10.0f, 0.0f, 0.0f, 0.2);
+const vec4 cold_color = vec4(7.0f, 8.0f, 10.0f, 0.01);
+const vec4 warm_color = vec4(10.0f, 4.0f, 1.0f, 0.02);
+const vec4 hot_color = vec4(10.0f, 0.0f, 0.0f, 0.4);
 
 void main()
 {
