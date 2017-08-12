@@ -1,0 +1,78 @@
+name "Voxel"
+
+views {
+    view {
+        name "Main"
+        dimension 960 540
+        bounces 1
+        samples 1
+        perspective-camera {
+            center 0 0 5
+            direction 0 0 -1
+            up 0 1 0
+            angle 60
+        }
+    }
+
+    view {
+        name "Ortho"
+        dimension 960 540
+        bounces 1
+        samples 1
+        orthographic-camera {
+            center 0 0 5
+            direction 0 0 -1
+            up 0 1 0
+            size 5
+        }
+    }
+
+    view {
+        name "Ortho close-up"
+        dimension 960 540
+        bounces 1
+        samples 1
+        orthographic-camera {
+            center 0 0 5
+            direction 0 0 -1
+            up 0 1 0
+            size 2
+        }
+    }
+}
+
+lights {
+}
+
+background {
+    color 0.3 0.3 1
+    strength 1
+}
+
+materials {
+    pbr-material {
+        pure
+        color 0.05 1 0.05
+        roughness 0.3
+        metalness 0
+        index-of-refraction 1.5
+    }
+}
+
+group {
+    xform {
+        model
+            2 0 0 0
+            0 2 0 0
+            0 0 2 0
+            0 0 0 1
+        object {
+            material-id 0
+            voxel {
+                mesh support/models/suzanne.obj
+                subdivision 16
+            }
+        }
+    }
+}
+
