@@ -15,12 +15,12 @@ namespace rt::raytracer
 
         glm::vec3 operator * (glm::mat4 const& xform, glm::vec3 const& p)
         {
-            return (xform * glm::vec4{p, 1.0f}).xyz();
+            return {xform * glm::vec4{p, 1.0f}};
         }
 
         direction_type operator * (glm::mat4 const& xform, direction_type const& d)
         {
-            return (xform * glm::vec4{*d, 0.0f}).xyz();
+            return {xform * glm::vec4{*d, 0.0f}};
         }
 
         ray_type operator * (glm::mat4 const& xform, ray_type const& ray)
@@ -106,7 +106,7 @@ namespace rt::raytracer
                     return hits::missed{ ray };
                 },
                 [&] (hits::shape shape_info) -> object_hit_type {
-                    auto extent_scale = length((obj.model_to_world * glm::vec4{*model_ray.dir, 0.0f}).xyz());
+                    auto extent_scale = length(glm::vec3{obj.model_to_world * glm::vec4{*model_ray.dir, 0.0f}});
                     return hits::object{
                         obj.material_id,
                         hits::shape {

@@ -43,7 +43,7 @@ namespace rt::raytracer::shading_details
             buf[pos].match(
                     [] (hits::missed) {},
                     [&] (hits::object const& hit) {
-                        direction_type view_normal = (w2c * glm::vec4{*hit.shape_info.normal, 0.0f}).xyz();
+                        direction_type view_normal = glm::vec3{w2c * glm::vec4{*hit.shape_info.normal, 0.0f}};
                         pixel = *view_normal * 0.5f + 0.5f;
                     });
         });

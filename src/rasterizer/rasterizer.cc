@@ -84,7 +84,7 @@ namespace rt::rasterizer
             for (auto& plane: s.geometry.planes) {
                 auto& mat = s.geometry.materials[plane.material_id];
                 auto& shape = plane.shape;
-                auto normal = (transpose(plane.world_to_model) * glm::vec4{*shape.normal, 0.0f}).xyz();
+                auto normal = glm::vec3{transpose(plane.world_to_model) * glm::vec4{*shape.normal, 0.0f}};
                 auto nlen = length(normal);
                 auto offset = shape.offset / nlen;
                 normal /= nlen;

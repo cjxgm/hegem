@@ -27,8 +27,8 @@ namespace rt::raytracer::ray_details
                 auto origin       = c2w * glm::vec4{p * half,  0, 1};
                 auto extent_point = c2w * glm::vec4{p * half, -1, 1};
                 return {
-                    origin.xyz(),
-                    (extent_point - origin).xyz(),
+                    glm::vec3{origin},
+                    glm::vec3{extent_point - origin},
                 };
             }
 
@@ -38,8 +38,8 @@ namespace rt::raytracer::ray_details
                 auto origin = c2w * glm::vec4{p  ,  0, 1};
                 auto dir    = c2w * glm::vec4{p*t, -1, 0};
                 return {
-                    origin.xyz(),
-                    dir.xyz(),
+                    glm::vec3{origin},
+                    glm::vec3{dir},
                 };
             }
         };

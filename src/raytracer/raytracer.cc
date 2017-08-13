@@ -234,7 +234,7 @@ namespace rt::raytracer::raytracer_details
                 screen_pos.x += nsampx();
                 screen_pos.y += nsampy();
                 auto p = s2cp * glm::vec3{screen_pos, 1};
-                auto ray = camera_ray_from_camera_plane(p.xy(), cam);
+                auto ray = camera_ray_from_camera_plane(glm::vec2{p}, cam);
                 auto sp_id = impl.trace_ray(ray, view.bounces);
                 sp_ids.emplace_back(sp_id);
             }
@@ -260,7 +260,7 @@ namespace rt::raytracer::raytracer_details
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
         auto p = s2cp * glm::vec3{screen_pos, 1.0f};
-        auto ray = camera_ray_from_camera_plane(p.xy(), cam);
+        auto ray = camera_ray_from_camera_plane(glm::vec2{p}, cam);
 
         raytracer_impl impl{scene};
         impl.trace_ray(ray, view.bounces);

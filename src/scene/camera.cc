@@ -93,14 +93,14 @@ namespace rt::scene::cameras
         return cam.match(
             [=] (pin_hole const& cam) {
                 auto c2w = camera_space_to_world_space(cam);
-                auto forward = (c2w * glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}).xyz();
-                auto center  = (c2w * glm::vec4{0.0f, 0.0f,  0.0f, 1.0f}).xyz();
+                auto forward = glm::vec3{c2w * glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}};
+                auto center  = glm::vec3{c2w * glm::vec4{0.0f, 0.0f,  0.0f, 1.0f}};
                 auto offset = sized_lens_to_pin_hole(nh, cam.fov) * forward;
                 return center - offset;
             },
             [=] (orthographic const& cam) {
                 auto c2w = camera_space_to_world_space(cam);
-                auto center  = (c2w * glm::vec4{0.0f, 0.0f,  0.0f, 1.0f}).xyz();
+                auto center  = glm::vec3{c2w * glm::vec4{0.0f, 0.0f,  0.0f, 1.0f}};
                 return center;
             });
     }
