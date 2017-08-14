@@ -38,7 +38,7 @@ namespace rt::rasterizer::sort_details
                             .texture_pack = texture_packs::pure{},
                             .albedo = m.diffuse,
                             .reflection = m.reflection,
-                            .roughness = 0,
+                            .roughness = m.roughness,
                             .ior = m.ior,
                         };
                     },

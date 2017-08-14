@@ -41,6 +41,7 @@ materials {
         specular-color 1 1 1
         exponent 32
         index-of-refraction 1.45
+        roughness 0.1
     }
     phong-material {
         diffuse-color 0.05 1 0.05
@@ -49,6 +50,7 @@ materials {
         specular-color 1 1 1
         exponent 32
         index-of-refraction 0
+        roughness 0.1
     }
     phong-material {
         diffuse-color 0.2 0.2 0.2
@@ -57,6 +59,7 @@ materials {
         specular-color 0 0 0
         exponent 0
         index-of-refraction 0
+        roughness 0.1
     }
     phong-material {
         diffuse-color 0.1 0.3 0.05
@@ -65,6 +68,7 @@ materials {
         specular-color 1 1 1
         exponent 2
         index-of-refraction 0
+        roughness 0.1
     }
 }
 

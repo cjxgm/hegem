@@ -26,5 +26,13 @@ namespace rt::scene::materials
                 [] (phong const& mat) { return mat.ior; },
                 [] (physically_based const& mat) { return 0.0f; });
     }
+
+    float roughness(material_type const& mat)
+    {
+        return mat.match(
+                [] (solid_color const&) { return 0.0f; },
+                [] (phong const& mat) { return mat.roughness; },
+                [] (physically_based const& mat) { return mat.roughness; });
+    }
 }
 

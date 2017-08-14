@@ -283,6 +283,7 @@ namespace rt::scene
                     PARSE_KV(glm::vec3, specular-color),
                     PARSE_KV(float, exponent),
                     PARSE_KV(float, index-of-refraction),
+                    PARSE_KV(float, roughness),
                 });
 
                 FN_PARSE(texture_packs::pure)
