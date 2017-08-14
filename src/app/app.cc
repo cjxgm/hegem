@@ -182,11 +182,19 @@ namespace rt::app
             auto& ctx = context::instance();
             auto& tman = ctx.tman;
 
-            auto make_task = [&] (int samples, auto view, auto tile) {
+            auto make_task = [&] (bool should_mark, int samples, auto view, auto tile) {
                 view.samples = samples;
-                return [&, view, tile] (auto tx, auto shared_canceled) {
+                return [&, view, tile, should_mark] (auto tx, auto shared_canceled) {
+                    if (should_mark) {
+                        tx.send(gl_job{
+                            shared_canceled,
+                            job::mark_as_working_tile{ hdr, tile },
+                        });
+                    }
+
                     auto result = raytracer::raytrace(scene, view, tile);
                     auto& image = std::get<0>(result);
+
                     tx.send(gl_job{
                         shared_canceled,
                         job::upload{ hdr, std::move(image), tile },
@@ -197,11 +205,11 @@ namespace rt::app
             auto [tile_w, tile_h] = ctx.tile_size;
             std::vector<task_type> tasks;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                tasks.emplace_back(make_task(1, view, tile));
+                tasks.emplace_back(make_task(false, 1, view, tile));
             }
             if (view.samples > 1) {
                 for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                    tasks.emplace_back(make_task(view.samples, view, tile));
+                    tasks.emplace_back(make_task(true, view.samples, view, tile));
                 }
             }
 
