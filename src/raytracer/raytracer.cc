@@ -9,12 +9,14 @@
 #include "intersect.hh"
 #include "shade.hh"
 #include <limits>
+#include <cmath>
 
 namespace rt::raytracer::raytracer_details
 {
     namespace
     {
         using global::counter;
+        using hits::direction_type;
 
         static constexpr auto inf = std::numeric_limits<float>::infinity();
         static constexpr auto color_primary_ray = color_type{10.0f, 5.0f, 2.0f};
@@ -26,6 +28,17 @@ namespace rt::raytracer::raytracer_details
         static constexpr auto color_normal_ray = color_type{2.0f, 5.0f, 10.0f};
         static constexpr auto width_normal_ray = 10.0f;
         static constexpr auto length_normal_ray = 0.3f;
+
+        direction_type sample_cone(direction_type dir, float angle, float rnd0, float rnd1)
+        {
+            auto axis = (dir->z > 1.0f-1e-5f ? glm::vec3{1.0f, 0.0f, 0.0f} : glm::vec3{0.0, 0.0f, 1.0f});
+            direction_type x = cross(*dir, axis);
+            direction_type y = cross(*dir, *x);
+
+            auto r = glm::tan(angle / 2.0f);
+            direction_type sample = *dir + *x * rnd0 * r + *y * rnd1 * r;
+            return sample;
+        }
 
         struct shading_point
         {
@@ -91,6 +104,8 @@ namespace rt::raytracer::raytracer_details
         {
             scene_type const& scene;
 
+            math::normal_sampler nsamp{0, 0.2};
+
             int trace_ray(
                 ray_type const& ray,
                 int remaining_bounces)
@@ -115,9 +130,13 @@ namespace rt::raytracer::raytracer_details
                             auto dir = reflect(*ray.dir, refl_normal);
                             auto shape_info_for_biasing = hit.shape_info;
                             shape_info_for_biasing.normal = refl_normal;
+
+                            auto rnd0 = nsamp();
+                            auto rnd1 = nsamp();
+                            auto dir_sample = sample_cone(dir, roughness(mat) * M_PI, rnd0, rnd1);
                             ray_type refl = biased_ray({
                                 hit.shape_info.hit_point,
-                                dir,
+                                dir_sample,
                             }, shape_info_for_biasing);
 
                             counter.ray_refl++;
@@ -131,11 +150,15 @@ namespace rt::raytracer::raytracer_details
                             auto dir = refract(*ray.dir, refr_normal, eta);
 
                             if (dir.x != 0.0f || dir.y != 0.0f) {   // not perfect reflection
+                                auto rnd0 = nsamp();
+                                auto rnd1 = nsamp();
+                                auto dir_sample = sample_cone(dir, roughness(mat) * M_PI, rnd0, rnd1);
+
                                 auto shape_info_for_biasing = hit.shape_info;
                                 shape_info_for_biasing.normal = -refr_normal;
                                 ray_type refr = biased_ray({
                                     hit.shape_info.hit_point,
-                                    dir,
+                                    dir_sample,
                                 }, shape_info_for_biasing);
 
                                 counter.ray_refr++;
@@ -220,8 +243,6 @@ namespace rt::raytracer::raytracer_details
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        math::normal_sampler nsampx{0, 0.2};
-        math::normal_sampler nsampy{0, 0.2};
         const int max_samples = view.samples > 0 ? view.samples : 1;
 
         image::image<std::vector<int>> shading_point_roots{{tile.w, tile.h}};
@@ -231,8 +252,8 @@ namespace rt::raytracer::raytracer_details
             for (int i=0; i<max_samples; i++) {
                 counter.pixel++;
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
-                screen_pos.x += nsampx();
-                screen_pos.y += nsampy();
+                screen_pos.x += impl.nsamp();
+                screen_pos.y += impl.nsamp();
                 auto p = s2cp * glm::vec3{screen_pos, 1};
                 auto ray = camera_ray_from_camera_plane(glm::vec2{p}, cam);
                 auto sp_id = impl.trace_ray(ray, view.bounces);
