@@ -1,6 +1,7 @@
 #include "../lib/glm/op/intersect.hh"
 #include "../scene/shape.hh"
 #include "../global/counter.hh"
+#include "../math/direction.hh"
 #include "intersect.hh"
 #include <numeric>
 #include <iostream>
@@ -10,7 +11,7 @@ namespace rt::raytracer
     namespace
     {
         using namespace scene;
-        using hits::direction_type;
+        using math::direction_type;
         using global::counter;
 
         glm::vec3 operator * (glm::mat4 const& xform, glm::vec3 const& p)

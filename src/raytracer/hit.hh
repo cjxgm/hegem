@@ -2,7 +2,7 @@
 #include "../lib/glm/vec3.hh"
 #include "../lib/mapbox/variant.hh"
 #include "../scene/material.hh"
-#include "../math/unit.hh"
+#include "../math/direction.hh"
 #include "../image/image.hh"
 #include "../image/color.hh"
 #include "ray.hh"
@@ -12,7 +12,7 @@ namespace rt::raytracer
     namespace hits
     {
         using point_type = glm::vec3;
-        using direction_type = math::unit<glm::vec3>;
+        using math::direction_type;
         using color_type = image::color::linear_rgb;
         using scene::material_id_type;
 

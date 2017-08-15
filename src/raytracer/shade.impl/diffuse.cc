@@ -1,7 +1,7 @@
 #include "../../lib/glm/vec3.hh"
 #include "../../lib/glm/op/geom.hh"
 #include "../../lib/glm/op/common.hh"
-#include "../../math/unit.hh"
+#include "../../math/direction.hh"
 #include "../../scene/material.hh"
 #include "../../scene/lamp.hh"
 #include "../../global/counter.hh"
@@ -17,7 +17,7 @@ namespace rt::raytracer::shading_details
     namespace
     {
         using global::counter;
-        using direction_type = math::unit<glm::vec3>;
+        using math::direction_type;
         namespace materials = scene::materials;
         static constexpr auto clamp_eps = 1e-7f;
 

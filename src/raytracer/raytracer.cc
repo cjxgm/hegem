@@ -4,6 +4,7 @@
 #include "../lib/glm/vec3.hh"
 #include "../lib/std/optional.hh"
 #include "../global/counter.hh"
+#include "../math/direction.hh"
 #include "../math/sampler.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
@@ -16,7 +17,7 @@ namespace rt::raytracer::raytracer_details
     namespace
     {
         using global::counter;
-        using hits::direction_type;
+        using math::direction_type;
 
         static constexpr auto inf = std::numeric_limits<float>::infinity();
         static constexpr auto color_primary_ray = color_type{10.0f, 5.0f, 2.0f};

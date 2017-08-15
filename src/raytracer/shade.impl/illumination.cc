@@ -2,7 +2,7 @@
 #include "../../lib/glm/op/common.hh"
 #include "../../lib/glm/op/geom.hh"
 #include "../../scene/material.hh"
-#include "../../math/unit.hh"
+#include "../../math/direction.hh"
 #include "../shade.hh"
 #include <stdexcept>
 
@@ -11,7 +11,7 @@ namespace rt::raytracer::shading_details
     namespace
     {
         namespace materials = scene::materials;
-        using direction_type = math::unit<glm::vec3>;
+        using math::direction_type;
 
         float fresnel_schlick(float ior, direction_type viewing, direction_type normal)
         {

@@ -2,14 +2,14 @@
 #include "../lib/glm/vec3.hh"
 #include "../lib/glm/fwd.hh"
 #include "../lib/mapbox/variant.hh"
-#include "../math/unit.hh"
+#include "../math/direction.hh"
 #include "../math/turn-table.hh"
 
 namespace rt::scene
 {
     namespace cameras
     {
-        using direction_type = math::unit<glm::vec3>;
+        using math::direction_type;
 
         struct pin_hole
         {

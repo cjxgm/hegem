@@ -1,6 +1,6 @@
 #pragma once
 #include "../../lib/glm/vec3.hh"
-#include "../../math/unit.hh"
+#include "../../math/direction.hh"
 #include <array>
 #include <vector>
 
@@ -8,7 +8,7 @@ namespace rt::scene
 {
     namespace shapes
     {
-        using direction_type = math::unit<glm::vec3>;
+        using math::direction_type;
 
         struct vert_attributes
         {

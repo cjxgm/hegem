@@ -1,7 +1,7 @@
 #pragma once
 #include "../lib/glm/vec2.hh"
 #include "../lib/glm/vec3.hh"
-#include "../math/unit.hh"
+#include "../math/direction.hh"
 #include "../scene/camera.hh"
 
 namespace rt::raytracer
@@ -9,12 +9,12 @@ namespace rt::raytracer
     namespace ray_details
     {
         using position_type = glm::vec2;
+        using math::direction_type;
         using scene::camera_type;
 
         struct ray_type
         {
             using point_type = glm::vec3;
-            using direction_type = math::unit<glm::vec3>;
 
             point_type origin;
             direction_type dir;

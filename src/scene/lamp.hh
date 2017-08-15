@@ -1,14 +1,14 @@
 #pragma once
 #include "../lib/glm/vec3.hh"
 #include "../lib/mapbox/variant.hh"
-#include "../math/unit.hh"
+#include "../math/direction.hh"
 #include "../image/color.hh"
 
 namespace rt::scene
 {
     namespace lamps
     {
-        using direction_type = math::unit<glm::vec3>;
+        using math::direction_type;
         using position_type = glm::vec3;
         using color_type = image::color::linear_rgb;
 

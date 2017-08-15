@@ -5,6 +5,7 @@
 #include "../scene/shape.hh"
 #include "../scene/lamp.hh"
 #include "../glu/resource.hh"
+#include "../math/direction.hh"
 #include <vector>
 
 namespace rt::rasterizer
@@ -13,6 +14,7 @@ namespace rt::rasterizer
     {
         using scene::scene_type;
         using scene::material_id_type;
+        using math::direction_type;
         namespace materials = scene::materials;
         namespace shapes = scene::shapes;
         namespace lamps = scene::lamps;
@@ -59,7 +61,7 @@ namespace rt::rasterizer
 
             struct
             {
-                std::vector<lamps::direction_type> dirs;
+                std::vector<direction_type> dirs;
                 std::vector<lamps::color_type> colors;
             }
             sun_lamp;

@@ -2,7 +2,7 @@
 #include "../../lib/glm/vec4.hh"
 #include "../../lib/glm/mat3.hh"
 #include "../../lib/glm/op/geom.hh"
-#include "../../math/unit.hh"
+#include "../../math/direction.hh"
 #include "../shade.hh"
 #include <limits>
 
@@ -10,7 +10,7 @@ namespace rt::raytracer::shading_details
 {
     namespace
     {
-        using direction_type = math::unit<glm::vec3>;
+        using math::direction_type;
         using lamp_container_type = scene::scene_type::lamp_container_type;
         static constexpr auto inf = std::numeric_limits<float>::infinity();
     }
