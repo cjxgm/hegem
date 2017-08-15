@@ -1,7 +1,7 @@
 #include "../lib/glm/vec4.hh"
 #include "../lib/glm/mat4.hh"
+#include "../lib/glm/op/trig.hh"
 #include "ray.hh"
-#include <cmath>
 
 namespace rt::raytracer::ray_details
 {
@@ -34,7 +34,7 @@ namespace rt::raytracer::ray_details
 
             ray_type impl(cameras::pin_hole const& cam)
             {
-                auto t = std::tan(cam.fov / 2.0f);
+                auto t = glm::tan(cam.fov / 2.0f);
                 auto origin = c2w * glm::vec4{p  ,  0, 1};
                 auto dir    = c2w * glm::vec4{p*t, -1, 0};
                 return {

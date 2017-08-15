@@ -10,7 +10,6 @@
 #include "unified-lamp.hh"
 #include <limits>
 #include <stdexcept>
-#include <cmath>
 
 namespace rt::raytracer::shading_details
 {
@@ -79,15 +78,15 @@ namespace rt::raytracer::shading_details
                 auto nh2 = nh * nh;
                 auto nh4 = nh2 * nh2;
                 auto roughness = glm::max(glm::min(mat.roughness, 0.99999f), 0.00001f);
-                auto slope = std::tan(roughness * float(M_PI) / 2.0f);
+                auto slope = std::tan(roughness * math::pi_2);
                 auto slope2 = slope * slope;
 
                 // Lambertian
                 auto albedo = sample_albedo(mat.texture_pack, mat.albedo, hit_point);
-                auto diffuse = albedo / float(M_PI) * nl;
+                auto diffuse = albedo / math::pi * nl;
 
                 // Beckmann distribution
-                float distribution = glm::exp((nh2 - 1.0f) / (slope2 * nh2)) / (slope2 * nh4 * M_PI);
+                float distribution = glm::exp((nh2 - 1.0f) / (slope2 * nh2)) / (slope2 * nh4 * math::pi);
 
                 // Cook Torrance geometry
                 float geometry = glm::min(1.0f, 2.0f * nh / vh * glm::min(nv, nl));

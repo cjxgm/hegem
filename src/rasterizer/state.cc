@@ -1,14 +1,14 @@
 #include "../lib/gl/gl.hh"
 #include "../glu/shader.hh"
+#include "../math/constants.hh"
 #include "state.hh"
 #include <utility>      // for std::move
-#include <limits>
 
 namespace rt::rasterizer::state_details
 {
     namespace
     {
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
+        using math::inf;
 
         auto default_texture2d(int w, int h, gl::enum_type internal_format=gl::rgba32f)
         {

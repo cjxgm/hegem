@@ -1,4 +1,5 @@
 #include "../../lib/glm/op/geom.hh"
+#include "../../math/constants.hh"
 #include "unified-lamp.hh"
 
 namespace rt::raytracer::shading_details::unified_lamp_details
@@ -6,7 +7,7 @@ namespace rt::raytracer::shading_details::unified_lamp_details
     namespace
     {
         namespace lamps = scene::lamps;
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
+        using math::inf;
     }
 
     unified_lamp unify_lamp(scene::lamp_type const& lamp, hits::object const& hit)

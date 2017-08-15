@@ -1,11 +1,11 @@
 #include "hit.hh"
-#include <limits>
+#include "../math/constants.hh"
 
 namespace rt::raytracer::hits
 {
     namespace
     {
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
+        using math::inf;
     }
 
     ray_type viewing_ray(object_hit_type const& a)

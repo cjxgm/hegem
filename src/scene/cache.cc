@@ -2,7 +2,6 @@
 #include "scene.hh"
 #include "node.hh"
 #include <deque>
-#include <cmath>
 
 namespace rt::scene::cache_details
 {

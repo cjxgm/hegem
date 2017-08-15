@@ -5,6 +5,7 @@
 #include "../lib/glm/relational.hh"
 #include "../global/counter.hh"
 #include "../math/ray-aabb.hh"
+#include "../math/constants.hh"
 #include "../raytracer/ray.hh"
 #include "../raytracer/hit.hh"
 #include <utility>      // for std::move
@@ -19,9 +20,8 @@ namespace rt::util
         using global::counter;
         using raytracer::shape_hit_type;
         using raytracer::ray_type;
+        using math::inf;
         namespace hits = raytracer::hits;
-
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
 
         struct bounding_box
         {

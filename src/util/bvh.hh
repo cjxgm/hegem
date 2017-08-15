@@ -9,11 +9,11 @@
 #include "../raytracer/hit.hh"
 #include "../global/counter.hh"
 #include "../math/ray-aabb.hh"
+#include "../math/constants.hh"
 #include <utility>      // for std::move
 #include <stdexcept>
 #include <algorithm>
 #include <numeric>
-#include <limits>
 #include <iostream>     // DEBUG TODO: use journal?
 
 namespace rt::util
@@ -23,9 +23,8 @@ namespace rt::util
         using global::counter;
         using raytracer::shape_hit_type;
         using raytracer::ray_type;
+        using math::inf;
         namespace hits = raytracer::hits;
-
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
 
         struct bounding_box
         {

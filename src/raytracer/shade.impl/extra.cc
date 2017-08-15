@@ -3,16 +3,16 @@
 #include "../../lib/glm/mat3.hh"
 #include "../../lib/glm/op/geom.hh"
 #include "../../math/direction.hh"
+#include "../../math/constants.hh"
 #include "../shade.hh"
-#include <limits>
 
 namespace rt::raytracer::shading_details
 {
     namespace
     {
         using math::direction_type;
+        using math::inf;
         using lamp_container_type = scene::scene_type::lamp_container_type;
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
     }
 
     image_type shade_depth(hit_buffer_type const& buf, view_type const& view)

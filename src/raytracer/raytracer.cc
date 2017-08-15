@@ -6,11 +6,10 @@
 #include "../global/counter.hh"
 #include "../math/direction.hh"
 #include "../math/sampler.hh"
+#include "../math/constants.hh"
 #include "raytracer.hh"
 #include "intersect.hh"
 #include "shade.hh"
-#include <limits>
-#include <cmath>
 
 namespace rt::raytracer::raytracer_details
 {
@@ -18,8 +17,8 @@ namespace rt::raytracer::raytracer_details
     {
         using global::counter;
         using math::direction_type;
+        using math::inf;
 
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
         static constexpr auto color_primary_ray = color_type{10.0f, 5.0f, 2.0f};
         static constexpr auto width_primary_ray = 10.0f;
         static constexpr auto color_reflective_ray = color_type{10.0f, 2.0f, 5.0f};
@@ -134,7 +133,7 @@ namespace rt::raytracer::raytracer_details
 
                             auto rnd0 = nsamp();
                             auto rnd1 = nsamp();
-                            auto dir_sample = sample_cone(dir, roughness(mat) * M_PI, rnd0, rnd1);
+                            auto dir_sample = sample_cone(dir, roughness(mat) * math::pi, rnd0, rnd1);
                             ray_type refl = biased_ray({
                                 hit.shape_info.hit_point,
                                 dir_sample,
@@ -153,7 +152,7 @@ namespace rt::raytracer::raytracer_details
                             if (dir.x != 0.0f || dir.y != 0.0f) {   // not perfect reflection
                                 auto rnd0 = nsamp();
                                 auto rnd1 = nsamp();
-                                auto dir_sample = sample_cone(dir, roughness(mat) * M_PI, rnd0, rnd1);
+                                auto dir_sample = sample_cone(dir, roughness(mat) * math::pi, rnd0, rnd1);
 
                                 auto shape_info_for_biasing = hit.shape_info;
                                 shape_info_for_biasing.normal = -refr_normal;

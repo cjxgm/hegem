@@ -2,9 +2,9 @@
 #include "../lib/glm/mat3.hh"
 #include "../lib/glm/mat4.hh"
 #include "../lib/glm/op/geom.hh"
+#include "../lib/glm/op/trig.hh"
 #include "../lib/glm/op/mat.hh"
 #include "camera.hh"
-#include <cmath>
 
 namespace rt::scene::cameras
 {
@@ -17,7 +17,7 @@ namespace rt::scene::cameras
         // The rasterizer thinks that the "lens" is just an infinitesimal pin hole.
         float sized_lens_to_pin_hole(float aspect_corrected_h, float yfov)
         {
-            return aspect_corrected_h / std::tan(yfov / 2.0f);
+            return aspect_corrected_h / glm::tan(yfov / 2.0f);
         }
 
         glm::mat4 zoffset(float offset)

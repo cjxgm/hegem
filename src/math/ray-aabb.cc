@@ -1,12 +1,12 @@
 #include "ray-aabb.hh"
 #include "../lib/glm/op/common.hh"
-#include <limits>
+#include "constants.hh"
 
 namespace rt::math::ray_aabb_details
 {
     namespace
     {
-        static constexpr auto inf = std::numeric_limits<float>::infinity();
+        using math::inf;
     }
 
     float ray_intersect_aabb_from_far(ray_type const& ray, glm::vec3 bmin, glm::vec3 bmax)
