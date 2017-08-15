@@ -50,5 +50,20 @@ namespace rt::math
         direction_type sample = *dir + *x * s0 + *y * s1;
         return sample;
     }
+
+    template <class Sampler>
+    inline direction_type sample_sphere(Sampler & samp)
+    {
+        while (true) {
+            auto s0 = samp();
+            auto s1 = samp();
+            auto s2 = samp();
+
+            if (s0 == 0.0f && s1 == 0.0f && s2 == 0.0f) continue;
+
+            direction_type sample{glm::vec3{s0, s1, s2}};
+            return sample;
+        }
+    }
 }
 
