@@ -29,17 +29,6 @@ namespace rt::raytracer::raytracer_details
         static constexpr auto width_normal_ray = 10.0f;
         static constexpr auto length_normal_ray = 0.3f;
 
-        direction_type sample_cone(direction_type dir, float angle, float rnd0, float rnd1)
-        {
-            auto axis = (dir->z > 1.0f-1e-5f ? glm::vec3{1.0f, 0.0f, 0.0f} : glm::vec3{0.0, 0.0f, 1.0f});
-            direction_type x = cross(*dir, axis);
-            direction_type y = cross(*dir, *x);
-
-            auto r = glm::tan(angle / 2.0f);
-            direction_type sample = *dir + *x * rnd0 * r + *y * rnd1 * r;
-            return sample;
-        }
-
         struct shading_point
         {
             object_hit_type hit;
@@ -131,9 +120,7 @@ namespace rt::raytracer::raytracer_details
                             auto shape_info_for_biasing = hit.shape_info;
                             shape_info_for_biasing.normal = refl_normal;
 
-                            auto rnd0 = nsamp();
-                            auto rnd1 = nsamp();
-                            auto dir_sample = sample_cone(dir, roughness(mat) * math::pi, rnd0, rnd1);
+                            auto dir_sample = math::sample_cone(nsamp, dir, roughness(mat) * math::pi);
                             ray_type refl = biased_ray({
                                 hit.shape_info.hit_point,
                                 dir_sample,
@@ -150,9 +137,7 @@ namespace rt::raytracer::raytracer_details
                             auto dir = refract(*ray.dir, refr_normal, eta);
 
                             if (dir.x != 0.0f || dir.y != 0.0f) {   // not perfect reflection
-                                auto rnd0 = nsamp();
-                                auto rnd1 = nsamp();
-                                auto dir_sample = sample_cone(dir, roughness(mat) * math::pi, rnd0, rnd1);
+                                auto dir_sample = math::sample_cone(nsamp, dir, roughness(mat) * math::pi);
 
                                 auto shape_info_for_biasing = hit.shape_info;
                                 shape_info_for_biasing.normal = -refr_normal;
