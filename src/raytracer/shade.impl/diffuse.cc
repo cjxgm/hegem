@@ -100,12 +100,12 @@ namespace rt::raytracer::shading_details
         };
     }
 
-    color_type shade_diffuse(scene_type const& scene, hits::object const& hit)
+    color_type shade_diffuse(scene_type const& scene, hits::object const& hit, math::normal_sampler & samp)
     {
         color_type diffuse;
         auto& mat = scene.materials[hit.material_id];
         for (auto& lamp: scene.lamps) {
-            auto ulamp = unify_lamp(lamp, hit);
+            auto ulamp = unify_lamp(lamp, hit, samp);
             diffuse_term_extractor diffuse_term{
                 ulamp.towards_lamp,
                 hit.shape_info.viewing,

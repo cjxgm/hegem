@@ -1,5 +1,6 @@
 #pragma once
 #include "../../scene/lamp.hh"
+#include "../../math/sampler.hh"
 #include "../shade.hh"
 
 namespace rt::raytracer::shading_details
@@ -13,7 +14,7 @@ namespace rt::raytracer::shading_details
             float distance_to_lamp;
         };
 
-        unified_lamp unify_lamp(scene::lamp_type const& lamp, hits::object const& hit);
+        unified_lamp unify_lamp(scene::lamp_type const& lamp, hits::object const& hit, math::normal_sampler & samp);
     }
 
     using unified_lamp_details::unified_lamp;

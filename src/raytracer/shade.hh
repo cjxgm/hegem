@@ -3,6 +3,7 @@
 #include "../image/color.hh"
 #include "../scene/scene.hh"
 #include "../scene/view.hh"
+#include "../math/sampler.hh"
 #include "ray.hh"
 #include "hit.hh"
 
@@ -16,7 +17,7 @@ namespace rt::raytracer
         using scene::view_type;
 
         color_type shade_environment(scene_type const& scene, ray_type const& viewing);
-        color_type shade_diffuse(scene_type const& scene, hits::object const& hit);
+        color_type shade_diffuse(scene_type const& scene, hits::object const& hit, math::normal_sampler & samp);
         color_type shade_illumination(
                 scene_type const& scene,
                 hits::object const& hit,

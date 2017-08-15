@@ -159,7 +159,7 @@ namespace rt::raytracer::raytracer_details
             shading_point_pool spp{};
         };
 
-        auto shade(shading_point_pool const& spp, scene_type const& scene)
+        auto shade(shading_point_pool const& spp, scene_type const& scene, math::normal_sampler & samp)
         {
             std::vector<color_type> radiances;
             radiances.reserve(spp.size() + 1);
@@ -173,7 +173,7 @@ namespace rt::raytracer::raytracer_details
                     [&] (hits::object hit) {
                         auto refl = radiances[sp.reflection];
                         auto refr = radiances[sp.refraction];
-                        auto diffuse = shade_diffuse(scene, hit);
+                        auto diffuse = shade_diffuse(scene, hit, samp);
                         auto radiance = shade_illumination(scene, hit, diffuse, refl, refr);
                         return radiance;
                     });
@@ -246,7 +246,7 @@ namespace rt::raytracer::raytracer_details
             }
         });
 
-        auto radiances = shade(impl.spp, scene);
+        auto radiances = shade(impl.spp, scene, impl.nsamp);
 
         image_type img{{tile.w, tile.h}};
         hit_buffer_type buf{{tile.w, tile.h}};
