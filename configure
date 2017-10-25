@@ -55,7 +55,6 @@ my @loader__flags;
 my %file_infos;
 my %known_impls;
 my %known_headers;
-my %known_dirs;
 my %outdated_files;
 
 my $ANSI_UNESCAPE_SEQUENCE__RESET = "[0m";
@@ -172,7 +171,6 @@ sub deps__update_impl
 
         next if exists $known_impls{$impl_path};
         $known_impls{$impl_path} = undef;
-        $known_dirs{&path__extract_dir($impl_path)} = undef;
 
         die "Cache corrupted. There should be a file called $impl_path.\n" unless -e $impl_path;
 
@@ -309,8 +307,16 @@ sub path__impl_from_header
 sub path__object_from_impl
 {
     my ($impl) = @_;
-    $impl =~ s{\.(?:cc|cpp|cxx|c\+\+|C|c)$}{.o} or die "Not a C++ translation unit file: $impl\n";
-    $impl;
+    $impl =~ m{\.(?:cc|cpp|cxx|c\+\+|C|c)$} or die "Not a C++ translation unit file: $impl\n";
+
+    my ($name) = $impl =~ m{(?:^|/)([^/]+)$};
+
+    my $identifier = join "", grep { defined } map { $file_infos{$_}->{digest} } ($impl, @{$file_infos{$impl}->{dependencies}});
+    $identifier .= &string__digest($impl);
+    $identifier .= &string__digest(join " ", @compiler__flags);
+    $identifier = &string__digest($identifier);
+
+    "objects/$name.$identifier.o";
 }
 
 # Normalize a path to something that is consistent enough
@@ -368,35 +374,6 @@ sub path__guess
     }
 }
 
-sub path__extract_dir
-{
-    use File::Basename;
-
-    my ($path) = @_;
-    die "Non-existent path: $path\n" unless -e $path;
-
-    return $path if -d $path;
-    for (dirname($path)) {
-        return $_ if $_ eq '/';
-        s{/$}{};
-        return $_;
-    }
-}
-
-sub path__parent_dir
-{
-    my ($path) = @_;
-    return $path if $path eq '/' || $path eq '';
-    die "Non-existent directory: $path\n" unless -d $path;
-
-    for ($path) {
-        die "Invalid directory path: $_\n" if m{/$};
-        s{/[^/]+$}{} or return '';
-        return '/' if $_ eq '';
-        return $_;
-    }
-}
-
 sub path__array__split
 {
     local $_ = $_[0];
@@ -409,6 +386,13 @@ sub path__array__join
 {
     my @parts = @_;
     join " ", map { s{\s}{\\$&}g; $_ } @parts;
+}
+
+sub string__digest
+{
+    use Digest::MD5 qw(md5_hex);
+    my ($x) = @_;
+    md5_hex($x);
 }
 
 sub file__mtime
@@ -512,9 +496,12 @@ sub makefile__write
     my $build_dir = &path__normalize($build__output_dir);
     my $compiler_flags = &path__array__join(@compiler__flags);
     my $loader_flags = &path__array__join(@loader__flags);
-    my $compiler_cmd = &path__array__join(
-        "$command_prefix\$(CC)",
-        "-c", "-o", "'\$\@'", "'\$<'", "\$(CCFLAGS)");
+    my $compiler_cmd = sub {
+        my ($impl) = @_;
+        &path__array__join(
+            "$command_prefix\$(CC)",
+            "-c", "-o", "'\$\@'", "'$impl'", "\$(CCFLAGS)");
+    };
     my $loader_cmd = &path__array__join(
         "$command_prefix\$(LD)",
         "-o", "'\$\@'", "\$(OBJECTS)", "\$(LDFLAGS)");
@@ -525,24 +512,20 @@ sub makefile__write
     my @rules;
     my @phonies;
 
-    for my $dir (sort keys %known_dirs) {
-        while (1) {
-            $dir = &path__parent_dir($dir);
-            last if $dir eq '' || $dir eq '/';
-            last if exists $known_dirs{$dir};
-            $known_dirs{$dir} = undef;
-        }
-    }
-    for my $dir ('', sort keys %known_dirs) {
-        my $parent = &path__parent_dir($dir);
-        $parent = ' | $(BUILD)/' . &path__array__join($parent) if $dir ne '';
-        my $target = '$(BUILD)/' . &path__array__join($dir);
+    my $make_directory = sub {
+        my ($target, $parent) = @_;
+        $parent //= '';
+        $parent = " | $parent" unless $parent eq '';
         push @rules, join "\n\t", (
-            $target . ":" . $parent,
+            "$target:$parent",
             $progress->("making directory", $target),
             "${command_prefix}mkdir -p $target",
         );
-    }
+    };
+
+    $make_directory->('$(BUILD)/');
+    $make_directory->('$(BUILD)/objects/', '$(BUILD)/');
+    $make_directory->('$(BUILD)/bin/', '$(BUILD)/');
 
     for my $impl (sort keys %known_impls) {
         my $info = $file_infos{$impl};
@@ -552,21 +535,32 @@ sub makefile__write
 
         push @objects, $target;
         push @rules, join "\n\t", (
-            &path__array__join($target) . ": " . &path__array__join($impl, @$deps) . ' | $(BUILD)/' . &path__array__join(&path__extract_dir($impl)),
+            &path__array__join($target) . ": | " . &path__array__join($impl, @$deps) . ' $(BUILD)/objects/',
             $progress->("compiling", $impl),
-            $compiler_cmd,
+            $compiler_cmd->($impl),
         );
     }
 
+    my $bin_id = &string__digest(join " ", @objects);
+    $bin_id .= &string__digest($bin);
+    $bin_id .= &string__digest(join " ", @loader__flags);
+    $bin_id = &string__digest($bin_id);
+    my $output_bin = "bin/$build__output_bin.$bin_id";
     push @rules, join "\n\t", (
-        '$(BIN): ' . &path__array__join("\$(OBJECTS)") . ' | $(BUILD)/',
+        "\$(BUILD)/$output_bin: | " . &path__array__join("\$(OBJECTS)") . ' $(BUILD)/bin/',
         $progress->("loading", $build__output_bin),
         $loader_cmd,
     );
 
-    push @phonies, ".PHONY: all clean cleanall test reconf rebuild";
+    push @phonies, ".PHONY: all bin clean cleanall test rebuild";
     push @phonies, join "\n\t", (
-        'all: $(BIN)',
+        'all:',
+        '@./configure $(CONFIGURE)',
+        '@$(MAKE) --no-print-directory bin',
+    );
+    push @phonies, join "\n\t", (
+        "bin: | \$(BUILD)/$output_bin",
+        "\@ln -sf $output_bin \$(BIN)",
     );
     push @phonies, join "\n\t", (
         "clean:",
@@ -588,11 +582,6 @@ sub makefile__write
             $progress->("running", $_->{name}),
             map { "$command_prefix$_" } @{$_->{commands}},
         )} @makefile__commands__test),
-    );
-    push @phonies, join "\n\t", (
-        "reconf:",
-        $progress->("reconfiguring"),
-        &path__array__join("$command_prefix./configure"),
     );
     push @phonies, join "\n\t", (
         "rebuild: clean",
@@ -618,6 +607,9 @@ LDFLAGS = $loader_flags
 OBJECTS = $objects
 BUILD = $build
 BIN = $bin
+
+# user options
+CONFIGURE =
 
 # phonies
 $phonies
