@@ -564,7 +564,7 @@ sub makefile__write
         $loader_cmd,
     );
 
-    push @phonies, ".PHONY: all clean test reconf rebuild";
+    push @phonies, ".PHONY: all clean cleanall test reconf rebuild";
     push @phonies, join "\n\t", (
         'all: $(BIN)',
     );
@@ -572,6 +572,15 @@ sub makefile__write
         "clean:",
         $progress->("removing", '$(BUILD)'),
         &path__array__join("${command_prefix}rm", '-rf', '$(BUILD)/'),
+    );
+    push @phonies, join "\n\t", (
+        "cleanall: clean",
+        $progress->("removing", 'build cache'),
+        &path__array__join("${command_prefix}rm", '-rf', 'build.cache'),
+        $progress->("removing", 'build flags'),
+        &path__array__join("${command_prefix}rm", '-rf', 'build.flags'),
+        $progress->("removing", 'makefile'),
+        &path__array__join("${command_prefix}rm", '-rf', 'makefile'),
     );
     push @phonies, join "\n\t", (
         "test: all",
