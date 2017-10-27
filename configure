@@ -542,7 +542,7 @@ sub makefile__write
 
         push @objects, $target;
         push @rules, join "\n\t", (
-            &path__array__join($target) . ": | " . &path__array__join($impl, @$deps) . ' $(BUILD)/objects/',
+            &path__array__join($target) . ': | $(BUILD)/objects/',
             $progress->("compiling", $impl),
             $compiler_cmd->($impl),
         );
@@ -701,7 +701,6 @@ sub output__variable__bool
         &output__progress("# $_", $val ? 'enabled' : 'disabled');
     }
 }
-
 
 &main;
 
