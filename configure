@@ -71,6 +71,13 @@ my $COLOR_MORE = "\e$ANSI_UNESCAPE_SEQUENCE__MORE";
 my $COLOR_LESS = "\e$ANSI_UNESCAPE_SEQUENCE__LESS";
 my $COLOR_COMMENT = "\e$ANSI_UNESCAPE_SEQUENCE__COMMENT";
 
+my @incl_suffixes = qw[hh hpp hxx h++ H h pull];
+my @impl_suffixes = qw[cc cpp cxx c++ C c];
+my $incl_suffixes = join "|", map { quotemeta } @incl_suffixes;
+my $impl_suffixes = join "|", map { quotemeta } @impl_suffixes;
+my $re_incl = qr{\.(?:$incl_suffixes)$};
+my $re_impl = qr{\.(?:$impl_suffixes)$};
+
 sub main
 {
     # This must come first so that user cannot override calculated values.
@@ -300,14 +307,14 @@ sub deps__clear_unknown_files
 sub path__impl_from_header
 {
     my ($header) = @_;
-    $header =~ s{\.(?:hh|hpp|hxx|h\+\+|H|h|pull)$}{} or return;
-    grep { -f } map { "$header.$_" } qw[cc cpp cxx c++ C c];
+    $header =~ s{$re_incl}{} or return;
+    grep { -f } map { "$header.$_" } @impl_suffixes;
 }
 
 sub path__object_from_impl
 {
     my ($impl) = @_;
-    $impl =~ m{\.(?:cc|cpp|cxx|c\+\+|C|c)$} or die "Not a C++ translation unit file: $impl\n";
+    $impl =~ m{$re_impl} or die "Not a C++ translation unit file: $impl\n";
 
     my ($name) = $impl =~ m{(?:^|/)([^/]+)$};
 
