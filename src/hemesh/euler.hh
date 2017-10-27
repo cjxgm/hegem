@@ -36,17 +36,21 @@ namespace rt::hemesh
         face_type* make_face(hemesh& m, hege_type* first, hege_type* last)
         {
             auto h = m.make_hege_twin(last, first->start);
+            m.make_edge(h);
             m.close_hege(h, first);
 
             auto b = first->ring->face->body;
             auto f = m.make_face(b);
             auto r = m.make_ring(f, first->start);
 
-            first = first->twin;
+            first->ring->any_hege = first->twin;
             for (h=first; true; h=h->next) {
                 h->ring = r;
                 if (h->next == first) break;
             }
+            r->any_hege = first;
+
+            return f;
         }
     }
 }
