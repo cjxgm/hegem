@@ -11,12 +11,12 @@ namespace rt::hemesh
         // All makers establish topological connections.
         auto* make_body()
         {
-            return list_append(first_body, bodys.alloc());
+            return list_append(any_body, bodys.alloc());
         }
 
         auto* make_face(body_type* body)
         {
-            auto* f = list_append(body->first_face, faces.alloc());
+            auto* f = list_append(body->any_face, faces.alloc());
             f->body = body;
             return f;
         }
@@ -30,30 +30,30 @@ namespace rt::hemesh
         {
             auto* r = list_append(face->boundary, rings.alloc());
             r->face = face;
-            r->first_vert = vert;
+            r->any_vert = vert;
             return r;
         }
 
         hege_type* make_hege_twin(ring_type* ring, vert_type* vert)
         {
-            if (ring->first_hege) return nullptr;
+            if (ring->any_hege) return nullptr;
 
-            auto* h0 = list_append(ring->first_hege, heges.alloc());
-            auto* h1 = list_append(ring->first_hege, heges.alloc());
+            auto* h0 = list_append(ring->any_hege, heges.alloc());
+            auto* h1 = list_append(ring->any_hege, heges.alloc());
             h0->twin = h1;
             h1->twin = h0;
             h0->ring = ring;
             h1->ring = ring;
-            h0->start = ring->first_vert;
+            h0->start = ring->any_vert;
             h1->start = vert;
-            h0->start->first_hege = h0;
-            h1->start->first_hege = h1;
+            h0->start->any_hege = h0;
+            h1->start->any_hege = h1;
             return h0;
         }
 
         hege_type* make_hege_twin(hege_type* hege, vert_type* vert)
         {
-            if (!hege->ring->first_hege) return nullptr;
+            if (!hege->ring->any_hege) return nullptr;
 
             auto* h0 = list_insert_after(hege, heges.alloc());
             auto* h1 = list_insert_after(h0,   heges.alloc());
@@ -63,15 +63,15 @@ namespace rt::hemesh
             h1->ring = hege->ring;
             h0->start = hege->twin->start;
             h1->start = vert;
-            h0->start->first_hege = h0;
-            h1->start->first_hege = h1;
+            h0->start->any_hege = h0;
+            h1->start->any_hege = h1;
             return h0;
         }
 
         edge_type* make_edge(hege_type* hege)
         {
             auto* e = edges.alloc();
-            e->first_hege = hege;
+            e->any_hege = hege;
             hege->edge = e;
             hege->twin->edge = e;
             return e;
@@ -94,7 +94,7 @@ namespace rt::hemesh
         unbound_slab<primitive::edge_type> edges;
         unbound_slab<primitive::hege_type> heges;
         unbound_slab<primitive::vert_type> verts;
-        body_type* first_body{};
+        body_type* any_body{};
 
         template <class T>
         static T* list_append(T*& a, T* x)

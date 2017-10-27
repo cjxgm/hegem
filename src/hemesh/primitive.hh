@@ -18,7 +18,7 @@ namespace rt::hemesh
         {
             body_type* next;
             body_type* prev;
-            face_type* first_face;
+            face_type* any_face;
         };
 
         struct face_type
@@ -41,13 +41,13 @@ namespace rt::hemesh
             ring_type* next;
             ring_type* prev;
             face_type* face;
-            vert_type* first_vert;
-            hege_type* first_hege;
+            vert_type* any_vert;
+            hege_type* any_hege;
         };
 
         struct edge_type
         {
-            hege_type* first_hege;
+            hege_type* any_hege;
         };
 
         struct hege_type
@@ -62,7 +62,7 @@ namespace rt::hemesh
 
         struct vert_type
         {
-            hege_type* first_hege;
+            hege_type* any_hege;
             position_type pos;
         };
     }
