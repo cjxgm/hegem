@@ -418,7 +418,7 @@ sub file__digest
 sub system__find_depended_headers
 {
     my ($impl_path) = @_;
-    local $_ = &system__invoke_read($compiler__bin, @compiler__flags, "-MM", $impl_path);
+    local $_ = &system__run($compiler__bin, @compiler__flags, "-MM", $impl_path);
     s{\s*\\\n\s*}{ }g;
     my @deps = map { &path__normalize($_) } &path__array__split($_);
     # @deps is now something like qw[BASENAME.o: BASENAME.cc dep1 dep2 dep3 ... depN]
@@ -436,39 +436,28 @@ sub system__find_depended_headers
 sub system__pkg_config__compiler_flags
 {
     return unless @_;
-    &path__array__split(&system__invoke_read($pkg_config__bin, "--cflags", @_));
+    &path__array__split(&system__run($pkg_config__bin, "--cflags", @_));
 }
 
 sub system__pkg_config__loader_flags
 {
     return unless @_;
-    &path__array__split(&system__invoke_read($pkg_config__bin, "--libs", @_));
+    &path__array__split(&system__run($pkg_config__bin, "--libs", @_));
 }
 
-sub system__invoke
+sub system__run
 {
-    use IPC::Open3;
-    use Symbol q[gensym];
-    my $err = gensym();
-    my $pid = open3(my $wr, my $rd, $err, @_);
-    ($pid, $wr, $rd, $err);
-}
-
-sub system__invoke_and_wait
-{
-    my ($pid, $wr, $rd, $err) = &system__invoke(@_);
-    waitpid $pid, 0;
-    my $exit_status = $? >> 8;
-    ($exit_status, $wr, $rd, $err);
-}
-
-sub system__invoke_read
-{
-    my ($exit_status, $wr, $rd, $err) = &system__invoke_and_wait(@_);
-    local $" = " ";
-    local $/;
-    die "Error invoking @_: " . <$err> . "\n" if $exit_status != 0;
-    <$rd>;
+    use IPC::Cmd qw[run];
+    my ($ok, $err, undef, $stdout, $stderr) = run(
+        command => [@_],
+        verbose => 0,
+    );
+    $stdout = join "", @$stdout;
+    $stderr = join "", @$stderr;
+    chomp $stderr;
+    chomp $stdout;
+    die "$err\n$stderr\n" unless $ok;
+    $stdout;
 }
 
 sub flags__write
