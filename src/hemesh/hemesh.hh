@@ -1,6 +1,7 @@
 #pragma once
 #include "primitive.hh"
 #include "slab.hh"
+#include "list.hh"
 
 namespace rt::hemesh
 {
@@ -11,12 +12,12 @@ namespace rt::hemesh
         // All makers establish topological connections.
         auto* make_body()
         {
-            return list_append(any_body, bodys.alloc());
+            return list::append(any_body, bodys.alloc());
         }
 
         auto* make_face(body_type* body)
         {
-            auto* f = list_append(body->any_face, faces.alloc());
+            auto* f = list::append(body->any_face, faces.alloc());
             f->body = body;
             return f;
         }
@@ -28,7 +29,7 @@ namespace rt::hemesh
 
         auto* make_ring(face_type* face, vert_type* vert)
         {
-            auto* r = list_append(face->boundary, rings.alloc());
+            auto* r = list::append(face->boundary, rings.alloc());
             r->face = face;
             r->any_vert = vert;
             return r;
@@ -38,8 +39,8 @@ namespace rt::hemesh
         {
             if (ring->any_hege) return nullptr;
 
-            auto* h0 = list_append(ring->any_hege, heges.alloc());
-            auto* h1 = list_append(ring->any_hege, heges.alloc());
+            auto* h0 = list::append(ring->any_hege, heges.alloc());
+            auto* h1 = list::append(ring->any_hege, heges.alloc());
             h0->twin = h1;
             h1->twin = h0;
             h0->ring = ring;
@@ -55,8 +56,8 @@ namespace rt::hemesh
         {
             if (!hege->ring->any_hege) return nullptr;
 
-            auto* h0 = list_insert_after(hege, heges.alloc());
-            auto* h1 = list_insert_after(h0,   heges.alloc());
+            auto* h0 = list::insert_after(hege, heges.alloc());
+            auto* h1 = list::insert_after(h0,   heges.alloc());
             h0->twin = h1;
             h1->twin = h0;
             h0->ring = hege->ring;
@@ -94,33 +95,6 @@ namespace rt::hemesh
         #include "primitive.inl"
 
         body_type* any_body{};
-
-        template <class T>
-        static T* list_append(T*& a, T* x)
-        {
-            if (!a) a = x;
-            return list_insert_before(a, x);
-        }
-
-        template <class T>
-        static T* list_insert_after(T* pivot, T* x)
-        {
-            x->next = pivot->next;
-            x->prev = pivot;
-            x->prev->next = x;
-            x->next->prev = x;
-            return x;
-        }
-
-        template <class T>
-        static T* list_insert_before(T* pivot, T* x)
-        {
-            x->next = pivot;
-            x->prev = pivot->prev;
-            x->next->prev = x;
-            x->prev->next = x;
-            return x;
-        }
     };
 }
 
