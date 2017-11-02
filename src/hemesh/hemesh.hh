@@ -19,7 +19,7 @@ namespace rt::hemesh
         body_type* any_body{};
 
         // Expands to unbound_slab<body_type> bodys; and etc.
-        #define STRUCT(NAME) unbound_slab<NAME>
+        #define STRUCT(NAME) unbound_trivial_slab<NAME>
         #define END_STRUCT(VAR) VAR ## s;
         #include "primitive.inl"
     };
