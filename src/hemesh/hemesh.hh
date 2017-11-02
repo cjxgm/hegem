@@ -88,12 +88,11 @@ namespace rt::hemesh
         }
 
     private:
-        unbound_slab<primitive::body_type> bodys;
-        unbound_slab<primitive::face_type> faces;
-        unbound_slab<primitive::ring_type> rings;
-        unbound_slab<primitive::edge_type> edges;
-        unbound_slab<primitive::hege_type> heges;
-        unbound_slab<primitive::vert_type> verts;
+        // Expands to unbound_slab<body_type> bodys; and etc.
+        #define STRUCT(NAME) unbound_slab<NAME>
+        #define END_STRUCT(VAR) VAR ## s;
+        #include "primitive.inl"
+
         body_type* any_body{};
 
         template <class T>
