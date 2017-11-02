@@ -16,13 +16,12 @@ namespace rt::hemesh
         edge_type* make_edge(hege_type* hege);
         bool close_hege(hege_type* h0, hege_type* h1);
 
-    private:
+        body_type* any_body{};
+
         // Expands to unbound_slab<body_type> bodys; and etc.
         #define STRUCT(NAME) unbound_slab<NAME>
         #define END_STRUCT(VAR) VAR ## s;
         #include "primitive.inl"
-
-        body_type* any_body{};
     };
 }
 

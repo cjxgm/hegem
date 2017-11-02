@@ -33,7 +33,6 @@ namespace rt::hemesh
             frees.emplace_back(x);
         }
 
-    private:
         std::deque<value_type> nodes;
         std::vector<value_type*> frees;
     };
