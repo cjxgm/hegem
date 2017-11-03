@@ -6,7 +6,13 @@ namespace rt::hemesh
 {
     struct hemesh
     {
-        // Makers establishe internal data structures.
+        hemesh() = default;
+        hemesh(hemesh &&) = default;
+        hemesh& operator = (hemesh &&) = default;
+        hemesh& operator = (hemesh const&) = delete;
+        hemesh clone() const;
+
+    public: // Makers establishe internal data structures.
         body_type* make_body();
         face_type* make_face(body_type* body);
         vert_type* make_vert();
@@ -16,11 +22,15 @@ namespace rt::hemesh
         edge_type* make_edge(hege_type* hege);
         bool close_hege(hege_type* h0, hege_type* h1);
 
+    public: // data structure
         body_type* any_body{};
 
         // Expands to unbound_slab<body_type> bodys; and etc.
         #define STRUCT(NAME, VAR) unbound_trivial_slab<NAME> VAR ## s;
         #include "primitive.inl"
+
+    private:
+        hemesh(hemesh const&) = default;    // not "= delete" intentionally
     };
 }
 

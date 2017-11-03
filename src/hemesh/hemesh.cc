@@ -1,5 +1,18 @@
 #include "hemesh.hh"
 #include "list.hh"
+#include "rebuild.hh"
+
+namespace rt::hemesh
+{
+    hemesh hemesh::clone() const
+    {
+        hemesh m{*this};
+        auto pmap = build_pointer_map(*this, m);
+        auto ptrs = collect_pointers(m);
+        reconstruct_pointers(pmap, ptrs);
+        return m;
+    }
+}
 
 // makers
 namespace rt::hemesh
