@@ -5,6 +5,26 @@
 
 namespace rt::hemesh
 {
+    void dump_serializer::begin_structure(char const* name, void const* ptr)
+    {
+        std::cerr << "struct " << ptr << " " << name << "\n";
+    }
+
+    void dump_serializer::end_structure()
+    {
+        std::cerr << "end\n";
+    }
+
+    void dump_serializer::field_ptr_from_slab(char const* name, void const* ptr)
+    {
+        std::cerr << "    field.sptr " << name << " " << ptr << "\n";
+    }
+
+    void dump_serializer::field(char const* name, position_type pos)
+    {
+        std::cerr << "    field.pos " << name << " " << pos.x << " " << pos.y << " " << pos.z << "\n";
+    }
+
     void dump(rt::hemesh::body_type* body)
     {
         for (auto& b: list::iterate(body)) {
