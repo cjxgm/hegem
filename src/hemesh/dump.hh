@@ -1,24 +1,41 @@
 #include "primitive.fwd.hh"
+#include "hemesh.fwd.hh"
 #include "serialize.hh"
+#include <unordered_map>
 
 namespace rt::hemesh
 {
-    struct dump_serializer final: serializer
-    {
-        void begin_structure(char const* name, void const* ptr) override;
-        void end_structure() override;
-        void field_ptr_from_slab(char const* name, void const* ptr) override;
-        void field(char const* name, position_type pos) override;
-    };
-
     struct cpp_serializer final: serializer
     {
-        void begin_structure(char const* name, void const* ptr) override;
+        void declare_structure(char const* type, char const* name, void const* ptr) override;
+
+        void begin_structure(char const* type, char const* name, void const* ptr) override;
         void end_structure() override;
-        void field_ptr_from_slab(char const* name, void const* ptr) override;
-        void field(char const* name, position_type pos) override;
+        void field_ptr_from_slab(char const* type, char const* name, void const* ptr) override;
+        void field(char const* type, char const* name, position_type pos) override;
+
+    private:
+        std::unordered_map<char const*, int> counters;
+        std::unordered_map<void const*, int> pointer_ids;
     };
 
-    void dump(rt::hemesh::body_type* body);
+    struct dump_serializer final: serializer
+    {
+        void declare_structure(char const* type, char const* name, void const* ptr) override;
+
+        void begin_structure(char const* type, char const* name, void const* ptr) override;
+        void end_structure() override;
+        void field_ptr_from_slab(char const* type, char const* name, void const* ptr) override;
+        void field(char const* type, char const* name, position_type pos) override;
+
+    private:
+        std::unordered_map<char const*, int> counters;
+        std::unordered_map<void const*, int> pointer_ids;
+        std::unordered_map<char const*, char const*> type_names;
+    };
+
+    void dump(hemesh const& m);
+    void dump_cpp(hemesh const& m);
+    void dump_pretty(hemesh const& m);
 }
 
