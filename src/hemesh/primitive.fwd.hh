@@ -5,7 +5,7 @@ namespace rt::hemesh
     inline namespace primitive
     {
         // Forward declarations
-        #define STRUCT(NAME) struct NAME;
+        #define STRUCT(NAME, VAR) struct NAME;
         #include "primitive.inl"
     }
 }

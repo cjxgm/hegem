@@ -1,11 +1,11 @@
 //#pragma once      // No #pragma once intentionally.
 // Primitive data structures description
 #ifndef STRUCT
-    #define STRUCT(NAME)
+    #define STRUCT(NAME, VAR)
 #endif
 
 #ifndef END_STRUCT
-    #define END_STRUCT(VAR)
+    #define END_STRUCT()
 #endif
 
 #ifndef FIELD_PTR_FROM_SLAB   // TYPE* is a pointer allocated from a slab
@@ -16,18 +16,18 @@
     #define FIELD(TYPE, VAR)
 #endif
 
-STRUCT(body_type)
+STRUCT(body_type, body)
     FIELD_PTR_FROM_SLAB(body_type, next)
     FIELD_PTR_FROM_SLAB(body_type, prev)
     FIELD_PTR_FROM_SLAB(face_type, any_face)
-END_STRUCT(body)
+END_STRUCT()
 
-STRUCT(face_type)
+STRUCT(face_type, face)
     FIELD_PTR_FROM_SLAB(face_type, next)
     FIELD_PTR_FROM_SLAB(face_type, prev)
     FIELD_PTR_FROM_SLAB(body_type, body)
     FIELD_PTR_FROM_SLAB(ring_type, boundary)
-END_STRUCT(face)
+END_STRUCT()
 
 // A "ring" represent a loop. (Yeah, yeah, I know).
 //
@@ -36,32 +36,32 @@ END_STRUCT(face)
 //
 // Inner and boundary loops must not intersect each other.
 // Inner loops must not contains any other loop.
-STRUCT(ring_type)
+STRUCT(ring_type, ring)
     FIELD_PTR_FROM_SLAB(ring_type, next)
     FIELD_PTR_FROM_SLAB(ring_type, prev)
     FIELD_PTR_FROM_SLAB(face_type, face)
     FIELD_PTR_FROM_SLAB(vert_type, any_vert)
     FIELD_PTR_FROM_SLAB(hege_type, any_hege)
-END_STRUCT(ring)
+END_STRUCT()
 
-STRUCT(edge_type)
+STRUCT(edge_type, edge)
     FIELD_PTR_FROM_SLAB(hege_type, any_hege)
-END_STRUCT(edge)
+END_STRUCT()
 
 // hege = Half EdGE
-STRUCT(hege_type)
+STRUCT(hege_type, hege)
     FIELD_PTR_FROM_SLAB(hege_type, next)
     FIELD_PTR_FROM_SLAB(hege_type, prev)
     FIELD_PTR_FROM_SLAB(hege_type, twin)
     FIELD_PTR_FROM_SLAB(ring_type, ring)
     FIELD_PTR_FROM_SLAB(vert_type, start)
     FIELD_PTR_FROM_SLAB(edge_type, edge)
-END_STRUCT(hege)
+END_STRUCT()
 
-STRUCT(vert_type)
+STRUCT(vert_type, vert)
     FIELD_PTR_FROM_SLAB(hege_type, any_hege)
     FIELD(position_type, pos)
-END_STRUCT(vert)
+END_STRUCT()
 
 #undef STRUCT
 #undef END_STRUCT
