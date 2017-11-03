@@ -24,7 +24,33 @@ namespace rt::hemesh
     {
         std::cerr << "    field.pos " << name << " " << pos.x << " " << pos.y << " " << pos.z << "\n";
     }
+}
 
+namespace rt::hemesh
+{
+    void cpp_serializer::begin_structure(char const* name, void const* ptr)
+    {
+        std::cerr << "new (" << ptr << ") " << name << "_type {\n";
+    }
+
+    void cpp_serializer::end_structure()
+    {
+        std::cerr << "};\n";
+    }
+
+    void cpp_serializer::field_ptr_from_slab(char const* name, void const* ptr)
+    {
+        std::cerr << "    ." << name << " = " << ptr << ",\n";
+    }
+
+    void cpp_serializer::field(char const* name, position_type pos)
+    {
+        std::cerr << "    ." << name << " = position_type{" << pos.x << ", " << pos.y << ", " << pos.z << "},\n";
+    }
+}
+
+namespace rt::hemesh
+{
     void dump(rt::hemesh::body_type* body)
     {
         for (auto& b: list::iterate(body)) {
