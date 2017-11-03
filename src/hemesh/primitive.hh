@@ -11,7 +11,7 @@ namespace rt::hemesh
         // Define structs
         #define STRUCT(NAME) struct NAME {
         #define END_STRUCT(VAR) };
-        #define FIELD_PTR(TYPE, VAR) TYPE* VAR;
+        #define FIELD_PTR_FROM_SLAB(TYPE, VAR) TYPE* VAR;
         #define FIELD(TYPE, VAR) TYPE VAR;
         #include "primitive.inl"
     }
