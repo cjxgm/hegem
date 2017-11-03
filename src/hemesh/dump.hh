@@ -3,7 +3,7 @@
 
 namespace rt::hemesh
 {
-    struct dump_serializer: serializer
+    struct dump_serializer final: serializer
     {
         void begin_structure(char const* name, void const* ptr) override;
         void end_structure() override;
@@ -11,7 +11,7 @@ namespace rt::hemesh
         void field(char const* name, position_type pos) override;
     };
 
-    struct cpp_serializer: serializer
+    struct cpp_serializer final: serializer
     {
         void begin_structure(char const* name, void const* ptr) override;
         void end_structure() override;
