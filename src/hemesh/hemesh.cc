@@ -1,6 +1,7 @@
 #include "hemesh.hh"
 #include "list.hh"
 #include "rebuild.hh"
+#include <stdexcept>
 
 namespace rt::hemesh
 {
@@ -44,7 +45,11 @@ namespace rt::hemesh
 
     hege_type* hemesh::make_hege_twin(ring_type* ring, vert_type* vert)
     {
-        if (ring->any_hege) return nullptr;
+        if (ring->any_hege) {
+            throw std::logic_error{
+                "Cannot make heges on a ring that already has an hege"
+            };
+        }
 
         auto* h0 = list::append(ring->any_hege, heges.alloc());
         auto* h1 = list::append(ring->any_hege, heges.alloc());
@@ -61,8 +66,6 @@ namespace rt::hemesh
 
     hege_type* hemesh::make_hege_twin(hege_type* hege, vert_type* vert)
     {
-        if (!hege->ring->any_hege) return nullptr;
-
         auto* h0 = list::insert_after(hege, heges.alloc());
         auto* h1 = list::insert_after(h0,   heges.alloc());
         h0->twin = h1;
@@ -85,14 +88,25 @@ namespace rt::hemesh
         return e;
     }
 
-    bool hemesh::close_hege(hege_type* h0, hege_type* h1)
+    //        h0
+    //    *<-----
+    //   /
+    //  / h1
+    // v
+    //
+    // assert: start(h1) == end(h0)
+    void hemesh::close_hege(hege_type* h0, hege_type* h1)
     {
-        if (h0->twin->start != h1->start) return false;
+        if (h0->twin->start != h1->start) {
+            throw std::logic_error{
+                "Cannot only close consecutive heges that share an intermediate point."
+            };
+        }
+
+        h1->prev->next = h0->twin;
+        h0->twin->prev = h1->prev;
         h0->next = h1;
         h1->prev = h0;
-        h1->twin->next = h0->twin;
-        h0->twin->prev = h1->twin;
-        return true;
     }
 }
 

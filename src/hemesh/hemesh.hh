@@ -21,7 +21,7 @@ namespace rt::hemesh
         hege_type* make_hege_twin(ring_type* ring, vert_type* vert);
         hege_type* make_hege_twin(hege_type* hege, vert_type* vert);
         edge_type* make_edge(hege_type* hege);
-        bool close_hege(hege_type* h0, hege_type* h1);
+        void close_hege(hege_type* h0, hege_type* h1);
 
     public: // data structure
         body_type* any_body{};

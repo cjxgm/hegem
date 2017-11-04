@@ -44,7 +44,7 @@ namespace rt::hemesh
             auto f = m.make_face(b);
             auto r = m.make_ring(f, first->start);
 
-            first->ring->any_hege = first->twin;
+            h->ring->any_hege = h->twin;
             for (h=first; true; h=h->next) {
                 h->ring = r;
                 if (h->next == first) break;
