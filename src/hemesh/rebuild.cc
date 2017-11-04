@@ -1,4 +1,5 @@
 #include "rebuild.hh"
+#include "hemesh.hh"
 #include <stdexcept>
 
 namespace rt::hemesh

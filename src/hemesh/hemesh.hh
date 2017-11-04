@@ -1,4 +1,5 @@
 #pragma once
+#include "hemesh.fwd.hh"
 #include "primitive.hh"
 #include "slab.hh"
 

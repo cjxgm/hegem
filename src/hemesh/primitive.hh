@@ -1,13 +1,11 @@
 #pragma once
-#include "../lib/glm/vec3.hh"
+#include "type.hh"
 #include "primitive.fwd.hh"
 
 namespace rt::hemesh
 {
     inline namespace primitive
     {
-        using position_type = glm::vec3;
-
         // Define structs
         #define STRUCT(NAME, VAR) struct NAME {
         #define END_STRUCT() };

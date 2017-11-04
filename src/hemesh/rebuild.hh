@@ -4,7 +4,7 @@
 // - Cloning a hemesh
 // - Deserialize hemesh from file
 // - Condense/Garbage-collect the slabs
-#include "hemesh.hh"
+#include "hemesh.fwd.hh"
 #include <vector>
 #include <unordered_map>
 #include <functional>

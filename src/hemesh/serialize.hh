@@ -2,7 +2,7 @@
 #include <string>
 #include <utility>      // for std::forward
 #include "hemesh.fwd.hh"
-#include "primitive.hh"
+#include "type.hh"
 
 namespace rt::hemesh
 {

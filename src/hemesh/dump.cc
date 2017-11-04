@@ -1,7 +1,6 @@
 #include "../lib/boost/format.hh"
 #include "dump.hh"
 #include "list.hh"
-#include "primitive.hh"
 #include "hemesh.hh"
 #include <iostream>
 #include <unordered_map>
