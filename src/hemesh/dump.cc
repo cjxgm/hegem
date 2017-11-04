@@ -145,6 +145,11 @@ namespace rt::hemesh
                 return "nil";
             };
 
+        if (m.any_body == nullptr) {
+            std::cerr << "= nil\n";
+            return;
+        }
+
         for (auto& b: iterate(m.any_body)) {
             std::cerr << "= " << name_of(&b) << "\n";
             for (auto& f: iterate(b.any_face)) {
