@@ -88,13 +88,15 @@ namespace rt::hemesh
 
 namespace rt::hemesh
 {
-    void dump(hemesh const& m)
+    void dump(hemesh const& m, bool starts_with_newline)
     {
+        if (starts_with_newline) std::cerr << "\n";
         serialize<dump_serializer>(m);
     }
 
-    void dump_cpp(hemesh const& m)
+    void dump_cpp(hemesh const& m, bool starts_with_newline)
     {
+        if (starts_with_newline) std::cerr << "\n";
         serialize<cpp_serializer>(m);
     }
 }
@@ -134,7 +136,7 @@ namespace rt::hemesh
         }
     }
 
-    void dump_pretty(hemesh const& m)
+    void dump_pretty(hemesh const& m, bool starts_with_newline)
     {
         using list::iterate;
 
@@ -144,6 +146,8 @@ namespace rt::hemesh
                 if (ptr) return ptr_names.at(ptr);
                 return "nil";
             };
+
+        if (starts_with_newline) std::cerr << "\n";
 
         if (m.any_body == nullptr) {
             std::cerr << "= nil\n";

@@ -34,8 +34,8 @@ namespace rt::hemesh
         std::unordered_map<char const*, char const*> type_names;
     };
 
-    void dump(hemesh const& m);
-    void dump_cpp(hemesh const& m);
-    void dump_pretty(hemesh const& m);
+    void dump(hemesh const& m, bool starts_with_newline=true);
+    void dump_cpp(hemesh const& m, bool starts_with_newline=true);
+    void dump_pretty(hemesh const& m, bool starts_with_newline=true);
 }
 
