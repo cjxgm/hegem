@@ -2,6 +2,7 @@
 #include "dump.hh"
 #include "list.hh"
 #include "hemesh.hh"
+#include "type.hh"
 #include <iostream>
 #include <unordered_map>
 #include <string>
@@ -135,15 +136,30 @@ namespace rt::hemesh
         }
     }
 
+    std::string pointer_name(
+        std::unordered_map<void const*, std::string> names,
+        void const* ptr)
+    {
+        if (ptr == nullptr) return "nil";
+
+        auto it = names.find(ptr);
+        if (it == end(names)) {
+            auto id = int(usize(ptr) & 0xFFFF);
+            auto fmt = boost::format("unknown-%04x");
+            return str(fmt % id);
+        }
+
+        return it->second;
+    }
+
     void dump_pretty(hemesh const& m, bool starts_with_newline)
     {
         using list::iterate;
 
         auto name_of =
             [ptr_names = build_pointer_names(m)]
-            (void const* ptr) -> std::string {
-                if (ptr) return ptr_names.at(ptr);
-                return "nil";
+            (void const* ptr) {
+                return pointer_name(ptr_names, ptr);
             };
 
         if (starts_with_newline) std::cerr << "\n";
@@ -177,6 +193,11 @@ namespace rt::hemesh
                 }
             }
         }
+    }
+
+    void dump_pointer(hemesh const& m, void const* ptr)
+    {
+        std::cerr << pointer_name(build_pointer_names(m), ptr) << "\n";
     }
 }
 
