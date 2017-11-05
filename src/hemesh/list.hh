@@ -1,6 +1,7 @@
 #pragma once
 // Operators for generic doubly-linked cyclic lists.
 #include "../util/priter.hh"
+#include <utility>      // for std::forward
 
 namespace rt::hemesh
 {
@@ -33,13 +34,17 @@ namespace rt::hemesh
             return insert_before(a, x);
         }
 
-        template <class T>
+        template <class Next_Policy>
         struct priter
         {
-            using value_type = T;
+            using next_policy = Next_Policy;
+            using value_type = typename next_policy::value_type;
 
             priter() = default;
-            priter(value_type* first) : first{first}, now{first} {}
+            priter(value_type* first, value_type* start=nullptr)
+                : now{start ? start : first}
+                , last{first}   // In doubly-linked cyclic lists, the first is also the last.
+            {}
 
             value_type* operator ++ ()
             {
@@ -47,21 +52,50 @@ namespace rt::hemesh
                     return nullptr;
 
                 auto result = now;
-                now = now->next;
-                if (now == first)
+                now = next(now);
+                if (now == last)
                     now = nullptr;
                 return result;
             }
 
+            static value_type* next(value_type* p) { return next_policy::next(p); }
+
         private:
-            value_type* first;
             value_type* now;
+            value_type* last;
         };
 
-        template <class T>
-        auto iterate(T* first)
+        template <class Next_Policy, class ...Ts>
+        auto range(Ts &&... xs)
         {
-            return util::range_from_priter(priter{first});
+            return util::range_from_priter(
+                priter<Next_Policy>{
+                    std::forward<Ts>(xs)...,
+                });
+        }
+
+        template <class T>
+        auto iterate(T* first, T* start=nullptr)
+        {
+            struct next_node
+            {
+                using value_type = T;
+                static value_type* next(value_type* p) { return p->next; }
+            };
+
+            return range<next_node>(first, start);
+        }
+
+        template <class T>
+        auto reverse_iterate(T* first, T* start=nullptr)
+        {
+            struct prev_node
+            {
+                using value_type = T;
+                static value_type* next(value_type* p) { return p->prev; }
+            };
+
+            return range<prev_node>(first, start);
         }
     }
 }
