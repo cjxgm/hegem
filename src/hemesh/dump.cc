@@ -110,7 +110,7 @@ namespace rt::hemesh
             std::unordered_map<std::string, int> counters;
             std::unordered_map<void const*, std::string> pointer_names;
 
-            auto fmt_name_2 = boost::format("%s-%02x");
+            auto fmt_name_3 = boost::format("%s-%03x");
             auto fmt_name_4 = boost::format("%s-%04x");
             auto fmt_name_8 = boost::format("%s-%08x");
             // fmt_name_16? No I don't think it's necessary.
@@ -125,8 +125,8 @@ namespace rt::hemesh
                     auto id = counters[var]++; \
                     auto& fmt = ( \
                         id > 0xFFFF ? fmt_name_8 : \
-                        id > 0xFF   ? fmt_name_4 : \
-                        fmt_name_2); \
+                        id > 0xFFF   ? fmt_name_4 : \
+                        fmt_name_3); \
                     pointer_names.emplace(&node, str(fmt % #VAR % id)); \
                 } \
             }
@@ -169,6 +169,8 @@ namespace rt::hemesh
             return;
         }
 
+        auto fmt_point = boost::format("(%+.3f, %+.3f, %+.3f)");
+
         for (auto& b: iterate(m.any_body)) {
             std::cerr << "= " << name_of(&b) << "\n";
             for (auto& f: iterate(b.any_face)) {
@@ -180,14 +182,14 @@ namespace rt::hemesh
                     std::cerr
                         << "  - " << name_of(&r) << ": "
                         << name_of(r.face) << " " << name_of(r.any_vert)
-                        << " (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
+                        << " " << fmt_point % pos.x % pos.y % pos.z
                         << "\n";
                     for (auto& h: iterate(r.any_hege)) {
                         auto& pos = h.start->pos;
                         std::cerr
                             << "    " << name_of(&h) << " ~ " << name_of(h.twin) << ": "
                             << name_of(h.edge) << " " << name_of(h.start)
-                            << " (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
+                            << " " << fmt_point % pos.x % pos.y % pos.z
                             << "\n";
                     }
                 }
