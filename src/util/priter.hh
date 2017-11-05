@@ -21,6 +21,7 @@
 //      while (auto x = ++x_pri) {
 //          // use *x
 //      }
+#include "range.hh"
 #include <utility>      // for std::move
 #include <type_traits>
 
@@ -87,19 +88,12 @@ namespace rt::util
     };
 
     template <class Priter>
-    struct range_from_priter
+    auto range_from_priter(Priter p)
     {
-        using priter_type = Priter;
-
-        range_from_priter(priter_type priter)
-            : priter{std::move(priter)}
-        {}
-
-        auto begin() const { return iterator_from_priter<priter_type>{priter}; }
-        auto   end() const { return iterator_from_priter<priter_type>{}; }
-
-    private:
-        priter_type priter;
-    };
+        return range{
+            iterator_from_priter<Priter>{std::move(p)},
+            iterator_from_priter<Priter>{},
+        };
+    }
 }
 

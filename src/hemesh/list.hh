@@ -61,7 +61,7 @@ namespace rt::hemesh
         template <class T>
         auto iterate(T* first)
         {
-            return util::range_from_priter{priter{first}};
+            return util::range_from_priter(priter{first});
         }
     }
 }
