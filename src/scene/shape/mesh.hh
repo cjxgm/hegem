@@ -32,6 +32,8 @@ namespace rt::scene
             vert_soup_type verts;
             face_soup_type faces;
         };
+
+        void extend(mesh & dst, mesh const& src);
     }
 }
 
