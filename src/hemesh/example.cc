@@ -42,6 +42,66 @@ namespace rt::hemesh
 
             return m;
         }
+
+        scene::scene_type make_example_scene()
+        {
+            auto view = scene::view_type {
+                "Example",
+                { 800, 450 },
+                8,
+                4,
+                scene::cameras::pin_hole {
+                    glm::vec3{ 0.0f, 0.0f, 5.0f },
+                    glm::vec3{ 0.0f, 0.0f, -1.0f },
+                    glm::vec3{ 0.0f, 1.0f, 0.0f },
+                    glm::radians(30.0f),
+                },
+            };
+
+            auto lamp_main = scene::lamps::sun {
+                glm::vec3{ 2.0f, -2.0f, -1.0f },
+                glm::vec3{ 1.0f, 0.9f, 0.8f } * 20.0f,
+            };
+            auto lamp_rim = scene::lamps::sun {
+                glm::vec3{ -1.0f, 1.0f, -1.0f },
+                glm::vec3{ 0.2f, 0.4f, 1.0f } * 16.0f,
+            };
+            auto lamp_back = scene::lamps::sun {
+                glm::vec3{ -0.2f, 0.2f, 0.8f },
+                glm::vec3{ 0.6f, 0.6f, 0.6f } * 10.0f,
+            };
+
+            auto mat_object = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{1.0f, 0.4f, 0.1f},
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
+                0.01,
+                1.5f,
+            };
+            auto mat_sky = scene::materials::solid_color {
+                glm::vec3{0.3f, 0.3f, 1.0f} * 10.0f,
+            };
+
+            scene::nodes::group node_root;
+            node_root.nodes.emplace_back(
+                scene::nodes::object {
+                    1,
+                    make_example(),
+                });
+
+            auto scene = scene::scene_type {
+                "hemesh",
+                { std::move(view) },
+                { std::move(lamp_main), std::move(lamp_rim), std::move(lamp_back) },
+                { std::move(mat_sky), std::move(mat_object) },
+                std::move(node_root),
+                0,
+            };
+
+            scene.rebuild_cache();
+
+            return scene;
+        }
     }
 }
 
