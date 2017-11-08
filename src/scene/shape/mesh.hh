@@ -3,6 +3,7 @@
 #include "../../math/direction.hh"
 #include <array>
 #include <vector>
+#include <iostream>
 
 namespace rt::scene
 {
@@ -34,6 +35,8 @@ namespace rt::scene
         };
 
         void extend(mesh & dst, mesh const& src);
+        void write_obj(mesh const& m, std::ostream & out);
+        void write_obj(mesh const& m, char const* path);
     }
 }
 
