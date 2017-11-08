@@ -77,6 +77,11 @@ namespace rt::hemesh
 
                     return h;
                 }
+
+                hege_type* make_cube(hemesh & m)
+                {
+                    return make_polygon_cylinder(m, 4, math::inv_sqrt_2, 1, 1.0f);
+                }
             }
         }
     }

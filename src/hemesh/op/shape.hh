@@ -20,7 +20,7 @@ namespace rt::hemesh
             inline namespace _3d
             {
                 hege_type* make_polygon_cylinder(hemesh & m, int ngon, float radius, int nseg, float height);
-                inline hege_type* make_cube(hemesh & m) { return make_polygon_cylinder(m, 4, 0.5f, 1, 1.0f); }
+                hege_type* make_cube(hemesh & m);
             }
         }
     }
