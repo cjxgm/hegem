@@ -48,8 +48,8 @@ namespace rt::hegem
             auto view = scene::view_type {
                 "Example",
                 { 800, 450 },
-                8,
-                4,
+                1,
+                16,
                 scene::cameras::pin_hole {
                     glm::vec3{ 0.0f, 0.0f, 5.0f },
                     glm::vec3{ 0.0f, 0.0f, -1.0f },
@@ -74,15 +74,15 @@ namespace rt::hegem
             auto mat_outline = scene::materials::physically_based {
                 scene::texture_packs::pure{},
                 glm::vec3{0.0f, 0.0f, 0.0f},
-                glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.8f,
                 0.1f,
                 1.5f,
             };
             auto mat_object = scene::materials::physically_based {
                 scene::texture_packs::pure{},
                 glm::vec3{1.0f, 0.4f, 0.1f},
-                glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
-                0.01f,
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.2f,
+                0.05f,
                 1.5f,
             };
             auto mat_sky = scene::materials::solid_color {
