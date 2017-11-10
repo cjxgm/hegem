@@ -5,6 +5,7 @@
 #include "intersect.hh"
 #include <numeric>
 #include <iostream>
+#include <stdexcept>
 
 namespace rt::raytracer
 {
@@ -88,6 +89,11 @@ namespace rt::raytracer
             shape_hit_type intersect_shape(ray_type const& ray, shapes::voxel const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
             {
                 return shape.voxelized.intersect(ray);
+            }
+
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::hemesh const& /*shape*/, optional_mesh_bvh_type const& /*opt_bvh*/)
+            {
+                throw std::logic_error{"hemeshes should have been converted into meshes."};
             }
         }
 

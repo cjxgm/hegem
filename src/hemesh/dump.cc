@@ -1,0 +1,205 @@
+#include "../lib/boost/format.hh"
+#include "dump.hh"
+#include "list.hh"
+#include "hemesh.hh"
+#include "type.hh"
+#include <iostream>
+#include <unordered_map>
+#include <string>
+#include <utility>      // for std::move
+
+namespace rt::hemesh
+{
+    void cpp_serializer::declare_structure(
+        char const* type,
+        char const* /*name*/,
+        void const* ptr)
+    {
+        if (counters.find(type) == end(counters))
+            counters.emplace(type, 0);
+        pointer_ids[ptr] = ++counters[type];
+    }
+
+    void cpp_serializer::begin_structure(
+        char const* type,
+        char const* /*name*/,
+        void const* ptr)
+    {
+        std::cerr << "new (" << pointer_ids[ptr] << ") " << type << " {\n";
+    }
+
+    void cpp_serializer::end_structure()
+    {
+        std::cerr << "};\n";
+    }
+
+    void cpp_serializer::field_ptr_from_slab(char const* type, char const* name, void const* ptr)
+    {
+        std::cerr
+            << "    ." << name << " = (" << type << "*)"
+            << (ptr ? pointer_ids[ptr] : 0)
+            << ",\n";
+    }
+
+    void cpp_serializer::field(char const* type, char const* name, position_type pos)
+    {
+        std::cerr << "    ." << name << " = position_type{" << pos.x << ", " << pos.y << ", " << pos.z << "},\n";
+    }
+}
+
+namespace rt::hemesh
+{
+    void dump_serializer::declare_structure(
+        char const* type,
+        char const* name,
+        void const* ptr)
+    {
+        if (counters.find(name) == end(counters))
+            counters.emplace(name, 0);
+        pointer_ids[ptr] = ++counters[name];
+        type_names[type] = name;
+    }
+
+    void dump_serializer::begin_structure(
+        char const* /*type*/,
+        char const* name,
+        void const* ptr)
+    {
+        std::cerr << "- " << name << "." << pointer_ids[ptr] << "\n";
+    }
+
+    void dump_serializer::end_structure()
+    {
+    }
+
+    void dump_serializer::field_ptr_from_slab(char const* type, char const* name, void const* ptr)
+    {
+        std::cerr
+            << "    " << name << " " << type_names[type]
+            << "." << (ptr ? pointer_ids[ptr] : 0)
+            << "\n";
+    }
+
+    void dump_serializer::field(char const* type, char const* name, position_type pos)
+    {
+        std::cerr << "    " << name << " " << pos.x << " " << pos.y << " " << pos.z << "\n";
+    }
+}
+
+namespace rt::hemesh
+{
+    void dump(hemesh const& m, bool starts_with_newline)
+    {
+        if (starts_with_newline) std::cerr << "\n";
+        serialize<dump_serializer>(m);
+    }
+
+    void dump_cpp(hemesh const& m, bool starts_with_newline)
+    {
+        if (starts_with_newline) std::cerr << "\n";
+        serialize<cpp_serializer>(m);
+    }
+}
+
+namespace rt::hemesh
+{
+    namespace
+    {
+        auto build_pointer_names(hemesh const& m)
+        {
+            std::unordered_map<std::string, int> counters;
+            std::unordered_map<void const*, std::string> pointer_names;
+
+            auto fmt_name_3 = boost::format("%s-%03x");
+            auto fmt_name_4 = boost::format("%s-%04x");
+            auto fmt_name_8 = boost::format("%s-%08x");
+            // fmt_name_16? No I don't think it's necessary.
+            // If there are actually that large number, just let it over-align.
+
+            #define STRUCT(TYPE, VAR) \
+            { \
+                std::string var{#VAR}; \
+                for (auto& node: m.VAR##s.nodes) { \
+                    if (counters.find(var) == end(counters)) \
+                        counters.emplace(var, 0); \
+                    auto id = counters[var]++; \
+                    auto& fmt = ( \
+                        id > 0xFFFF ? fmt_name_8 : \
+                        id > 0xFFF   ? fmt_name_4 : \
+                        fmt_name_3); \
+                    pointer_names.emplace(&node, str(fmt % #VAR % id)); \
+                } \
+            }
+            #include "primitive.inl"
+
+            return pointer_names;
+        }
+    }
+
+    std::string pointer_name(
+        std::unordered_map<void const*, std::string> names,
+        void const* ptr)
+    {
+        if (ptr == nullptr) return "nil";
+
+        auto it = names.find(ptr);
+        if (it == end(names)) {
+            auto id = int(usize(ptr) & 0xFFFF);
+            auto fmt = boost::format("unknown-%04x");
+            return str(fmt % id);
+        }
+
+        return it->second;
+    }
+
+    void dump_pretty(hemesh const& m, bool starts_with_newline)
+    {
+        using list::iterate;
+
+        auto name_of =
+            [ptr_names = build_pointer_names(m)]
+            (void const* ptr) {
+                return pointer_name(ptr_names, ptr);
+            };
+
+        if (starts_with_newline) std::cerr << "\n";
+
+        if (m.any_body == nullptr) {
+            std::cerr << "= nil\n";
+            return;
+        }
+
+        auto fmt_point = boost::format("(%+.3f, %+.3f, %+.3f)");
+
+        for (auto& b: iterate(m.any_body)) {
+            std::cerr << "= " << name_of(&b) << "\n";
+            for (auto& f: iterate(b.any_face)) {
+                std::cerr
+                    << "* " << name_of(&f) << ": " << name_of(f.body)
+                    << "\n";
+                for (auto& r: iterate(f.boundary)) {
+                    auto& pos = r.any_vert->pos;
+                    std::cerr
+                        << "  - " << name_of(&r) << ": "
+                        << name_of(r.face) << " " << name_of(r.any_vert)
+                        << " " << fmt_point % pos.x % pos.y % pos.z
+                        << "\n";
+                    for (auto& h: iterate(r.any_hege)) {
+                        auto& pos = h.start->pos;
+                        std::cerr
+                            << "    " << name_of(&h) << " ~ " << name_of(h.twin) << ": "
+                            << name_of(h.edge) << " " << name_of(h.start)
+                            << " " << fmt_point % pos.x % pos.y % pos.z
+                            << "\n";
+                    }
+                }
+            }
+        }
+    }
+
+    void dump_pointer(hemesh const& m, void const* ptr)
+    {
+        std::cerr << pointer_name(build_pointer_names(m), ptr) << "\n";
+    }
+}
+
