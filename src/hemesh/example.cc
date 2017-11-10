@@ -75,7 +75,7 @@ namespace rt::hemesh
                 scene::texture_packs::pure{},
                 glm::vec3{1.0f, 0.4f, 0.1f},
                 glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
-                0.01,
+                0.01f,
                 1.5f,
             };
             auto mat_sky = scene::materials::solid_color {
