@@ -71,11 +71,18 @@ namespace rt::hemesh
                 glm::vec3{ 0.6f, 0.6f, 0.6f } * 10.0f,
             };
 
+            auto mat_outline = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{0.0f, 0.0f, 0.0f},
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
+                0.1f,
+                1.5f,
+            };
             auto mat_object = scene::materials::physically_based {
                 scene::texture_packs::pure{},
                 glm::vec3{1.0f, 0.4f, 0.1f},
                 glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
-                0.01,
+                0.01f,
                 1.5f,
             };
             auto mat_sky = scene::materials::solid_color {
@@ -83,17 +90,23 @@ namespace rt::hemesh
             };
 
             scene::nodes::group node_root;
+            auto example = make_example();
+            node_root.nodes.emplace_back(
+                scene::nodes::object {
+                    2,
+                    build_outline_mesh(example),
+                });
             node_root.nodes.emplace_back(
                 scene::nodes::object {
                     1,
-                    make_example(),
+                    std::move(example),
                 });
 
             auto scene = scene::scene_type {
                 "hemesh",
                 { std::move(view) },
                 { std::move(lamp_main), std::move(lamp_rim), std::move(lamp_back) },
-                { std::move(mat_sky), std::move(mat_object) },
+                { std::move(mat_sky), std::move(mat_object), std::move(mat_outline) },
                 std::move(node_root),
                 0,
             };
