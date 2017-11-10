@@ -8,7 +8,7 @@
 #include <vector>
 #include <array>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     namespace
     {

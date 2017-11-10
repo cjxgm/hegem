@@ -3,7 +3,7 @@
 #include "primitive.hh"
 #include "list.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace geometry_operator
     {

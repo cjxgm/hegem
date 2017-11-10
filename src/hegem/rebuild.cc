@@ -2,7 +2,7 @@
 #include "hemesh.hh"
 #include <stdexcept>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     template <class T>
     auto make_relocatable_pointer(T*& ptr)

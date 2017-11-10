@@ -7,13 +7,13 @@
 #include "op.hh"
 #include <iostream>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace example
     {
         hemesh make_example()
         {
-            rt::hemesh::hemesh m;
+            rt::hegem::hemesh m;
 
             auto cube = make_cube(m)->ring->face->body;
             auto cylinder = make_polygon_cylinder(m, 12, 1.0f, 4, 2.0f)->ring->face->body;
@@ -38,7 +38,7 @@ namespace rt::hemesh
 
             auto tm = build_mesh(m);
             write_obj(tm, std::cerr);
-            write_obj(tm, "/tmp/test.obj");
+            write_obj(tm, "/tmp/hegem.obj");
 
             return m;
         }
@@ -103,7 +103,7 @@ namespace rt::hemesh
                 });
 
             auto scene = scene::scene_type {
-                "hemesh",
+                "hegem",
                 { std::move(view) },
                 { std::move(lamp_main), std::move(lamp_rim), std::move(lamp_back) },
                 { std::move(mat_sky), std::move(mat_object), std::move(mat_outline) },

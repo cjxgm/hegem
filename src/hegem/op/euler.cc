@@ -2,7 +2,7 @@
 #include "../primitive.hh"
 #include "euler.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace op
     {

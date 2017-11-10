@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <functional>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     using relocatable_pointer_type = std::reference_wrapper<void*>;
     using pointer_list_type = std::vector<relocatable_pointer_type>;

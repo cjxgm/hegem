@@ -4,7 +4,7 @@
 #include "transform.hh"
 #include <unordered_set>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace op
     {

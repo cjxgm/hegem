@@ -2,7 +2,7 @@
 #include "hemesh.hh"
 #include <unordered_set>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     void serialize(hemesh const& m, serializer& sr)
     {

@@ -3,7 +3,7 @@
 #include "../hemesh.fwd.hh"
 #include "../primitive.fwd.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace op
     {

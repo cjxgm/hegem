@@ -7,7 +7,7 @@
 #include <vector>
 #include <cmath>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace op
     {

@@ -5,7 +5,7 @@
 #include "../primitive.fwd.hh"
 #include "../type.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace op
     {

@@ -2,7 +2,7 @@
 #include "../scene/scene.hh"
 #include "hemesh.fwd.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace example
     {

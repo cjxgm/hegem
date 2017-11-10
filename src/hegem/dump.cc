@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>      // for std::move
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     void cpp_serializer::declare_structure(
         char const* type,
@@ -47,7 +47,7 @@ namespace rt::hemesh
     }
 }
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     void dump_serializer::declare_structure(
         char const* type,
@@ -86,7 +86,7 @@ namespace rt::hemesh
     }
 }
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     void dump(hemesh const& m, bool starts_with_newline)
     {
@@ -101,7 +101,7 @@ namespace rt::hemesh
     }
 }
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     namespace
     {

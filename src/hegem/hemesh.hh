@@ -3,7 +3,7 @@
 #include "primitive.hh"
 #include "slab.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     struct hemesh
     {

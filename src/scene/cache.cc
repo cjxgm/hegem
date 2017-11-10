@@ -1,4 +1,4 @@
-#include "../hemesh/mesh.hh"
+#include "../hegem/mesh.hh"
 #include "cache.hh"
 #include "scene.hh"
 #include "node.hh"

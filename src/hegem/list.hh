@@ -3,7 +3,7 @@
 #include "../util/priter.hh"
 #include <utility>      // for std::forward
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     namespace list
     {

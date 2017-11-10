@@ -3,7 +3,7 @@
 #include "rebuild.hh"
 #include <stdexcept>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     hemesh hemesh::clone() const
     {
@@ -16,7 +16,7 @@ namespace rt::hemesh
 }
 
 // makers
-namespace rt::hemesh
+namespace rt::hegem
 {
     body_type* hemesh::make_body()
     {
