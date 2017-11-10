@@ -23,6 +23,10 @@ namespace rt::hegem
         edge_type* make_edge(hege_type* hege);
         void close_hege(hege_type* h0, hege_type* h1);
 
+    public: // free(T*)
+        #define STRUCT(NAME, VAR) void free(NAME* VAR) { VAR ## s.free(VAR); }
+        #include "primitive.inl"
+
     public: // data structure
         body_type* any_body{};
 
