@@ -118,6 +118,35 @@ namespace rt::hegem
                 return ring;
             }
         }
+
+        inline namespace euler_reverse
+        {
+            hege_type* bridge(hemesh& m, hege_type* p0, hege_type* p1)
+            {
+                if (p0->ring == p1->ring) {
+                    throw std::invalid_argument{
+                        "Bridging connects 2 rings, but the 2 heges is on the same ring."
+                    };
+                }
+
+                if (p0->ring->face != p1->ring->face) {
+                    throw std::invalid_argument{
+                        "The 2 rings to bridge must be in the same face."
+                    };
+                }
+
+                auto ring = p0->ring;
+                m.free(p1->ring);
+
+                for (auto& h: list::iterate(p1))
+                    h.ring = ring;
+
+                auto h = m.make_hege_twin(p0->prev, p1->start);
+                m.close_hege(h, p1);
+                m.make_edge(h);
+                return h;
+            }
+        }
     }
 }
 
