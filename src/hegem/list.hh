@@ -8,30 +8,33 @@ namespace rt::hegem
     namespace list
     {
         template <class T>
+        void connect(T* from, T* to)
+        {
+            if (from) from->next = to;
+            if (to)     to->prev = from;
+        }
+
+        template <class T>
         T* insert_after(T* pivot, T* x)
         {
-            x->next = pivot->next;
-            x->prev = pivot;
-            x->prev->next = x;
-            x->next->prev = x;
+            connect(x, pivot->next);
+            connect(pivot, x);
             return x;
         }
 
         template <class T>
         T* insert_before(T* pivot, T* x)
         {
-            x->next = pivot;
-            x->prev = pivot->prev;
-            x->next->prev = x;
-            x->prev->next = x;
+            connect(pivot->prev, x);
+            connect(x, pivot);
             return x;
         }
 
         template <class T>
-        T* append(T*& a, T* x)
+        T* append(T*& first, T* x)
         {
-            if (!a) a = x;
-            return insert_before(a, x);
+            if (!first) first = x;
+            return insert_before(first, x);
         }
 
         template <class Next_Policy>
