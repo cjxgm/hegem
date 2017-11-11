@@ -74,8 +74,6 @@ namespace rt::hegem
             auto p0 = hege->start->pos;
             auto p1 = hege->twin->start->pos;
 
-            if (distance(p0, p1) < 0.2f) return tri_mesh;
-
             // Build local axis
             //      z: normal
             //      y: the same direction as hege
@@ -90,6 +88,9 @@ namespace rt::hegem
             tri_mesh.verts.push_back({ p1 - x * width, normal });   // 3
             tri_mesh.faces.emplace_back(0, 1, 2);
             tri_mesh.faces.emplace_back(3, 2, 1);
+
+            // No arrow if too close
+            if (distance(p0, p1) < 0.1f) return tri_mesh;
 
             // arrow
             auto arrow_center = mix(p0, p1, arrow_center_sliding) - x * width;
