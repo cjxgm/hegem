@@ -3,6 +3,7 @@
 #include "list.hh"
 #include "hemesh.hh"
 #include "type.hh"
+#include "rebuild.hh"
 #include <iostream>
 #include <unordered_map>
 #include <string>
@@ -103,41 +104,8 @@ namespace rt::hegem
 
 namespace rt::hegem
 {
-    namespace
-    {
-        auto build_pointer_names(hemesh const& m)
-        {
-            std::unordered_map<std::string, int> counters;
-            std::unordered_map<void const*, std::string> pointer_names;
-
-            auto fmt_name_3 = boost::format("%s-%03x");
-            auto fmt_name_4 = boost::format("%s-%04x");
-            auto fmt_name_8 = boost::format("%s-%08x");
-            // fmt_name_16? No I don't think it's necessary.
-            // If there are actually that large number, just let it over-align.
-
-            #define STRUCT(TYPE, VAR) \
-            { \
-                std::string var{#VAR}; \
-                for (auto& node: m.VAR##s.nodes) { \
-                    if (counters.find(var) == end(counters)) \
-                        counters.emplace(var, 0); \
-                    auto id = counters[var]++; \
-                    auto& fmt = ( \
-                        id > 0xFFFF ? fmt_name_8 : \
-                        id > 0xFFF   ? fmt_name_4 : \
-                        fmt_name_3); \
-                    pointer_names.emplace(&node, str(fmt % #VAR % id)); \
-                } \
-            }
-            #include "primitive.inl"
-
-            return pointer_names;
-        }
-    }
-
     std::string pointer_name(
-        std::unordered_map<void const*, std::string> names,
+        pointer_name_map_type const& names,
         void const* ptr)
     {
         if (ptr == nullptr) return "nil";
@@ -157,7 +125,7 @@ namespace rt::hegem
         using list::iterate;
 
         auto name_of =
-            [ptr_names = build_pointer_names(m)]
+            [ptr_names = build_pointer_name_map(m)]
             (void const* ptr) {
                 return pointer_name(ptr_names, ptr);
             };
@@ -199,7 +167,7 @@ namespace rt::hegem
 
     void dump_pointer(hemesh const& m, void const* ptr)
     {
-        std::cerr << pointer_name(build_pointer_names(m), ptr) << "\n";
+        std::cerr << pointer_name(build_pointer_name_map(m), ptr) << "\n";
     }
 }
 

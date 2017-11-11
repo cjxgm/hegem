@@ -1,13 +1,17 @@
+#include "../lib/boost/format.hh"
 #include "rebuild.hh"
 #include "hemesh.hh"
 #include <stdexcept>
 
 namespace rt::hegem
 {
-    template <class T>
-    auto make_relocatable_pointer(T*& ptr)
+    namespace
     {
-        return std::ref(reinterpret_cast<void*&>(ptr));
+        template <class T>
+        auto make_relocatable_pointer(T*& ptr)
+        {
+            return std::ref(reinterpret_cast<void*&>(ptr));
+        }
     }
 
     pointer_list_type collect_pointers(hemesh & m)
@@ -27,6 +31,48 @@ namespace rt::hegem
         #include "primitive.inl"
 
         return ptrs;
+    }
+
+    pointer_name_map_type build_pointer_name_map(hemesh const& m)
+    {
+        std::unordered_map<std::string, int> counters;
+        std::unordered_map<void const*, std::string> pointer_names;
+
+        auto fmt_name_3 = boost::format("%s-%03x");
+        auto fmt_name_4 = boost::format("%s-%04x");
+        auto fmt_name_8 = boost::format("%s-%08x");
+        // fmt_name_16? No I don't think it's necessary.
+        // If there are actually that large number, just let it over-align.
+
+        #define STRUCT(TYPE, VAR) \
+        { \
+            std::string var{#VAR}; \
+            for (auto& node: m.VAR##s.nodes) { \
+                if (counters.find(var) == end(counters)) \
+                    counters.emplace(var, 0); \
+                auto id = counters[var]++; \
+                auto& fmt = ( \
+                    id > 0xFFFF ? fmt_name_8 : \
+                    id > 0xFFF   ? fmt_name_4 : \
+                    fmt_name_3); \
+                pointer_names.emplace(&node, str(fmt % #VAR % id)); \
+            } \
+        }
+        #include "primitive.inl"
+
+        return pointer_names;
+    }
+
+    pointer_set_type build_free_pointer_set(hemesh const& m)
+    {
+        pointer_set_type frees;
+
+        #define STRUCT(TYPE, VAR) \
+            for (auto free: m.VAR##s.frees) \
+                frees.emplace(free);
+        #include "primitive.inl"
+
+        return frees;
     }
 
     pointer_map_type build_pointer_map(hemesh const& old, hemesh & now)

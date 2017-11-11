@@ -1,18 +1,12 @@
 #include "serialize.hh"
 #include "hemesh.hh"
-#include <unordered_set>
+#include "rebuild.hh"
 
 namespace rt::hegem
 {
     void serialize(hemesh const& m, serializer& sr)
     {
-        std::unordered_set<void const*> frees;
-
-        // Build free set (ID == 0 means it's a free pointer)
-        #define STRUCT(TYPE, VAR) \
-            for (auto free: m.VAR##s.frees) \
-                frees.emplace(free);
-        #include "primitive.inl"
+        auto frees = build_free_pointer_set(m);
 
         // Declare structures (skipping nodes in freelist)
         sr.declare_structure("hemesh", "mesh", &m);
