@@ -33,7 +33,7 @@ namespace rt::hegem
             auto hdisk = make_polygon_disk(m, 6, 1.0f);
             auto arrow = hdisk->ring->face->body;
             hdisk->start->pos = {};
-            extrude(m, hdisk->ring, {0, 2, 0});
+            extrude(m, hdisk->ring->face, {0, 2, 0});
 
             dump_pretty(m);
 

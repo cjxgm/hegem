@@ -4,6 +4,7 @@
 #include "../geometry.hh"
 #include "sweep.hh"
 #include "euler.hh"
+#include <stdexcept>
 
 namespace rt::hegem
 {
@@ -11,14 +12,21 @@ namespace rt::hegem
     {
         inline namespace sweep
         {
-            void extrude(hemesh & m, ring_type* ring, offset_type offset, float eps)
+            void extrude(hemesh & m, face_type* face, offset_type offset, float eps)
             {
-                if (ring == nullptr) return;
-                if (ring->any_hege == nullptr) return;
-                if (dot(offset, offset) <= eps*eps) return;
+                auto ring = face->boundary;
+                if (dot(offset, offset) <= eps*eps) {
+                    throw std::invalid_argument{
+                        "Extrusion offset too small."
+                    };
+                }
 
                 auto n = normal(ring->any_hege, eps);
-                if (!is_same_side(n, offset, eps)) return;
+                if (!is_same_side(n, offset, eps)) {
+                    throw std::invalid_argument{
+                        "Cannot extrude inward."
+                    };
+                }
 
                 auto first = ring->any_hege;
                 for (auto now=first;;) {

@@ -91,10 +91,10 @@ namespace rt::hegem
                     }
 
                     auto h = make_polygon_disk(m, ngon, radius);
-                    auto r = h->ring;
+                    auto f = h->ring->face;
                     offset_type offset{0.0f, height / float(nseg), 0.0f};
                     while (nseg-- > 0) {
-                        extrude(m, r, offset);
+                        extrude(m, f, offset);
                     }
 
                     return h;

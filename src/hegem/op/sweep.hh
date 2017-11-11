@@ -9,7 +9,7 @@ namespace rt::hegem
     {
         inline namespace sweep
         {
-            void extrude(hemesh & m, ring_type* ring, offset_type offset, float eps=1e-3f);
+            void extrude(hemesh & m, face_type* face, offset_type offset, float eps=1e-3f);
         }
     }
 }
