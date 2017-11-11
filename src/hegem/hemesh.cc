@@ -103,10 +103,8 @@ namespace rt::hegem
             };
         }
 
-        h1->prev->next = h0->twin;
-        h0->twin->prev = h1->prev;
-        h0->next = h1;
-        h1->prev = h0;
+        list::connect(h1->prev, h0->twin);
+        list::connect(h0, h1);
     }
 }
 

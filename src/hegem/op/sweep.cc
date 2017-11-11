@@ -3,6 +3,7 @@
 #include "../primitive.hh"
 #include "../geometry.hh"
 #include "../list.hh"
+#include "../iteration.hh"
 #include "sweep.hh"
 #include "euler.hh"
 #include <stdexcept>
@@ -19,16 +20,11 @@ namespace rt::hegem
                 {
                     auto first = ring->any_hege;
 
-                    for (auto now=first;;) {
-                        auto next = now->next;
-                        make_edge(m, now, next->start->pos + offset);
-                        if ((now = next) == first) break;
-                    }
+                    for (auto& h: list::iterate(first))
+                        make_edge(m, &h, h.next->start->pos + offset);
 
-                    for (auto now=first;;) {
-                        make_face(m, now->prev, now->next);
-                        if ((now = now->next->twin->next) == first) break;
-                    }
+                    for (auto& h: iter::heges_on_T_ring(first))
+                        make_face(m, h.prev, h.next);
                 }
             }
 

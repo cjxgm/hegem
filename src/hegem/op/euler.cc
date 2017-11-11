@@ -50,11 +50,9 @@ namespace rt::hegem
                 auto f = m.make_face(b);
                 auto r = m.make_ring(f, first->start);
 
-                for (h=first; true; h=h->next) {
-                    h->ring = r;
-                    if (h->next == first) break;
-                }
                 r->any_hege = first;
+                for (auto& h: list::iterate(first))
+                    h.ring = r;
 
                 return f;
             }
