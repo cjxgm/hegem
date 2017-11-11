@@ -45,7 +45,7 @@ namespace rt::hegem
 
             priter() = default;
             priter(value_type* first, value_type* start=nullptr)
-                : now{start ? start : first}
+                : now{start ? (start == first ? nullptr : start) : first}
                 , last{first}   // In doubly-linked cyclic lists, the first is also the last.
             {}
 
