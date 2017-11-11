@@ -1,6 +1,6 @@
 #include "../lib/std/filesystem.hh"
 #include "../util/journal.hh"
-#include "../hemesh/example.hh"
+#include "../hegem/example.hh"
 #include "options.hh"
 #include <vector>
 #include <algorithm>
@@ -34,7 +34,7 @@ namespace rt::app
     {
         if (argc > 1) scene_basedir = argv[1];
 
-        scenes.emplace_back(hemesh::make_example_scene());
+        scenes.emplace_back(hegem::make_example_scene());
         populate_scenes(*this);
     }
 }

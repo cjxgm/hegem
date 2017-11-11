@@ -4,7 +4,7 @@
 #include "../math/direction.hh"
 #include "../util/types.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace type
     {

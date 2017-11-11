@@ -148,7 +148,6 @@ void main()
         vec3 refl_color = refl_ior.rgb;
         float ior       = refl_ior.w;
 
-        vec3 towards_lamp_dir = normalize(vec3(-2.0f, 2.0f, 1.0f));
         vec3 viewing = normalize(p - camera_apex);
         vec3 reflected = reflect(viewing, n);
 
@@ -159,7 +158,13 @@ void main()
         vec3 refl = refl_color * dome_color;
         vec3 shaded = mix(diffuse, refl, fresnel);
 
-        combined = vec4(shaded, 1.0f);
+        if (dot(viewing, n) >= 0.0f) { // back face
+            float luma = clamp(dot(shaded, vec3(0.333f)), 1.0f, 3.0f);
+            combined = vec4(vec3(1.0f, 2.0f, 1.0f) * luma, 1.0f);
+        } else {    // front face
+            combined = vec4(shaded, 1.0f);
+        }
+
         return;
     }
 

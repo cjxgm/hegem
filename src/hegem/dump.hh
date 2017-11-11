@@ -2,7 +2,7 @@
 #include "serialize.hh"
 #include <unordered_map>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     struct cpp_serializer final: serializer
     {

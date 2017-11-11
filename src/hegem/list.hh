@@ -3,35 +3,44 @@
 #include "../util/priter.hh"
 #include <utility>      // for std::forward
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     namespace list
     {
         template <class T>
+        void connect(T* from, T* to)
+        {
+            if (from) from->next = to;
+            if (to)     to->prev = from;
+        }
+
+        template <class T>
+        void remove(T* x)
+        {
+            connect(x->prev, x->next);
+        }
+
+        template <class T>
         T* insert_after(T* pivot, T* x)
         {
-            x->next = pivot->next;
-            x->prev = pivot;
-            x->prev->next = x;
-            x->next->prev = x;
+            connect(x, pivot->next);
+            connect(pivot, x);
             return x;
         }
 
         template <class T>
         T* insert_before(T* pivot, T* x)
         {
-            x->next = pivot;
-            x->prev = pivot->prev;
-            x->next->prev = x;
-            x->prev->next = x;
+            connect(pivot->prev, x);
+            connect(x, pivot);
             return x;
         }
 
         template <class T>
-        T* append(T*& a, T* x)
+        T* append(T*& first, T* x)
         {
-            if (!a) a = x;
-            return insert_before(a, x);
+            if (!first) first = x;
+            return insert_before(first, x);
         }
 
         template <class Next_Policy>
@@ -42,7 +51,7 @@ namespace rt::hemesh
 
             priter() = default;
             priter(value_type* first, value_type* start=nullptr)
-                : now{start ? start : first}
+                : now{start ? (start == first ? nullptr : start) : first}
                 , last{first}   // In doubly-linked cyclic lists, the first is also the last.
             {}
 

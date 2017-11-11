@@ -2,7 +2,7 @@
 #include "type.hh"
 #include "primitive.fwd.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace geometry_operator
     {

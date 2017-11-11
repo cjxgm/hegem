@@ -3,7 +3,7 @@
 #include "rebuild.hh"
 #include <stdexcept>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     hemesh hemesh::clone() const
     {
@@ -16,7 +16,7 @@ namespace rt::hemesh
 }
 
 // makers
-namespace rt::hemesh
+namespace rt::hegem
 {
     body_type* hemesh::make_body()
     {
@@ -103,10 +103,8 @@ namespace rt::hemesh
             };
         }
 
-        h1->prev->next = h0->twin;
-        h0->twin->prev = h1->prev;
-        h0->next = h1;
-        h1->prev = h0;
+        list::connect(h1->prev, h0->twin);
+        list::connect(h0, h1);
     }
 }
 

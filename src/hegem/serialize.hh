@@ -4,7 +4,7 @@
 #include "hemesh.fwd.hh"
 #include "type.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     struct serializer
     {

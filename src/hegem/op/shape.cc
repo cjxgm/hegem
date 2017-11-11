@@ -3,11 +3,12 @@
 #include "shape.hh"
 #include "euler.hh"
 #include "sweep.hh"
+#include <utility>      // for std::swap
 #include <stdexcept>
 #include <vector>
 #include <cmath>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace op
     {
@@ -15,7 +16,7 @@ namespace rt::hemesh
         {
             inline namespace _2d
             {
-                hege_type* make_polygon(hemesh & m, util::const_span<position_type> points)
+                hege_type* make_polygon(hemesh & m, util::const_span<position_type> points, face_type* outer_face, face_type* counter_face)
                 {
                     if (points.size() < 3) {
                         throw std::invalid_argument{
@@ -24,19 +25,40 @@ namespace rt::hemesh
                         };
                     }
 
-                    auto r = make_body(m, points[0])->any_face->boundary;
-                    auto front = make_edge(m, r, points[1])->any_hege;
-
-                    auto back = front;
-                    for (auto& p: points.range(2)) {
-                        back = make_edge(m, back, p)->any_hege;
+                    if (outer_face == nullptr && counter_face != nullptr) {
+                        throw std::invalid_argument{
+                            "Both outer face and counter face are required "
+                            "to make a hole."
+                        };
                     }
 
-                    make_face(m, front, back);
-                    return front;
+                    auto fill_face = [&] (hege_type* front) {
+                        auto back = front;
+                        for (auto& p: points.range(2))
+                            back = make_edge(m, back, p)->any_hege;
+                        make_face(m, front, back);
+                    };
+
+                    if (outer_face) {
+                        auto bridge = make_edge(m, outer_face->boundary->any_hege, points[0])->any_hege;
+                        auto front = make_edge(m, bridge, points[1])->any_hege;
+
+                        fill_face(front);
+                        kill_bridge(m, bridge);
+
+                        if (counter_face)
+                            face_to_ring(m, front->ring->face, counter_face);
+
+                        return front;
+                    } else {
+                        auto r = make_body(m, points[0])->any_face->boundary;
+                        auto front = make_edge(m, r, points[1])->any_hege;
+                        fill_face(front);
+                        return front;
+                    }
                 }
 
-                hege_type* make_polygon_disk(hemesh & m, int ngon, float radius)
+                hege_type* make_polygon_disk(hemesh & m, int ngon, float radius, face_type* outer_face, face_type* counter_face)
                 {
                     if (ngon < 3) {
                         throw std::invalid_argument{
@@ -54,7 +76,7 @@ namespace rt::hemesh
                         points.emplace_back(std::cos(a) * radius, 0.0f, std::sin(a) * radius);
                     }
 
-                    return make_polygon(m, points);
+                    return make_polygon(m, points, outer_face, counter_face);
                 }
             }
 
@@ -69,10 +91,10 @@ namespace rt::hemesh
                     }
 
                     auto h = make_polygon_disk(m, ngon, radius);
-                    auto r = h->ring;
+                    auto f = h->ring->face;
                     offset_type offset{0.0f, height / float(nseg), 0.0f};
                     while (nseg-- > 0) {
-                        extrude(m, r, offset);
+                        extrude(m, f, offset);
                     }
 
                     return h;

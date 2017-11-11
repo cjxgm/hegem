@@ -1,0 +1,52 @@
+#include "../../lib/glm/op/geom.hh"
+#include "../hemesh.hh"
+#include "../primitive.hh"
+#include "../geometry.hh"
+#include "../list.hh"
+#include "../iteration.hh"
+#include "sweep.hh"
+#include "euler.hh"
+#include <stdexcept>
+
+namespace rt::hegem
+{
+    inline namespace op
+    {
+        inline namespace sweep
+        {
+            namespace
+            {
+                void extrude_ring(hemesh & m, ring_type* ring, offset_type offset)
+                {
+                    auto first = ring->any_hege;
+
+                    for (auto& h: list::iterate(first))
+                        make_edge(m, &h, h.next->start->pos + offset);
+
+                    for (auto& h: iter::heges_on_T_ring(first))
+                        make_face(m, h.prev, h.next);
+                }
+            }
+
+            void extrude(hemesh & m, face_type* face, offset_type offset, float eps)
+            {
+                if (dot(offset, offset) <= eps*eps) {
+                    throw std::invalid_argument{
+                        "Extrusion offset too small."
+                    };
+                }
+
+                auto n = normal(face->boundary->any_hege, eps);
+                if (!is_same_side(n, offset, eps)) {
+                    throw std::invalid_argument{
+                        "Extruding inwards is not allowed."
+                    };
+                }
+
+                for (auto& r: list::iterate(face->boundary))
+                    extrude_ring(m, &r, offset);
+            }
+        }
+    }
+}
+

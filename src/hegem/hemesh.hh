@@ -3,7 +3,7 @@
 #include "primitive.hh"
 #include "slab.hh"
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     struct hemesh
     {
@@ -22,6 +22,10 @@ namespace rt::hemesh
         hege_type* make_hege_twin(hege_type* hege, vert_type* vert);
         edge_type* make_edge(hege_type* hege);
         void close_hege(hege_type* h0, hege_type* h1);
+
+    public: // free(T*)
+        #define STRUCT(NAME, VAR) void free(NAME* VAR) { VAR ## s.free(VAR); }
+        #include "primitive.inl"
 
     public: // data structure
         body_type* any_body{};

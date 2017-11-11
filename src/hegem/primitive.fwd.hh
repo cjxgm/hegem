@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace primitive
     {

@@ -4,19 +4,70 @@
 #include "hemesh.hh"
 #include "mesh.hh"
 #include "dump.hh"
+#include "fsck.hh"
 #include "op.hh"
 #include <iostream>
+#include <stdexcept>
 
-namespace rt::hemesh
+namespace rt::hegem
 {
     inline namespace example
     {
+        namespace
+        {
+            void fsck_or_die(hemesh const& m, std::string const& situation)
+            {
+                if (fsck_all(m)) {
+                    throw std::logic_error{
+                        "Failed fsck " + situation + ". "
+                        "There should be a bug somewhere."
+                    };
+                }
+            }
+        }
+
         hemesh make_example()
         {
-            rt::hemesh::hemesh m;
+            hemesh m;
+            fsck_or_die(m, "just initialized");
 
-            auto cube = make_cube(m)->ring->face->body;
-            auto cylinder = make_polygon_cylinder(m, 12, 1.0f, 4, 2.0f)->ring->face->body;
+            auto cube_hege = make_cube(m);
+            auto cube = cube_hege->ring->face->body;
+            auto cube_top = cube_hege->next->next->twin->ring->face;
+            {
+                auto hole = make_polygon_disk(m, 6, 0.2f, cube_top)->ring;
+                affine_transform(hole, glm::translate(glm::vec3{ 0.0f, 1.0f, 0.0f }));
+                extrude(m, hole->face, { 0.0f, 0.5f, 0.0f });
+            }
+            fsck_all(m);
+            fsck_or_die(m, "after a cube's creation");
+
+            auto cylinder_face = make_polygon_disk(m, 12, 1.0f)->ring->face;
+            auto cylinder_counter_face = cylinder_face->boundary->any_hege->twin->ring->face;
+            auto cylinder = cylinder_face->body;
+            {
+                auto hole0 = make_polygon_disk(m, 4, 0.2f, cylinder_face, cylinder_counter_face)->ring;
+                auto hole1 = make_polygon_disk(m, 6, 0.5f, cylinder_face, cylinder_counter_face)->ring;
+                hole1->any_hege->next->next->next->start->pos = {};
+                affine_transform(hole0, glm::translate(glm::vec3{ -0.3f, 0.0f, 0.0f }));
+                affine_transform(hole1, glm::translate(glm::vec3{ 0.3f, 0.0f, 0.0f }));
+            }
+            extrude(m, cylinder_face, {  0.15f, 0.5f, 0.0f });
+            extrude(m, cylinder_face, {  0.05f, 0.5f, 0.0f });
+            extrude(m, cylinder_face, { -0.05f, 0.5f, 0.0f });
+            extrude(m, cylinder_face, { -0.15f, 0.5f, 0.0f });
+            fsck_or_die(m, "after a cylinder's creation");
+
+            auto disk_face = make_polygon_disk(m, 12, 1.0f)->ring->face;
+            auto disk_counter_face = disk_face->boundary->any_hege->twin->ring->face;
+            auto disk = disk_face->body;
+            {
+                auto hole0 = make_polygon_disk(m, 4, 0.2f, disk_face, disk_counter_face)->ring;
+                auto hole1 = make_polygon_disk(m, 5, 0.3f, disk_face, disk_counter_face)->ring;
+                affine_transform(hole0, glm::translate(glm::vec3{ -0.3f, 0.0f, 0.0f }));
+                affine_transform(hole1, glm::translate(glm::vec3{ 0.3f, 0.0f, 0.0f }));
+            }
+            fsck_or_die(m, "after a disk's creation");
 
             // ">>" shape (it's actually "<<" shape)
             //  _______
@@ -27,18 +78,20 @@ namespace rt::hemesh
             auto hdisk = make_polygon_disk(m, 6, 1.0f);
             auto arrow = hdisk->ring->face->body;
             hdisk->start->pos = {};
-            extrude(m, hdisk->ring, {0, 2, 0});
+            extrude(m, hdisk->ring->face, {0, 2, 0});
+            fsck_or_die(m, "after an arrow's creation");
 
             dump_pretty(m);
 
             affine_transform(cube, glm::translate(glm::vec3{ 0.0f, 0.0f, -2.0f }));
             affine_transform(arrow, glm::translate(glm::vec3{ -2.0f, 0.0f, 0.0f }));
             affine_transform(cylinder, glm::translate(glm::vec3{ 0.0f, 0.5f, 0.0f }));
-            affine_transform_all(cube, glm::translate(glm::vec3{ 1.0f, -1.0f, 1.0f }));
+            affine_transform(disk, glm::translate(glm::vec3{ 2.5f, 1.0f, 0.0f }));
+            affine_transform_all(cube, glm::translate(glm::vec3{ 0.0f, -1.0f, 0.0f }));
 
             auto tm = build_mesh(m);
             write_obj(tm, std::cerr);
-            write_obj(tm, "/tmp/test.obj");
+            write_obj(tm, "/tmp/hegem.obj");
 
             return m;
         }
@@ -48,8 +101,8 @@ namespace rt::hemesh
             auto view = scene::view_type {
                 "Example",
                 { 800, 450 },
-                8,
-                4,
+                1,
+                16,
                 scene::cameras::pin_hole {
                     glm::vec3{ 0.0f, 0.0f, 5.0f },
                     glm::vec3{ 0.0f, 0.0f, -1.0f },
@@ -74,15 +127,15 @@ namespace rt::hemesh
             auto mat_outline = scene::materials::physically_based {
                 scene::texture_packs::pure{},
                 glm::vec3{0.0f, 0.0f, 0.0f},
-                glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.8f,
                 0.1f,
                 1.5f,
             };
             auto mat_object = scene::materials::physically_based {
                 scene::texture_packs::pure{},
                 glm::vec3{1.0f, 0.4f, 0.1f},
-                glm::vec3{1.0f, 1.0f, 1.0f} * 0.5f,
-                0.01f,
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.2f,
+                0.05f,
                 1.5f,
             };
             auto mat_sky = scene::materials::solid_color {
@@ -103,7 +156,7 @@ namespace rt::hemesh
                 });
 
             auto scene = scene::scene_type {
-                "hemesh",
+                "hegem",
                 { std::move(view) },
                 { std::move(lamp_main), std::move(lamp_rim), std::move(lamp_back) },
                 { std::move(mat_sky), std::move(mat_object), std::move(mat_outline) },
