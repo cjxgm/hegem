@@ -15,6 +15,12 @@ namespace rt::hegem
         }
 
         template <class T>
+        void remove(T* x)
+        {
+            connect(x->prev, x->next);
+        }
+
+        template <class T>
         T* insert_after(T* pivot, T* x)
         {
             connect(x, pivot->next);
