@@ -43,12 +43,13 @@ namespace rt::hegem
                 auto h = m.make_hege_twin(last, first->start);
                 m.make_edge(h);
                 m.close_hege(h, first);
+                first->ring->any_hege = h->twin;
+                first->ring->any_vert = h->twin->start;
 
                 auto b = first->ring->face->body;
                 auto f = m.make_face(b);
                 auto r = m.make_ring(f, first->start);
 
-                h->ring->any_hege = h->twin;
                 for (h=first; true; h=h->next) {
                     h->ring = r;
                     if (h->next == first) break;
