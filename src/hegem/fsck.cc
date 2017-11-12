@@ -95,63 +95,27 @@ namespace rt::hegem
             auto bad = false;
             auto frees = build_free_pointer_set(m);
 
-            #define SKIP_FREE() \
-                if (frees.find(&node) != end(frees)) continue
-
-            #define LINK_CONSISTENT_IF_EQ(STRUCT, X0, X1, DISP0, DISP1) do { \
-                for (auto& node: m.STRUCT##s.nodes) { \
-                    SKIP_FREE(); \
-                    auto x0 = X0; \
-                    auto x1 = X1; \
-                    if (x0 != x1) { \
-                        bad = true; \
-                        std::cerr \
-                            << "\e[1;31mInconsistent link\e[0m " \
-                            << DISP0 << " " << x0 \
-                            << " != " \
-                            << DISP1 << " " << x1 \
-                            << "\n"; \
-                    } \
+            #define STRUCT(TYPE, VAR) \
+                for (auto& node: m.VAR##s.nodes) { \
+                    if (frees.find(&node) != end(frees)) continue; \
+                    auto struct_name = #VAR;
+            #define END_STRUCT() \
+                }
+            #define CHILD_PARENT_RELATION(CHILD, PARENT) \
+            { \
+                auto x0 = node.CHILD->PARENT; \
+                auto x1 = &node; \
+                if (x0 != x1) { \
+                    bad = true; \
+                    std::cerr \
+                        << "\e[1;31mInconsistent link\e[0m " \
+                        << struct_name << "->" #CHILD "->" #PARENT " " << x0 \
+                        << " != " \
+                        << struct_name << " " << x1 \
+                        << "\n"; \
                 } \
-            } while (false)
-
-            #define CHECK_PARENT_CHILD_CONSISTENCY_FULL(STRUCT, CHILD, PARENT) \
-                LINK_CONSISTENT_IF_EQ( \
-                    STRUCT, \
-                    node.CHILD->PARENT, \
-                    &node, \
-                    #STRUCT "->" #CHILD "->" #PARENT,  \
-                    #STRUCT \
-                )
-
-            #define CHECK_PARENT_CHILD_CONSISTENCY(STRUCT, FIELD) \
-                CHECK_PARENT_CHILD_CONSISTENCY_FULL(STRUCT, FIELD, STRUCT)
-
-            #define CHECK_PREV_NEXT_CONSISTENCY(STRUCT) \
-                LINK_CONSISTENT_IF_EQ( \
-                    STRUCT, \
-                    node.next->prev, \
-                    &node, \
-                    #STRUCT "->next->prev",  \
-                    #STRUCT \
-                )
-
-            CHECK_PARENT_CHILD_CONSISTENCY(body, any_face);
-            CHECK_PARENT_CHILD_CONSISTENCY(face, boundary);
-            CHECK_PARENT_CHILD_CONSISTENCY(ring, any_hege);
-            CHECK_PARENT_CHILD_CONSISTENCY(edge, any_hege);
-            CHECK_PARENT_CHILD_CONSISTENCY_FULL(vert, any_hege, start);
-
-            CHECK_PREV_NEXT_CONSISTENCY(body);
-            CHECK_PREV_NEXT_CONSISTENCY(face);
-            CHECK_PREV_NEXT_CONSISTENCY(ring);
-            CHECK_PREV_NEXT_CONSISTENCY(hege);
-
-            #undef SKIP_FREE
-            #undef LINK_CONSISTENT_IF_EQ
-            #undef CHECK_PARENT_CHILD_CONSISTENCY_FULL
-            #undef CHECK_PARENT_CHILD_CONSISTENCY
-            #undef CHECK_PREV_NEXT_CONSISTENCY
+            }
+            #include "primitive.inl"
 
             std::cerr << "\e[33m----------------------------------------\e[0m\n";
             return bad;
