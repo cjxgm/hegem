@@ -3,7 +3,7 @@
 #include "list.hh"
 #include "hemesh.hh"
 #include "type.hh"
-#include "rebuild.hh"
+#include "meta.hh"
 #include <iostream>
 #include <unordered_map>
 #include <string>

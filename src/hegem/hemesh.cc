@@ -1,6 +1,6 @@
 #include "hemesh.hh"
 #include "list.hh"
-#include "rebuild.hh"
+#include "meta.hh"
 #include <stdexcept>
 
 namespace rt::hegem

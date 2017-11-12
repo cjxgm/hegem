@@ -1,6 +1,6 @@
 #include "serialize.hh"
 #include "hemesh.hh"
-#include "rebuild.hh"
+#include "meta.hh"
 
 namespace rt::hegem
 {

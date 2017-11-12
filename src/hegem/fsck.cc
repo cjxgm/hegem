@@ -1,6 +1,6 @@
 #include "fsck.hh"
 #include "hemesh.hh"
-#include "rebuild.hh"
+#include "meta.hh"
 #include "list.hh"
 #include <unordered_map>
 #include <unordered_set>
