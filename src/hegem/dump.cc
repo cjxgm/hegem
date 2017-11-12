@@ -171,3 +171,24 @@ namespace rt::hegem
     }
 }
 
+namespace rt::hegem
+{
+    void dump_memory_usage_map(hemesh const& m)
+    {
+        constexpr auto line_width = 76;
+        auto frees = build_free_pointer_set(m);
+
+        #define STRUCT(NAME, VAR) \
+        { \
+            int x = 0; \
+            for (auto& node: m.VAR##s.nodes) { \
+                if (x++ % line_width == 0) std::cerr << (x == 1 ? "" : "\e[1;30m") << #VAR " \e[0m"; \
+                std::cerr << (frees.find(&node) == end(frees) ? "\e[1;30m.\e[0m" : "\e[1;32m#\e[0m"); \
+                if (x % line_width == 0) std::cerr << "\n"; \
+            } \
+            if (x % line_width != 0) std::cerr << "\n"; \
+        }
+        #include "primitive.inl"
+    }
+}
+

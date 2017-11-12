@@ -17,6 +17,7 @@ namespace rt::hegem
         {
             void fsck_or_die(hemesh const& m, std::string const& situation)
             {
+                dump_memory_usage_map(m);
                 if (fsck_all(m)) {
                     throw std::logic_error{
                         "Failed fsck " + situation + ". "
