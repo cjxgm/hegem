@@ -2,7 +2,7 @@
 use utf8;
 use strict;
 use warnings;
-use autodie qw[:all];
+use autodie;
 
 ############# default configuration ##############
 my $base_dir__source = "src";
