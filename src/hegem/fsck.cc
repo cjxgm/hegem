@@ -95,6 +95,20 @@ namespace rt::hegem
             auto bad = false;
             auto frees = build_free_pointer_set(m);
 
+            #define CHECK_EQ(A, B, NAME) do { \
+                auto x0 = A; \
+                auto x1 = B; \
+                if (x0 != x1) { \
+                    bad = true; \
+                    std::cerr \
+                        << "\e[1;31mInconsistent link\e[0m " \
+                        << struct_name << NAME << " " << x0 \
+                        << " != " \
+                        << struct_name << " " << x1 \
+                        << "\n"; \
+                } \
+            } while (false)
+
             #define STRUCT(TYPE, VAR) \
                 for (auto& node: m.VAR##s.nodes) { \
                     if (frees.find(&node) != end(frees)) continue; \
@@ -102,18 +116,23 @@ namespace rt::hegem
             #define END_STRUCT() \
                 }
             #define CHILD_PARENT_RELATION(CHILD, PARENT) \
+                CHECK_EQ(node.CHILD->PARENT, &node, "->" #CHILD "->" #PARENT);
+            #include "primitive.inl"
+
+            #define STRUCT(TYPE, VAR) \
+                for (auto& node: m.VAR##s.nodes) { \
+                    if (frees.find(&node) != end(frees)) continue; \
+                    auto struct_name = #VAR;
+            #define END_STRUCT() \
+                }
+            #define CHILDREN_PARENT_RELATION_CUSTOM_NEXT(CHILD_FIRST, PARENT, NEXT) \
             { \
-                auto x0 = node.CHILD->PARENT; \
-                auto x1 = &node; \
-                if (x0 != x1) { \
-                    bad = true; \
-                    std::cerr \
-                        << "\e[1;31mInconsistent link\e[0m " \
-                        << struct_name << "->" #CHILD "->" #PARENT " " << x0 \
-                        << " != " \
-                        << struct_name << " " << x1 \
-                        << "\n"; \
-                } \
+                auto first = node.CHILD_FIRST; \
+                auto child = first; \
+                do { \
+                    CHECK_EQ(child->PARENT, &node, "~>" #CHILD_FIRST "->" #PARENT); \
+                    child = child->NEXT; \
+                } while (child != first); \
             }
             #include "primitive.inl"
 

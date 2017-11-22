@@ -2,6 +2,7 @@
 // Primitive data structures description
 
 //---- You should define (one of or many of) the following macros.
+// structure definition
 #ifndef STRUCT
     #define STRUCT(NAME, VAR)
 #endif
@@ -18,8 +19,19 @@
     #define FIELD(TYPE, VAR)
 #endif
 
+// relationships
 #ifndef CHILD_PARENT_RELATION
     #define CHILD_PARENT_RELATION(CHILD, PARENT)
+#endif
+
+#ifndef CHILDREN_PARENT_RELATION
+    #define CHILDREN_PARENT_RELATION(CHILD_FIRST, PARENT) \
+        CHILDREN_PARENT_RELATION_CUSTOM_NEXT(CHILD_FIRST, PARENT, next)      // fallback
+#endif
+
+#ifndef CHILDREN_PARENT_RELATION_CUSTOM_NEXT
+    #define CHILDREN_PARENT_RELATION_CUSTOM_NEXT(CHILD_FIRST, PARENT, NEXT) \
+        CHILD_PARENT_RELATION(CHILD_FIRST, PARENT)      // fallback
 #endif
 
 //---- You'd better NOT define any of the following macros.
@@ -34,13 +46,13 @@
 //---- Data structure description
 LINKABLE_STRUCT(body_type, body)
     FIELD_PTR_FROM_SLAB(face_type, any_face)
-    CHILD_PARENT_RELATION(any_face, body)
+    CHILDREN_PARENT_RELATION(any_face, body)
 END_STRUCT()
 
 LINKABLE_STRUCT(face_type, face)
     FIELD_PTR_FROM_SLAB(body_type, body)
     FIELD_PTR_FROM_SLAB(ring_type, boundary)
-    CHILD_PARENT_RELATION(boundary, face)
+    CHILDREN_PARENT_RELATION(boundary, face)
 END_STRUCT()
 
 // A "ring" represent a loop. (Yeah, yeah, I know).
@@ -53,12 +65,13 @@ LINKABLE_STRUCT(ring_type, ring)
     FIELD_PTR_FROM_SLAB(face_type, face)
     FIELD_PTR_FROM_SLAB(vert_type, any_vert)
     FIELD_PTR_FROM_SLAB(hege_type, any_hege)
-    CHILD_PARENT_RELATION(any_hege, ring)
+    CHILDREN_PARENT_RELATION(any_hege, ring)
 END_STRUCT()
 
 STRUCT(edge_type, edge)
     FIELD_PTR_FROM_SLAB(hege_type, any_hege)
     CHILD_PARENT_RELATION(any_hege, edge)
+    CHILD_PARENT_RELATION(any_hege->twin, edge)
 END_STRUCT()
 
 // hege = Half EdGE
@@ -72,7 +85,7 @@ END_STRUCT()
 STRUCT(vert_type, vert)
     FIELD_PTR_FROM_SLAB(hege_type, any_hege)
     FIELD(position_type, pos)
-    CHILD_PARENT_RELATION(any_hege, start)
+    CHILDREN_PARENT_RELATION_CUSTOM_NEXT(any_hege, start, prev->twin)
 END_STRUCT()
 
 //---- ALL MACROS SHOULD BE UNDEF-ED
@@ -81,5 +94,7 @@ END_STRUCT()
 #undef FIELD_PTR_FROM_SLAB
 #undef FIELD
 #undef CHILD_PARENT_RELATION
+#undef CHILDREN_PARENT_RELATION
+#undef CHILDREN_PARENT_RELATION_CUSTOM_NEXT
 #undef LINKABLE_STRUCT
 
