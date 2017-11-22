@@ -37,5 +37,6 @@ namespace rt::hegem
     void dump_cpp(hemesh const& m, bool starts_with_newline=true);
     void dump_pretty(hemesh const& m, bool starts_with_newline=true);
     void dump_pointer(hemesh const& m, void const* ptr);    // this is slow
+    void dump_memory_usage_map(hemesh const& m);
 }
 

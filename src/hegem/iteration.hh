@@ -8,7 +8,7 @@ namespace rt::hegem
     namespace iter
     {
         // all outgoing heges around the start vertex of a hege
-        auto heges_around_vert(hege_type* first, hege_type* start=nullptr)
+        inline auto heges_around_vert(hege_type* first, hege_type* start=nullptr)
         {
             struct next_hege
             {
@@ -31,7 +31,7 @@ namespace rt::hegem
         //        │     ╰╴next
         //        ╰──────╴first
         //
-        auto heges_on_T_ring(hege_type* first, hege_type* start=nullptr)
+        inline auto heges_on_T_ring(hege_type* first, hege_type* start=nullptr)
         {
             struct next_on_T_ring
             {
