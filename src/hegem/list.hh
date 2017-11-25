@@ -43,6 +43,21 @@ namespace rt::hegem
             return insert_before(first, x);
         }
 
+        template <class T>
+        void extend(T*& first, T* x)
+        {
+            if (first) {
+                auto a = first;
+                auto b = first->prev;
+                auto c = x;
+                auto d = x->prev;
+                connect(b, c);
+                connect(d, a);
+            } else {
+                first = x;
+            }
+        }
+
         template <class Next_Policy>
         struct priter
         {
