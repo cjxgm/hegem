@@ -27,7 +27,7 @@ namespace rt::hegem
     public: // splicing-related
         void extend(hemesh const& m);
 
-    public: // Makers establishe internal data structures.
+    public: // makers establishes internal data structures.
         body_type* make_body();
         face_type* make_face(body_type* body);
         vert_type* make_vert();
@@ -44,7 +44,7 @@ namespace rt::hegem
     public: // data structure
         body_type* any_body{};
 
-        // Expands to unbound_slab<body_type> bodys; and etc.
+        // Expands to `unbound_slab<body_type> bodys;` and etc.
         #define STRUCT(NAME, VAR) unbound_trivial_slab<NAME> VAR ## s;
         #include "primitive.inl"
     };
