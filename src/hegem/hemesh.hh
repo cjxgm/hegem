@@ -10,7 +10,19 @@ namespace rt::hegem
         hemesh() = default;
         hemesh(hemesh &&) = default;
         hemesh& operator = (hemesh &&) = default;
-        hemesh& operator = (hemesh const&) = delete;
+
+        hemesh(hemesh const& m)
+        {
+            extend(m);
+        }
+
+        hemesh& operator = (hemesh const& m)
+        {
+            using std::swap;
+            hemesh x{m};
+            swap(*this, x);
+            return *this;
+        }
 
     public: // splicing-related
         hemesh clone() const;
@@ -36,9 +48,6 @@ namespace rt::hegem
         // Expands to unbound_slab<body_type> bodys; and etc.
         #define STRUCT(NAME, VAR) unbound_trivial_slab<NAME> VAR ## s;
         #include "primitive.inl"
-
-    private:
-        hemesh(hemesh const&) = default;    // not "= delete" intentionally
     };
 }
 
