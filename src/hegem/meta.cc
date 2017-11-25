@@ -1,6 +1,7 @@
 #include "../lib/boost/format.hh"
 #include "meta.hh"
 #include "hemesh.hh"
+#include "list.hh"
 #include <stdexcept>
 
 namespace rt::hegem
@@ -122,6 +123,37 @@ namespace rt::hegem
 
                 p.get() = entry_it->second;
             }
+        }
+
+        void extend(hemesh const& old, hemesh & now)
+        {
+            if (old.any_body == nullptr)
+                return;
+
+            auto frees = build_free_pointer_set(old);
+            pointer_map_type pmap;
+            pointer_list_type ptrs;
+
+            #define STRUCT(TYPE, VAR) \
+            { \
+                auto& old_slab = old.VAR##s; \
+                auto& now_slab = now.VAR##s; \
+                for (auto& node: old_slab.nodes) { \
+                    if (frees.find(&node) != end(frees)) continue; \
+                    auto& now_node = *now_slab.alloc(); \
+                    now_node = node; \
+                    pmap[&node] = &now_node;
+            #define END_STRUCT() \
+                } \
+            }
+            #define FIELD_PTR_FROM_SLAB(TYPE, VAR) \
+                ptrs.emplace_back(make_relocatable_pointer(now_node.VAR));
+            #include "primitive.inl"
+
+            reconstruct_pointers(pmap, ptrs);
+
+            auto extra_body = static_cast<body_type*>(pmap.at(old.any_body));
+            list::extend(now.any_body, extra_body);
         }
     }
 }

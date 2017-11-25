@@ -29,6 +29,7 @@ namespace rt::hegem
         pointer_set_type build_free_pointer_set(hemesh const& m);
         pointer_map_type build_pointer_map(hemesh const& old, hemesh & now);
         void reconstruct_pointers(pointer_map_type const& pmap, pointer_list_type const& ptrs);
+        void extend(hemesh const& old, hemesh & now);
     }
 }
 
