@@ -25,7 +25,6 @@ namespace rt::hegem
         }
 
     public: // splicing-related
-        hemesh clone() const;
         void extend(hemesh const& m);
 
     public: // Makers establishe internal data structures.
