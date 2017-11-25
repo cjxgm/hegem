@@ -3,6 +3,7 @@
 #include "meta.hh"
 #include <stdexcept>
 
+// splicing
 namespace rt::hegem
 {
     hemesh hemesh::clone() const
@@ -12,6 +13,11 @@ namespace rt::hegem
         auto ptrs = collect_pointers(m);
         reconstruct_pointers(pmap, ptrs);
         return m;
+    }
+
+    void hemesh::extend(hemesh const& m)
+    {
+        meta::extend(m, *this);
     }
 }
 

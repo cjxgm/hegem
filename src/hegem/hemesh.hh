@@ -11,7 +11,10 @@ namespace rt::hegem
         hemesh(hemesh &&) = default;
         hemesh& operator = (hemesh &&) = default;
         hemesh& operator = (hemesh const&) = delete;
+
+    public: // splicing-related
         hemesh clone() const;
+        void extend(hemesh const& m);
 
     public: // Makers establishe internal data structures.
         body_type* make_body();
