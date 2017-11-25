@@ -1,14 +1,28 @@
 #include "hemesh.hh"
 #include "list.hh"
 #include "meta.hh"
+#include "dump.hh"
+#include "fsck.hh"
 #include <stdexcept>
+#include <string>
 
-// splicing
+// misc
 namespace rt::hegem
 {
     void hemesh::extend(hemesh const& m)
     {
         meta::extend(m, *this);
+    }
+
+    void hemesh::diagnose(char const* situation) const
+    {
+        dump_memory_usage_map(*this);
+        if (fsck_all(*this)) {
+            throw std::logic_error{
+                std::string{} + "Failed fsck " + situation + ". "
+                "There should be a bug somewhere."
+            };
+        }
     }
 }
 

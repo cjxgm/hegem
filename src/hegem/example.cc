@@ -4,7 +4,6 @@
 #include "hemesh.hh"
 #include "mesh.hh"
 #include "dump.hh"
-#include "fsck.hh"
 #include "op.hh"
 #include <iostream>
 #include <stdexcept>
@@ -13,24 +12,10 @@ namespace rt::hegem
 {
     inline namespace example
     {
-        namespace
-        {
-            void fsck_or_die(hemesh const& m, std::string const& situation)
-            {
-                dump_memory_usage_map(m);
-                if (fsck_all(m)) {
-                    throw std::logic_error{
-                        "Failed fsck " + situation + ". "
-                        "There should be a bug somewhere."
-                    };
-                }
-            }
-        }
-
         hemesh make_example()
         {
             hemesh m;
-            fsck_or_die(m, "just initialized");
+            m.diagnose("just initialized");
 
             auto cube_hege = make_cube(m);
             auto cube = cube_hege->ring->face->body;
@@ -40,8 +25,7 @@ namespace rt::hegem
                 affine_transform(hole, glm::translate(glm::vec3{ 0.0f, 1.0f, 0.0f }));
                 extrude(m, hole->face, { 0.0f, 0.5f, 0.0f });
             }
-            fsck_all(m);
-            fsck_or_die(m, "after a cube's creation");
+            m.diagnose("after a cube's creation");
 
             auto cylinder_face = make_polygon_disk(m, 12, 1.0f)->ring->face;
             auto cylinder_counter_face = cylinder_face->boundary->any_hege->twin->ring->face;
@@ -57,7 +41,7 @@ namespace rt::hegem
             extrude(m, cylinder_face, {  0.05f, 0.5f, 0.0f });
             extrude(m, cylinder_face, { -0.05f, 0.5f, 0.0f });
             extrude(m, cylinder_face, { -0.15f, 0.5f, 0.0f });
-            fsck_or_die(m, "after a cylinder's creation");
+            m.diagnose("after a cylinder's creation");
 
             auto disk_face = make_polygon_disk(m, 12, 1.0f)->ring->face;
             auto disk_counter_face = disk_face->boundary->any_hege->twin->ring->face;
@@ -68,7 +52,7 @@ namespace rt::hegem
                 affine_transform(hole0, glm::translate(glm::vec3{ -0.3f, 0.0f, 0.0f }));
                 affine_transform(hole1, glm::translate(glm::vec3{ 0.3f, 0.0f, 0.0f }));
             }
-            fsck_or_die(m, "after a disk's creation");
+            m.diagnose("after a disk's creation");
 
             // ">>" shape (it's actually "<<" shape)
             //  _______
@@ -80,7 +64,7 @@ namespace rt::hegem
             auto arrow = hdisk->ring->face->body;
             hdisk->start->pos = {};
             extrude(m, hdisk->ring->face, {0, 2, 0});
-            fsck_or_die(m, "after an arrow's creation");
+            m.diagnose("after an arrow's creation");
 
             dump_pretty(m);
 

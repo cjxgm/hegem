@@ -24,8 +24,9 @@ namespace rt::hegem
             return *this;
         }
 
-    public: // splicing-related
+    public: // misc
         void extend(hemesh const& m);
+        void diagnose(char const* situation="at random location") const;
 
     public: // makers establishes internal data structures.
         body_type* make_body();
