@@ -1,3 +1,4 @@
+#include "../lib/glm/op/common.hh"
 #include "../lib/imgui.hh"
 #include "editor.hh"
 #include <algorithm>
@@ -25,7 +26,7 @@ namespace rt::sk
             auto origin_offset = to_glm(ImGui::GetCursorPos());
 
             auto screen_to_grid = [=] (glm::vec2 screen) {
-                return glm::ivec2{(screen - window_origin - origin) / grid_size};
+                return glm::ivec2{floor((screen - window_origin - origin) / grid_size)};
             };
 
             auto grid_to_screen = [=] (glm::ivec2 grid) {
