@@ -22,7 +22,7 @@ namespace rt::sk
     private:
         op_registry reg;
         std::vector<node> nodes;
-        node_id_type next_id;
+        node_id_type latest_id;
     };
 }
 

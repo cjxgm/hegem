@@ -6,7 +6,7 @@ namespace rt::sk
     node& graph::emplace(int x, int y, int width, op_id id)
     {
         return nodes.emplace_back(node{
-            .id = next_id++,
+            .id = ++latest_id,
             .x = x,
             .y = y,
             .width = width,
