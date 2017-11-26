@@ -49,7 +49,7 @@ namespace rt::sk
                         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor{50, 50, 50});
                         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
                         ImGui::SetCursorPos(to_imgui(pos));
-                        if (ImGui::Button("New node here...", to_imgui(size))) {
+                        if (ImGui::Button("+", to_imgui(size))) {
                             selection = 0;
                             state.new_node_x = mouse_grid.x;
                             state.new_node_y = mouse_grid.y;
