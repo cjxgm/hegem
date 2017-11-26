@@ -29,7 +29,7 @@ namespace rt::sk
                 auto kind_count = float(kinds.size());
                 #define KIND(ID, NAME, TOOLTIP) \
                 { \
-                    auto hue = kind_index++ / kind_count; \
+                    auto hue = kind_index++ / kind_count * 0.95f + 0.05f; \
                     kind_metadata_##ID = { \
                         .id = #ID, \
                         .name = NAME, \
