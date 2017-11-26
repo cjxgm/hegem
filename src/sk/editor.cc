@@ -218,6 +218,11 @@ namespace rt::sk
             }
 
             ImGui::EndChild();
+
+            if (ImGui::IsMouseDragging(2)) {
+                auto delta = to_glm(io.MouseDelta);
+                origin += delta;
+            }
         }
     }
 
