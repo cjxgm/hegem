@@ -18,7 +18,10 @@ namespace rt::sk
             char const* tooltip;
 
             // palette
-            color_type color;
+            color_type color_fg;
+            color_type color_bg;
+            color_type color_fg_accent;
+            color_type color_bg_accent;
         };
 
         struct op_metadata
