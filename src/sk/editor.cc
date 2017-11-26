@@ -13,7 +13,7 @@ namespace rt::sk
 
         void draw_editor(
             graph & g,
-            node_id_type & selection,
+            node_id_type & previewing_node,
             glm::vec2 & grid_size,
             glm::vec2 & origin,
             int & default_node_width,
@@ -51,7 +51,6 @@ namespace rt::sk
                         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
                         ImGui::SetCursorPos(to_imgui(pos));
                         if (ImGui::Button("+", to_imgui(size))) {
-                            selection = 0;
                             state.new_node_x = mouse_grid.x;
                             state.new_node_y = mouse_grid.y;
                             state.new_node_w = placeholder_width;
@@ -95,7 +94,7 @@ namespace rt::sk
                                 state.new_node_y,
                                 state.new_node_w,
                                 id);
-                            selection = node.id;
+                            previewing_node = node.id;
                             ImGui::CloseCurrentPopup();
                         }
                         if (ImGui::IsItemHovered()) {
@@ -135,7 +134,7 @@ namespace rt::sk
                         auto pos = grid_to_local({ node.x, node.y });
                         auto size = glm::vec2{float(node.width) - 0.3f, 1.0f} * grid_size;
 
-                        if (node.id == selection) {
+                        if (node.id == previewing_node) {
                             ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_bg));
                             ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg));
                             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
@@ -152,7 +151,7 @@ namespace rt::sk
                         ImGui::Button(op.name, to_imgui(size));
                         if (ImGui::IsItemActive()) {
                             if (ImGui::IsMouseDoubleClicked(0)) {
-                                selection = node.id;
+                                previewing_node = node.id;
                             }
 
                             else if (ImGui::IsMouseClicked(0)) {
@@ -234,7 +233,7 @@ namespace rt::sk
         ImGui::PushStyleColor(ImGuiCol_Border, ImColor{30, 30, 30});
         ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
-        draw_editor(g, selection, grid_size, origin, default_node_width, state);
+        draw_editor(g, previewing_node, grid_size, origin, default_node_width, state);
 
         ImGui::PopStyleColor(4);
     }

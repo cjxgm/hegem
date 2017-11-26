@@ -21,7 +21,7 @@ namespace rt::sk
 
     private:
         graph g;
-        node_id_type selection;
+        node_id_type previewing_node{};
 
         glm::vec2 grid_size{30.0f, 30.0f};
         glm::vec2 origin{0.0f, 0.0f};
