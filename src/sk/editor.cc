@@ -80,7 +80,15 @@ namespace rt::sk
                         ImGui::PushStyleColor(ImGuiCol_Button, ImColor{0, 0, 0, 0});
                         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(op.kind->color_bg));
                         ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(op.kind->color_bg_accent));
-                        ImGui::Button(op.name);
+                        if (ImGui::Button(op.name)) {
+                            auto& node = g.emplace(
+                                state.new_node_x,
+                                state.new_node_y,
+                                state.new_node_w,
+                                id);
+                            selection = node.id;
+                            ImGui::CloseCurrentPopup();
+                        }
                         ImGui::PopStyleColor(4);
                     }
                     ImGui::EndPopup();
