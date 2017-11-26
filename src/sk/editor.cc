@@ -95,6 +95,51 @@ namespace rt::sk
                 }
             }
 
+            { // nodes
+                ImGui::PushID("nodes");
+                for (auto& node: g.node_range()) {
+                    auto& op = *node.metadata;
+                    auto& kind = *op.kind;
+
+                    ImGui::PushID(node.id);
+
+                    { // operator node button
+                        auto pos = grid_to_local({ node.x, node.y });
+                        auto size = glm::vec2{float(node.width) - 0.3f, 1.0f} * grid_size;
+
+                        ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
+                        ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+
+                        ImGui::PushID("operator");
+                        ImGui::SetCursorPos(to_imgui(pos));
+                        ImGui::Button(op.name, to_imgui(size));
+                        ImGui::PopID();
+
+                        ImGui::PopStyleColor(4);
+                    }
+
+                    { // node resize button
+                        auto pos = grid_to_local({ node.x + node.width, node.y });
+                        auto size = glm::vec2{0.3f, 1.0f} * grid_size;
+                        pos.x -= 0.3f * grid_size.x;
+
+                        ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg_accent));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_fg));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_bg_accent));
+
+                        ImGui::SetCursorPos(to_imgui(pos));
+                        ImGui::Button("##resize", to_imgui(size));
+
+                        ImGui::PopStyleColor(3);
+                    }
+
+                    ImGui::PopID();
+                }
+                ImGui::PopID();
+            }
+
             ImGui::EndChild();
         }
     }
