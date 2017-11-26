@@ -19,7 +19,6 @@ namespace rt::sk
         {
             ImGui::BeginChild("sk editor region", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-            auto window_hovered = ImGui::IsWindowHovered();
             auto window_origin = to_glm(ImGui::GetCursorScreenPos());
             auto origin_offset = to_glm(ImGui::GetCursorPos());
 
@@ -36,7 +35,7 @@ namespace rt::sk
             };
 
             { // new node placeholder button and popup menu
-                if (window_hovered) {
+                if (ImGui::IsWindowHovered() && !ImGui::IsMouseDragging(0)) {
                     auto mouse_grid = screen_to_grid(to_glm(ImGui::GetMousePos()));
                     auto placeholder_width = g.find_empty_width(mouse_grid.x, mouse_grid.y, default_node_width);
 
@@ -49,6 +48,7 @@ namespace rt::sk
                         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
                         ImGui::SetCursorPos(to_imgui(pos));
                         if (ImGui::Button("New node here...", to_imgui(size))) {
+                            selection = 0;
                             state.new_node_x = mouse_grid.x;
                             state.new_node_y = mouse_grid.y;
                             state.new_node_w = placeholder_width;
@@ -107,14 +107,26 @@ namespace rt::sk
                         auto pos = grid_to_local({ node.x, node.y });
                         auto size = glm::vec2{float(node.width) - 0.3f, 1.0f} * grid_size;
 
-                        ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
-                        ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+                        if (node.id == selection) {
+                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_bg));
+                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+                        } else {
+                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+                        }
 
                         ImGui::PushID("operator");
                         ImGui::SetCursorPos(to_imgui(pos));
                         ImGui::Button(op.name, to_imgui(size));
+                        if (ImGui::IsItemClicked(0)) {
+                            if (ImGui::IsMouseDoubleClicked(0)) {
+                                selection = node.id;
+                            }
+                        }
                         ImGui::PopID();
 
                         ImGui::PopStyleColor(4);
