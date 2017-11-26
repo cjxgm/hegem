@@ -21,5 +21,22 @@ namespace rt::sk
                 return &node;
         return nullptr;
     }
+
+    node* graph::find_node(int x, int y)
+    {
+        for (auto& node: node_range())
+            if (contains(node, x, y))
+                return &node;
+        return nullptr;
+    }
+
+    std::vector<node*> graph::find_nodes(int x, int y)
+    {
+        std::vector<node*> found;
+        for (auto& node: node_range())
+            if (contains(node, x, y))
+                found.emplace_back(&node);
+        return found;
+    }
 }
 
