@@ -11,6 +11,7 @@
 #include "../raytracer/shade.hh"
 #include "../rasterizer/rasterizer.hh"
 #include "../rasterizer/state.hh"
+#include "../sk/editor.hh"
 #include "app.hh"
 #include "glfw.hh"
 #include "hdr-texture.hh"
@@ -66,6 +67,7 @@ namespace rt::app
             int tile_size[2] = {64, 64};
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
+            sk::editor sk_editor;
 
             static context& instance()
             {
@@ -535,6 +537,12 @@ namespace rt::app
                     view::statistics("statistics");
                     ImGui::End();
                 }
+
+                ImGui::SetNextWindowPos(ImVec2(400, 100), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
+                ImGui::Begin("Sk Editor");
+                ctx.sk_editor.draw();
+                ImGui::End();
 
                 process_pending_gl_jobs();
             }

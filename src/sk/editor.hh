@@ -8,8 +8,7 @@ namespace rt::sk
 {
     struct editor: util::constraints::only_movable
     {
-        void draw_editor();
-        void draw_properties();
+        void draw();
 
     private:
         graph g;
