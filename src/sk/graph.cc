@@ -1,4 +1,5 @@
 #include "graph.hh"
+#include <algorithm>
 
 namespace rt::sk
 {
@@ -37,6 +38,16 @@ namespace rt::sk
             if (contains(node, x, y))
                 found.emplace_back(&node);
         return found;
+    }
+
+    int graph::find_empty_width(int x, int y, int width)
+    {
+        for (auto& node: node_range()) {
+            if (node.y != y) continue;
+            if (node.x + node.width <= x) continue;
+            width = std::min(std::max(node.x - x, 0), width);
+        }
+        return width;
     }
 }
 
