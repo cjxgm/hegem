@@ -63,6 +63,8 @@ namespace rt::sk
                 if (ImGui::BeginPopup("new node")) {
                     auto pos = grid_to_screen({ state.new_node_x, state.new_node_y });
                     ImGui::SetWindowPos(to_imgui(pos));
+                    char const* tooltip{};
+                    kind_metadata const* tooltip_kind;
 
                     kind_metadata const* prev_kind = nullptr;
                     for (auto& entry: g.op_metadata_range()) {
@@ -74,6 +76,10 @@ namespace rt::sk
                             ImGui::AlignFirstTextHeightToWidgets();
                             ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(op.kind->color_fg_accent));
                             ImGui::Text(prev_kind->name);
+                            if (ImGui::IsItemHovered()) {
+                                tooltip = prev_kind->tooltip;
+                                tooltip_kind = prev_kind;
+                            }
                             ImGui::PopStyleColor(1);
                         }
                         ImGui::SameLine();
@@ -91,8 +97,24 @@ namespace rt::sk
                             selection = node.id;
                             ImGui::CloseCurrentPopup();
                         }
+                        if (ImGui::IsItemHovered()) {
+                            tooltip = op.tooltip;
+                            tooltip_kind = op.kind;
+                        }
                         ImGui::PopStyleColor(4);
                     }
+
+                    if (tooltip) {
+                        ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_kind->color_fg));
+                        ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{20, 20, 20, 200});
+                        auto pos = window_origin + glm::vec2{10.0f};
+                        ImGui::SetNextWindowPos(to_imgui(pos));
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", tooltip);
+                        ImGui::EndTooltip();
+                        ImGui::PopStyleColor(2);
+                    }
+
                     ImGui::EndPopup();
                 }
             }
