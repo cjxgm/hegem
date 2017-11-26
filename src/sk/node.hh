@@ -18,5 +18,9 @@ namespace rt::sk
         // cache
         op_metadata const* metadata;
     };
+
+    bool contains(node const& n, int x, int y);
+    bool overlaps(node const& a, node const& b);
+    bool connects(node const& above, node const& below);
 }
 
