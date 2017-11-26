@@ -1,5 +1,6 @@
 #include "../lib/imgui.hh"
 #include "editor.hh"
+#include <algorithm>
 
 namespace rt::sk
 {
@@ -17,6 +18,7 @@ namespace rt::sk
             int & default_node_width,
             editor::draw_state & state)
         {
+            auto& io = ImGui::GetIO();
             ImGui::BeginChild("sk editor region", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
             auto window_origin = to_glm(ImGui::GetCursorScreenPos());
@@ -102,6 +104,9 @@ namespace rt::sk
                     auto& kind = *op.kind;
 
                     ImGui::PushID(node.id);
+                    auto node_new_x = node.x;
+                    auto node_new_y = node.y;
+                    auto node_new_w = node.width;
 
                     { // operator node button
                         auto pos = grid_to_local({ node.x, node.y });
@@ -122,9 +127,28 @@ namespace rt::sk
                         ImGui::PushID("operator");
                         ImGui::SetCursorPos(to_imgui(pos));
                         ImGui::Button(op.name, to_imgui(size));
-                        if (ImGui::IsItemClicked(0)) {
+                        if (ImGui::IsItemActive()) {
                             if (ImGui::IsMouseDoubleClicked(0)) {
                                 selection = node.id;
+                            }
+
+                            else if (ImGui::IsMouseClicked(0)) {
+                                state.drag_start_node_x = node.x;
+                                state.drag_start_node_y = node.y;
+                            }
+
+                            else if (ImGui::IsMouseDragging(0)) {
+                                auto old_mouse = to_glm(io.MouseClickedPos[0]);
+                                auto mouse = to_glm(ImGui::GetMousePos());
+                                auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
+
+                                auto old_grid = glm::ivec2{
+                                    state.drag_start_node_x,
+                                    state.drag_start_node_y,
+                                };
+                                auto grid = old_grid + grid_delta;
+                                node_new_x = grid.x;
+                                node_new_y = grid.y;
                             }
                         }
                         ImGui::PopID();
@@ -143,9 +167,28 @@ namespace rt::sk
 
                         ImGui::SetCursorPos(to_imgui(pos));
                         ImGui::Button("##resize", to_imgui(size));
+                        if (ImGui::IsItemActive()) {
+                            if (ImGui::IsMouseClicked(0)) {
+                                state.drag_start_node_x = node.x + node.width - 1;
+                            }
+
+                            else if (ImGui::IsMouseDragging(0)) {
+                                auto old_mouse = to_glm(io.MouseClickedPos[0]);
+                                auto mouse = to_glm(ImGui::GetMousePos());
+                                auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
+
+                                auto old_grid = state.drag_start_node_x;
+                                auto grid = old_grid + grid_delta.x;
+                                node_new_w = std::max(1, grid - node.x + 1);
+                            }
+                        }
 
                         ImGui::PopStyleColor(3);
                     }
+
+                    node.x = node_new_x;
+                    node.y = node_new_y;
+                    node.width = node_new_w;
 
                     ImGui::PopID();
                 }

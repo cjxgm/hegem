@@ -15,6 +15,8 @@ namespace rt::sk
             int new_node_x{};
             int new_node_y{};
             int new_node_w{};
+            int drag_start_node_x{};
+            int drag_start_node_y{};
         };
 
     private:
