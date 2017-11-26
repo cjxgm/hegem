@@ -11,6 +11,7 @@ namespace rt::sk
     struct graph: util::constraints::only_movable
     {
         node& emplace(int x, int y, int width, op_id id);
+        node* find_node(node_id_type id);
 
         auto node_range() { return util::range{begin(nodes), end(nodes)}; }
         auto op_metadata_range() { return util::range{begin(reg.ops), end(reg.ops)}; }
@@ -18,6 +19,7 @@ namespace rt::sk
     private:
         op_registry reg;
         std::vector<node> nodes;
+        node_id_type next_id;
     };
 }
 
