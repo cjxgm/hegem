@@ -124,6 +124,9 @@ namespace rt::sk
                     return glm::vec2{grid} * grid_size + origin + origin_offset;
                 };
 
+                char const* tooltip{};
+                kind_metadata const* tooltip_kind;
+
                 { // new node placeholder button and popup menu
                     if (ImGui::IsWindowHovered() && !ImGui::IsMouseDragging(0)) {
                         auto mouse_grid = screen_to_grid(mouse_screen_pos);
@@ -149,8 +152,6 @@ namespace rt::sk
                     if (ImGui::BeginPopup("new node")) {
                         auto pos = grid_to_screen(tmp.node_pos);
                         ImGui::SetWindowPos(to_imgui(pos));
-                        char const* tooltip{};
-                        kind_metadata const* tooltip_kind;
 
                         kind_metadata const* prev_kind = nullptr;
                         for (auto& entry: g.op_metadata_range()) {
@@ -192,17 +193,6 @@ namespace rt::sk
                             ImGui::PopStyleColor(4);
 
                             ImGui::PopID();
-                        }
-
-                        if (tooltip) {
-                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_kind->color_fg));
-                            ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{20, 20, 20, 200});
-                            auto pos = window_origin + glm::vec2{10.0f};
-                            ImGui::SetNextWindowPos(to_imgui(pos));
-                            ImGui::BeginTooltip();
-                            ImGui::Text("%s", tooltip);
-                            ImGui::EndTooltip();
-                            ImGui::PopStyleColor(2);
                         }
 
                         ImGui::EndPopup();
@@ -325,6 +315,17 @@ namespace rt::sk
                         ImGui::PopID();
                     }
                     ImGui::PopID();
+                }
+
+                if (tooltip) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_kind->color_fg));
+                    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{20, 20, 20, 200});
+                    auto pos = window_origin + glm::vec2{10.0f};
+                    ImGui::SetNextWindowPos(to_imgui(pos));
+                    ImGui::BeginTooltip();
+                    ImGui::Text("%s", tooltip);
+                    ImGui::EndTooltip();
+                    ImGui::PopStyleColor(2);
                 }
 
                 ImGui::EndChild();
