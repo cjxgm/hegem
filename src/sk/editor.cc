@@ -40,6 +40,46 @@ namespace rt::sk
                 return scaler;
             }
 
+            namespace draw_edit
+            {
+                void number(char const* label, float & x)
+                {
+                    ImGui::DragFloat(label, &x);
+                }
+            }
+
+            void draw_fields(node & n)
+            {
+                auto& inst = n.instance;
+                auto& op = *n.metadata;
+                auto& kind = *op.kind;
+                char const* tooltip{};
+
+                {
+                    auto cpos = ImGui::GetCursorPos();
+                    ImGui::InvisibleButton("extend width", ImVec2{400.0f, 0.0f});
+                    ImGui::SetCursorPos(cpos);
+                }
+
+                ImGui::Text("%s (%s)", op.name, kind.name);
+                ImGui::Spacing();
+
+                switch (inst.id) {
+                    #define OP(KIND, ID, ARITY, NAME, TOOLTIP, FIELDS...) \
+                        case op_id::KIND##_##ID: { \
+                            auto& fields = inst.fields.KIND##_##ID; \
+                            FIELDS \
+                        } break;
+                    #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP) \
+                        ImGui::PushItemWidth(-100); \
+                        ImGui::PushID(#VAR); \
+                        draw_edit::EDITING_WIDGET(NAME, fields.VAR); \
+                        if (ImGui::IsItemHovered()) tooltip = TOOLTIP; \
+                        ImGui::PopID();
+                    #include "op.inl"
+                }
+            }
+
             void draw_editor(
                 graph & g,
                 node_id_type & previewing_node,
@@ -221,9 +261,27 @@ namespace rt::sk
                                     node_new_w = width;
                                 }
                             }
-                            ImGui::PopID();
 
+                            ImGui::PopID();
                             ImGui::PopStyleColor(4);
+
+                            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+                                ImGui::OpenPopup("fields");
+                            }
+
+                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_Border, to_imcolor(kind.color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBg, to_imcolor(kind.color_bg));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, to_imcolor(kind.color_fg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, to_imcolor(kind.color_bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, to_imcolor(kind.color_bg_accent));
+                            if (ImGui::BeginPopup("fields")) {
+                                auto pos = grid_to_screen({ node.x, node.y });
+                                ImGui::SetWindowPos(to_imgui(pos));
+                                draw_fields(node);
+                                ImGui::EndPopup();
+                            }
+                            ImGui::PopStyleColor(6);
                         }
 
                         { // node resize button
