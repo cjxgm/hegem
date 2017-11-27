@@ -48,12 +48,11 @@ namespace rt::sk
                 }
             }
 
-            void draw_fields(node & n)
+            void draw_fields(node & n, char const*& tooltip)
             {
                 auto& inst = n.instance;
                 auto& op = *n.metadata;
                 auto& kind = *op.kind;
-                char const* tooltip{};
 
                 {
                     auto cpos = ImGui::GetCursorPos();
@@ -272,7 +271,8 @@ namespace rt::sk
                             if (ImGui::BeginPopup("fields")) {
                                 auto pos = grid_to_screen({ node.x, node.y });
                                 ImGui::SetWindowPos(to_imgui(pos));
-                                draw_fields(node);
+                                tooltip_kind = &kind;
+                                draw_fields(node, tooltip);
                                 ImGui::EndPopup();
                             }
                             ImGui::PopStyleColor(6);
