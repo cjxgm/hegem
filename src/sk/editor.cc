@@ -163,6 +163,7 @@ namespace rt::sk
 
                                 else if (ImGui::IsMouseClicked(0)) {
                                     tmp.node_pos = { node.x, node.y };
+                                    tmp.node_width = node.width;
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
@@ -172,8 +173,12 @@ namespace rt::sk
 
                                     auto old_grid = tmp.node_pos;
                                     auto grid = old_grid + grid_delta;
+                                    grid.x = g.find_empty_x(grid.x, grid.y, node.id);
+                                    auto width = g.find_empty_width(grid.x, grid.y, tmp.node_width, node.id);
+
                                     node_new_x = grid.x;
                                     node_new_y = grid.y;
+                                    node_new_w = width;
                                 }
                             }
                             ImGui::PopID();
@@ -194,7 +199,8 @@ namespace rt::sk
                             ImGui::Button("##resize", to_imgui(size));
                             if (ImGui::IsItemActive()) {
                                 if (ImGui::IsMouseClicked(0)) {
-                                    tmp.node_pos.x = node.x + node.width - 1;
+                                    tmp.node_pos = { node.x, node.y };
+                                    tmp.node_width = node.width;
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
@@ -202,8 +208,9 @@ namespace rt::sk
                                     auto mouse = to_glm(ImGui::GetMousePos());
                                     auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
 
-                                    auto grid_x = tmp.node_pos.x + grid_delta.x;
-                                    node_new_w = std::max(1, grid_x - node.x + 1);
+                                    auto width = std::max(1, tmp.node_width + grid_delta.x);
+                                    width = g.find_empty_width(tmp.node_pos.x, tmp.node_pos.y, width, node.id);
+                                    node_new_w = width;
                                 }
                             }
 
