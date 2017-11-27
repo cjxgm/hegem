@@ -317,7 +317,7 @@ namespace rt::sk
                     ImGui::PopID();
                 }
 
-                if (tooltip) {
+                if (tooltip && tooltip[0] != '\0') {
                     ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_kind->color_fg));
                     ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{20, 20, 20, 200});
                     auto pos = window_origin + glm::vec2{10.0f};
