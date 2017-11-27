@@ -9,11 +9,8 @@ namespace rt::sk
     {
         struct temporary_state
         {
-            int new_node_x{};
-            int new_node_y{};
-            int new_node_w{};
-            int drag_start_node_x{};
-            int drag_start_node_y{};
+            glm::ivec2 node_pos;
+            int node_width;
         };
 
         namespace
@@ -62,9 +59,8 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
                             ImGui::SetCursorPos(to_imgui(pos));
                             if (ImGui::Button("+", to_imgui(size))) {
-                                tmp.new_node_x = mouse_grid.x;
-                                tmp.new_node_y = mouse_grid.y;
-                                tmp.new_node_w = placeholder_width;
+                                tmp.node_pos = mouse_grid;
+                                tmp.node_width = placeholder_width;
                                 ImGui::OpenPopup("new node");
                             }
                             ImGui::PopStyleColor(4);
@@ -72,7 +68,7 @@ namespace rt::sk
                     }
 
                     if (ImGui::BeginPopup("new node")) {
-                        auto pos = grid_to_screen({ tmp.new_node_x, tmp.new_node_y });
+                        auto pos = grid_to_screen(tmp.node_pos);
                         ImGui::SetWindowPos(to_imgui(pos));
                         char const* tooltip{};
                         kind_metadata const* tooltip_kind;
@@ -101,9 +97,9 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(op.kind->color_bg_accent));
                             if (ImGui::Button(op.name)) {
                                 auto& node = g.emplace(
-                                    tmp.new_node_x,
-                                    tmp.new_node_y,
-                                    tmp.new_node_w,
+                                    tmp.node_pos.x,
+                                    tmp.node_pos.y,
+                                    tmp.node_width,
                                     id);
                                 previewing_node = node.id;
                                 ImGui::CloseCurrentPopup();
@@ -166,8 +162,7 @@ namespace rt::sk
                                 }
 
                                 else if (ImGui::IsMouseClicked(0)) {
-                                    tmp.drag_start_node_x = node.x;
-                                    tmp.drag_start_node_y = node.y;
+                                    tmp.node_pos = { node.x, node.y };
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
@@ -175,10 +170,7 @@ namespace rt::sk
                                     auto mouse = to_glm(ImGui::GetMousePos());
                                     auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
 
-                                    auto old_grid = glm::ivec2{
-                                        tmp.drag_start_node_x,
-                                        tmp.drag_start_node_y,
-                                    };
+                                    auto old_grid = tmp.node_pos;
                                     auto grid = old_grid + grid_delta;
                                     node_new_x = grid.x;
                                     node_new_y = grid.y;
@@ -202,7 +194,7 @@ namespace rt::sk
                             ImGui::Button("##resize", to_imgui(size));
                             if (ImGui::IsItemActive()) {
                                 if (ImGui::IsMouseClicked(0)) {
-                                    tmp.drag_start_node_x = node.x + node.width - 1;
+                                    tmp.node_pos.x = node.x + node.width - 1;
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
@@ -210,9 +202,8 @@ namespace rt::sk
                                     auto mouse = to_glm(ImGui::GetMousePos());
                                     auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
 
-                                    auto old_grid = tmp.drag_start_node_x;
-                                    auto grid = old_grid + grid_delta.x;
-                                    node_new_w = std::max(1, grid - node.x + 1);
+                                    auto grid_x = tmp.node_pos.x + grid_delta.x;
+                                    node_new_w = std::max(1, grid_x - node.x + 1);
                                 }
                             }
 
