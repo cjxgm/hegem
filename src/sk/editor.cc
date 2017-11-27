@@ -52,15 +52,25 @@ namespace rt::sk
                 auto& io = ImGui::GetIO();
                 ImGui::BeginChild("sk editor region", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-                if (ImGui::IsWindowHovered()) scaling_level += io.MouseWheel;
-                auto scaling = scaling_factor(scaling_level);
-                auto font_scaling = scaling < 1.0f ? scaling * 0.5f + 0.5f : scaling * 0.4f + 0.6f;
-
-                ImGui::SetWindowFontScale(font_scaling);
-
-                auto grid_size = initial_grid_size * scaling;
                 auto window_origin = to_glm(ImGui::GetCursorScreenPos());
                 auto origin_offset = to_glm(ImGui::GetCursorPos());
+                auto mouse_screen_pos = to_glm(ImGui::GetMousePos());
+                auto scaling = scaling_factor(scaling_level);
+
+                if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f) {
+                    auto old_scaling = scaling;
+                    scaling = scaling_factor(scaling_level += io.MouseWheel);
+                    if (scaling != old_scaling) {
+                        auto mouse_local_pos = mouse_screen_pos - window_origin;
+                        origin = (origin - mouse_local_pos) * (scaling / old_scaling) + mouse_local_pos;
+                    }
+                }
+
+                auto font_scaling = scaling < 1.0f
+                    ? scaling * 0.5f + 0.5f
+                    : std::min(2.0f, scaling * 0.4f + 0.6f);
+                auto grid_size = round(initial_grid_size * scaling);
+                ImGui::SetWindowFontScale(font_scaling);
 
                 auto screen_to_grid = [=] (glm::vec2 screen) {
                     return glm::ivec2{floor((screen - window_origin - origin) / grid_size)};
@@ -76,7 +86,7 @@ namespace rt::sk
 
                 { // new node placeholder button and popup menu
                     if (ImGui::IsWindowHovered() && !ImGui::IsMouseDragging(0)) {
-                        auto mouse_grid = screen_to_grid(to_glm(ImGui::GetMousePos()));
+                        auto mouse_grid = screen_to_grid(mouse_screen_pos);
                         auto placeholder_width = g.find_empty_width(mouse_grid.x, mouse_grid.y, default_node_width);
 
                         if (placeholder_width != 0) {
@@ -197,8 +207,7 @@ namespace rt::sk
 
                                 else if (ImGui::IsMouseDragging(0)) {
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
-                                    auto mouse = to_glm(ImGui::GetMousePos());
-                                    auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
+                                    auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
                                     auto old_grid = tmp.node_pos;
                                     auto grid = old_grid + grid_delta;
@@ -234,8 +243,7 @@ namespace rt::sk
 
                                 else if (ImGui::IsMouseDragging(0)) {
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
-                                    auto mouse = to_glm(ImGui::GetMousePos());
-                                    auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
+                                    auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
                                     auto width = std::max(1, tmp.node_width + grid_delta.x);
                                     width = g.find_empty_width(tmp.node_pos.x, tmp.node_pos.y, width, node.id);
