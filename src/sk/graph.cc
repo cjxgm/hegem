@@ -50,5 +50,12 @@ namespace rt::sk
         }
         return width;
     }
+
+    int graph::find_empty_x(int x, int y, node_id_type ignored)
+    {
+        while (auto node = find_node(x, y, ignored))
+            x = node->x + node->width;
+        return x;
+    }
 }
 
