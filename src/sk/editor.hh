@@ -3,31 +3,33 @@
 #include "../util/constraints.hh"
 #include "graph.hh"
 #include <vector>
+#include <memory>
 
 namespace rt::sk
 {
-    struct editor: util::constraints::only_movable
+    namespace editor_details
     {
-        void draw();
+        struct temporary_state;
 
-        struct draw_state
+        struct editor: util::constraints::only_movable
         {
-            int new_node_x{};
-            int new_node_y{};
-            int new_node_w{};
-            int drag_start_node_x{};
-            int drag_start_node_y{};
+            editor();
+            ~editor(); // = default in implementation
+
+            void draw();
+
+        private:
+            graph g;
+            node_id_type previewing_node{};
+
+            glm::vec2 grid_size{30.0f, 30.0f};
+            glm::vec2 origin{0.0f, 0.0f};
+            int default_node_width = 5;
+
+            std::unique_ptr<temporary_state> tmp;
         };
+    }
 
-    private:
-        graph g;
-        node_id_type previewing_node{};
-
-        glm::vec2 grid_size{30.0f, 30.0f};
-        glm::vec2 origin{0.0f, 0.0f};
-        int default_node_width = 5;
-
-        draw_state state;
-    };
+    using editor_details::editor;
 }
 

@@ -5,237 +5,255 @@
 
 namespace rt::sk
 {
-    namespace
+    namespace editor_details
     {
-        auto to_glm(ImVec2 a) { return glm::vec2{a.x, a.y}; }
-        auto to_imgui(glm::vec2 a) { return ImVec2{a.x, a.y}; }
-        auto to_imcolor(op::color_type a) { return ImColor{a.x, a.y, a.z}; }
-
-        void draw_editor(
-            graph & g,
-            node_id_type & previewing_node,
-            glm::vec2 & grid_size,
-            glm::vec2 & origin,
-            int & default_node_width,
-            editor::draw_state & state)
+        struct temporary_state
         {
-            auto& io = ImGui::GetIO();
-            ImGui::BeginChild("sk editor region", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            int new_node_x{};
+            int new_node_y{};
+            int new_node_w{};
+            int drag_start_node_x{};
+            int drag_start_node_y{};
+        };
 
-            auto window_origin = to_glm(ImGui::GetCursorScreenPos());
-            auto origin_offset = to_glm(ImGui::GetCursorPos());
+        namespace
+        {
+            auto to_glm(ImVec2 a) { return glm::vec2{a.x, a.y}; }
+            auto to_imgui(glm::vec2 a) { return ImVec2{a.x, a.y}; }
+            auto to_imcolor(op::color_type a) { return ImColor{a.x, a.y, a.z}; }
 
-            auto screen_to_grid = [=] (glm::vec2 screen) {
-                return glm::ivec2{floor((screen - window_origin - origin) / grid_size)};
-            };
+            void draw_editor(
+                graph & g,
+                node_id_type & previewing_node,
+                glm::vec2 & grid_size,
+                glm::vec2 & origin,
+                int & default_node_width,
+                temporary_state & tmp)
+            {
+                auto& io = ImGui::GetIO();
+                ImGui::BeginChild("sk editor region", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-            auto grid_to_screen = [=] (glm::ivec2 grid) {
-                return glm::vec2{grid} * grid_size + origin + window_origin;
-            };
+                auto window_origin = to_glm(ImGui::GetCursorScreenPos());
+                auto origin_offset = to_glm(ImGui::GetCursorPos());
 
-            auto grid_to_local = [=] (glm::ivec2 grid) {
-                return glm::vec2{grid} * grid_size + origin + origin_offset;
-            };
+                auto screen_to_grid = [=] (glm::vec2 screen) {
+                    return glm::ivec2{floor((screen - window_origin - origin) / grid_size)};
+                };
 
-            { // new node placeholder button and popup menu
-                if (ImGui::IsWindowHovered() && !ImGui::IsMouseDragging(0)) {
-                    auto mouse_grid = screen_to_grid(to_glm(ImGui::GetMousePos()));
-                    auto placeholder_width = g.find_empty_width(mouse_grid.x, mouse_grid.y, default_node_width);
+                auto grid_to_screen = [=] (glm::ivec2 grid) {
+                    return glm::vec2{grid} * grid_size + origin + window_origin;
+                };
 
-                    if (placeholder_width != 0) {
-                        auto pos = grid_to_local(mouse_grid);
-                        auto size = glm::vec2{float(placeholder_width), 1.0f} * grid_size;
-                        ImGui::PushStyleColor(ImGuiCol_Text, ImColor{80, 80, 80});
-                        ImGui::PushStyleColor(ImGuiCol_Button, ImColor{50, 50, 50});
-                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor{50, 50, 50});
-                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
-                        ImGui::SetCursorPos(to_imgui(pos));
-                        if (ImGui::Button("+", to_imgui(size))) {
-                            state.new_node_x = mouse_grid.x;
-                            state.new_node_y = mouse_grid.y;
-                            state.new_node_w = placeholder_width;
-                            ImGui::OpenPopup("new node");
-                        }
-                        ImGui::PopStyleColor(4);
-                    }
-                }
+                auto grid_to_local = [=] (glm::ivec2 grid) {
+                    return glm::vec2{grid} * grid_size + origin + origin_offset;
+                };
 
-                if (ImGui::BeginPopup("new node")) {
-                    auto pos = grid_to_screen({ state.new_node_x, state.new_node_y });
-                    ImGui::SetWindowPos(to_imgui(pos));
-                    char const* tooltip{};
-                    kind_metadata const* tooltip_kind;
+                { // new node placeholder button and popup menu
+                    if (ImGui::IsWindowHovered() && !ImGui::IsMouseDragging(0)) {
+                        auto mouse_grid = screen_to_grid(to_glm(ImGui::GetMousePos()));
+                        auto placeholder_width = g.find_empty_width(mouse_grid.x, mouse_grid.y, default_node_width);
 
-                    kind_metadata const* prev_kind = nullptr;
-                    for (auto& entry: g.op_metadata_range()) {
-                        auto id = entry.first;
-                        auto& op = entry.second;
-
-                        if (op.kind != prev_kind) {
-                            prev_kind = op.kind;
-                            ImGui::AlignFirstTextHeightToWidgets();
-                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(op.kind->color_fg_accent));
-                            ImGui::Text(prev_kind->name);
-                            if (ImGui::IsItemHovered()) {
-                                tooltip = prev_kind->tooltip;
-                                tooltip_kind = prev_kind;
+                        if (placeholder_width != 0) {
+                            auto pos = grid_to_local(mouse_grid);
+                            auto size = glm::vec2{float(placeholder_width), 1.0f} * grid_size;
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImColor{80, 80, 80});
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImColor{50, 50, 50});
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor{50, 50, 50});
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
+                            ImGui::SetCursorPos(to_imgui(pos));
+                            if (ImGui::Button("+", to_imgui(size))) {
+                                tmp.new_node_x = mouse_grid.x;
+                                tmp.new_node_y = mouse_grid.y;
+                                tmp.new_node_w = placeholder_width;
+                                ImGui::OpenPopup("new node");
                             }
-                            ImGui::PopStyleColor(1);
+                            ImGui::PopStyleColor(4);
                         }
-                        ImGui::SameLine();
-
-                        ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(op.kind->color_fg));
-                        ImGui::PushStyleColor(ImGuiCol_Button, ImColor{0, 0, 0, 0});
-                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(op.kind->color_bg));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(op.kind->color_bg_accent));
-                        if (ImGui::Button(op.name)) {
-                            auto& node = g.emplace(
-                                state.new_node_x,
-                                state.new_node_y,
-                                state.new_node_w,
-                                id);
-                            previewing_node = node.id;
-                            ImGui::CloseCurrentPopup();
-                        }
-                        if (ImGui::IsItemHovered()) {
-                            tooltip = op.tooltip;
-                            tooltip_kind = op.kind;
-                        }
-                        ImGui::PopStyleColor(4);
                     }
 
-                    if (tooltip) {
-                        ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_kind->color_fg));
-                        ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{20, 20, 20, 200});
-                        auto pos = window_origin + glm::vec2{10.0f};
-                        ImGui::SetNextWindowPos(to_imgui(pos));
-                        ImGui::BeginTooltip();
-                        ImGui::Text("%s", tooltip);
-                        ImGui::EndTooltip();
-                        ImGui::PopStyleColor(2);
-                    }
+                    if (ImGui::BeginPopup("new node")) {
+                        auto pos = grid_to_screen({ tmp.new_node_x, tmp.new_node_y });
+                        ImGui::SetWindowPos(to_imgui(pos));
+                        char const* tooltip{};
+                        kind_metadata const* tooltip_kind;
 
-                    ImGui::EndPopup();
-                }
-            }
+                        kind_metadata const* prev_kind = nullptr;
+                        for (auto& entry: g.op_metadata_range()) {
+                            auto id = entry.first;
+                            auto& op = entry.second;
 
-            { // nodes
-                ImGui::PushID("nodes");
-                for (auto& node: g.node_range()) {
-                    auto& op = *node.metadata;
-                    auto& kind = *op.kind;
+                            if (op.kind != prev_kind) {
+                                prev_kind = op.kind;
+                                ImGui::AlignFirstTextHeightToWidgets();
+                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(op.kind->color_fg_accent));
+                                ImGui::Text(prev_kind->name);
+                                if (ImGui::IsItemHovered()) {
+                                    tooltip = prev_kind->tooltip;
+                                    tooltip_kind = prev_kind;
+                                }
+                                ImGui::PopStyleColor(1);
+                            }
+                            ImGui::SameLine();
 
-                    ImGui::PushID(node.id);
-                    auto node_new_x = node.x;
-                    auto node_new_y = node.y;
-                    auto node_new_w = node.width;
-
-                    { // operator node button
-                        auto pos = grid_to_local({ node.x, node.y });
-                        auto size = glm::vec2{float(node.width) - 0.3f, 1.0f} * grid_size;
-
-                        if (node.id == previewing_node) {
-                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_bg));
-                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
-                        } else {
-                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
-                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
-                        }
-
-                        ImGui::PushID("operator");
-                        ImGui::SetCursorPos(to_imgui(pos));
-                        ImGui::Button(op.name, to_imgui(size));
-                        if (ImGui::IsItemActive()) {
-                            if (ImGui::IsMouseDoubleClicked(0)) {
+                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(op.kind->color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImColor{0, 0, 0, 0});
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(op.kind->color_bg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(op.kind->color_bg_accent));
+                            if (ImGui::Button(op.name)) {
+                                auto& node = g.emplace(
+                                    tmp.new_node_x,
+                                    tmp.new_node_y,
+                                    tmp.new_node_w,
+                                    id);
                                 previewing_node = node.id;
+                                ImGui::CloseCurrentPopup();
                             }
-
-                            else if (ImGui::IsMouseClicked(0)) {
-                                state.drag_start_node_x = node.x;
-                                state.drag_start_node_y = node.y;
+                            if (ImGui::IsItemHovered()) {
+                                tooltip = op.tooltip;
+                                tooltip_kind = op.kind;
                             }
-
-                            else if (ImGui::IsMouseDragging(0)) {
-                                auto old_mouse = to_glm(io.MouseClickedPos[0]);
-                                auto mouse = to_glm(ImGui::GetMousePos());
-                                auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
-
-                                auto old_grid = glm::ivec2{
-                                    state.drag_start_node_x,
-                                    state.drag_start_node_y,
-                                };
-                                auto grid = old_grid + grid_delta;
-                                node_new_x = grid.x;
-                                node_new_y = grid.y;
-                            }
+                            ImGui::PopStyleColor(4);
                         }
+
+                        if (tooltip) {
+                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_kind->color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{20, 20, 20, 200});
+                            auto pos = window_origin + glm::vec2{10.0f};
+                            ImGui::SetNextWindowPos(to_imgui(pos));
+                            ImGui::BeginTooltip();
+                            ImGui::Text("%s", tooltip);
+                            ImGui::EndTooltip();
+                            ImGui::PopStyleColor(2);
+                        }
+
+                        ImGui::EndPopup();
+                    }
+                }
+
+                { // nodes
+                    ImGui::PushID("nodes");
+                    for (auto& node: g.node_range()) {
+                        auto& op = *node.metadata;
+                        auto& kind = *op.kind;
+
+                        ImGui::PushID(node.id);
+                        auto node_new_x = node.x;
+                        auto node_new_y = node.y;
+                        auto node_new_w = node.width;
+
+                        { // operator node button
+                            auto pos = grid_to_local({ node.x, node.y });
+                            auto size = glm::vec2{float(node.width) - 0.3f, 1.0f} * grid_size;
+
+                            if (node.id == previewing_node) {
+                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_bg));
+                                ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
+                                ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+                            }
+
+                            ImGui::PushID("operator");
+                            ImGui::SetCursorPos(to_imgui(pos));
+                            ImGui::Button(op.name, to_imgui(size));
+                            if (ImGui::IsItemActive()) {
+                                if (ImGui::IsMouseDoubleClicked(0)) {
+                                    previewing_node = node.id;
+                                }
+
+                                else if (ImGui::IsMouseClicked(0)) {
+                                    tmp.drag_start_node_x = node.x;
+                                    tmp.drag_start_node_y = node.y;
+                                }
+
+                                else if (ImGui::IsMouseDragging(0)) {
+                                    auto old_mouse = to_glm(io.MouseClickedPos[0]);
+                                    auto mouse = to_glm(ImGui::GetMousePos());
+                                    auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
+
+                                    auto old_grid = glm::ivec2{
+                                        tmp.drag_start_node_x,
+                                        tmp.drag_start_node_y,
+                                    };
+                                    auto grid = old_grid + grid_delta;
+                                    node_new_x = grid.x;
+                                    node_new_y = grid.y;
+                                }
+                            }
+                            ImGui::PopID();
+
+                            ImGui::PopStyleColor(4);
+                        }
+
+                        { // node resize button
+                            auto pos = grid_to_local({ node.x + node.width, node.y });
+                            auto size = glm::vec2{0.3f, 1.0f} * grid_size;
+                            pos.x -= 0.3f * grid_size.x;
+
+                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_bg_accent));
+
+                            ImGui::SetCursorPos(to_imgui(pos));
+                            ImGui::Button("##resize", to_imgui(size));
+                            if (ImGui::IsItemActive()) {
+                                if (ImGui::IsMouseClicked(0)) {
+                                    tmp.drag_start_node_x = node.x + node.width - 1;
+                                }
+
+                                else if (ImGui::IsMouseDragging(0)) {
+                                    auto old_mouse = to_glm(io.MouseClickedPos[0]);
+                                    auto mouse = to_glm(ImGui::GetMousePos());
+                                    auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
+
+                                    auto old_grid = tmp.drag_start_node_x;
+                                    auto grid = old_grid + grid_delta.x;
+                                    node_new_w = std::max(1, grid - node.x + 1);
+                                }
+                            }
+
+                            ImGui::PopStyleColor(3);
+                        }
+
+                        node.x = node_new_x;
+                        node.y = node_new_y;
+                        node.width = node_new_w;
+
                         ImGui::PopID();
-
-                        ImGui::PopStyleColor(4);
                     }
-
-                    { // node resize button
-                        auto pos = grid_to_local({ node.x + node.width, node.y });
-                        auto size = glm::vec2{0.3f, 1.0f} * grid_size;
-                        pos.x -= 0.3f * grid_size.x;
-
-                        ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg_accent));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_fg));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_bg_accent));
-
-                        ImGui::SetCursorPos(to_imgui(pos));
-                        ImGui::Button("##resize", to_imgui(size));
-                        if (ImGui::IsItemActive()) {
-                            if (ImGui::IsMouseClicked(0)) {
-                                state.drag_start_node_x = node.x + node.width - 1;
-                            }
-
-                            else if (ImGui::IsMouseDragging(0)) {
-                                auto old_mouse = to_glm(io.MouseClickedPos[0]);
-                                auto mouse = to_glm(ImGui::GetMousePos());
-                                auto grid_delta = screen_to_grid(mouse) - screen_to_grid(old_mouse);
-
-                                auto old_grid = state.drag_start_node_x;
-                                auto grid = old_grid + grid_delta.x;
-                                node_new_w = std::max(1, grid - node.x + 1);
-                            }
-                        }
-
-                        ImGui::PopStyleColor(3);
-                    }
-
-                    node.x = node_new_x;
-                    node.y = node_new_y;
-                    node.width = node_new_w;
-
                     ImGui::PopID();
                 }
-                ImGui::PopID();
-            }
 
-            ImGui::EndChild();
+                ImGui::EndChild();
 
-            if (ImGui::IsMouseDragging(2)) {
-                auto delta = to_glm(io.MouseDelta);
-                origin += delta;
+                if (ImGui::IsMouseDragging(2)) {
+                    auto delta = to_glm(io.MouseDelta);
+                    origin += delta;
+                }
             }
         }
-    }
 
-    void editor::draw()
-    {
-        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor{40, 40, 40});
-        ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{50, 50, 50});
-        ImGui::PushStyleColor(ImGuiCol_Border, ImColor{30, 30, 30});
-        ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
+        editor::editor()
+            : tmp{std::make_unique<temporary_state>()}
+        {}
 
-        draw_editor(g, previewing_node, grid_size, origin, default_node_width, state);
+        editor::~editor() = default;
 
-        ImGui::PopStyleColor(4);
+        void editor::draw()
+        {
+            ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor{40, 40, 40});
+            ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{50, 50, 50});
+            ImGui::PushStyleColor(ImGuiCol_Border, ImColor{30, 30, 30});
+            ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
+
+            draw_editor(g, previewing_node, grid_size, origin, default_node_width, *tmp);
+
+            ImGui::PopStyleColor(4);
+        }
     }
 }
 
