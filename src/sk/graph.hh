@@ -12,9 +12,9 @@ namespace rt::sk
     {
         node& emplace(int x, int y, int width, op_id id);
         node* find_node(node_id_type id);
-        node* find_node(int x, int y);
-        std::vector<node*> find_nodes(int x, int y);
-        int find_empty_width(int x, int y, int max_width);
+        node* find_node(int x, int y, node_id_type ignored=0);
+        std::vector<node*> find_nodes(int x, int y, node_id_type ignored=0);
+        int find_empty_width(int x, int y, int max_width, node_id_type ignored=0);
 
         auto node_range() { return util::range{begin(nodes), end(nodes)}; }
         auto op_metadata_range() { return util::range{begin(reg.ops), end(reg.ops)}; }

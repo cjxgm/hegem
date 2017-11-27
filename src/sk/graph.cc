@@ -23,26 +23,27 @@ namespace rt::sk
         return nullptr;
     }
 
-    node* graph::find_node(int x, int y)
+    node* graph::find_node(int x, int y, node_id_type ignored)
     {
         for (auto& node: node_range())
-            if (contains(node, x, y))
+            if (node.id != ignored && contains(node, x, y))
                 return &node;
         return nullptr;
     }
 
-    std::vector<node*> graph::find_nodes(int x, int y)
+    std::vector<node*> graph::find_nodes(int x, int y, node_id_type ignored)
     {
         std::vector<node*> found;
         for (auto& node: node_range())
-            if (contains(node, x, y))
+            if (node.id != ignored && contains(node, x, y))
                 found.emplace_back(&node);
         return found;
     }
 
-    int graph::find_empty_width(int x, int y, int width)
+    int graph::find_empty_width(int x, int y, int width, node_id_type ignored)
     {
         for (auto& node: node_range()) {
+            if (node.id == ignored) continue;
             if (node.y != y) continue;
             if (node.x + node.width <= x) continue;
             width = std::min(std::max(node.x - x, 0), width);
