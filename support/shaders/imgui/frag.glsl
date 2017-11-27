@@ -45,11 +45,20 @@ vec3 tonemap(vec3 color, vec3 black, vec3 white)
     return aces_film_tonemap((color - black) / (white - black));
 }
 
+float remap(float x, float xf, float xt, float df, float dt)
+{
+    return (x - xf) / (xt - xf) * (dt - df) + df;
+}
+
 void main()
 {
     vec4 mask = vec4(1, 0, 1, 1);
     if (mode == 0) {                            // general mode
         float a = texture(tex, prev.uv).r;
+        float r = sqrt(fwidth(a));
+        float bright = remap(r, 0.0f, 1.0f, 1.0f, 0.7f);
+        float dark   = remap(r, 0.0f, 1.0f, 0.0f, 0.1f);
+        a = smoothstep(dark, bright, a);
         mask = vec4(1, 1, 1, a);
     } else if (mode == 1) {                     // HDR mode
         vec3 src = texture(tex, prev.uv).rgb;
