@@ -209,10 +209,12 @@ namespace rt::sk
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
-                                    auto old_grid = tmp.node_pos;
-                                    auto grid = old_grid + grid_delta;
-                                    grid.x = g.find_empty_x(grid.x, grid.y, node.id);
-                                    auto width = g.find_empty_width(grid.x, grid.y, tmp.node_width, node.id);
+                                    auto grid = tmp.node_pos + grid_delta;
+                                    auto avail_x = g.find_empty_x(grid.x, grid.y, node.id);
+                                    auto width = std::min(grid.x + tmp.node_width - avail_x, tmp.node_width);
+                                    if (width < 1) width = tmp.node_width;
+                                    grid.x = avail_x;
+                                    width = g.find_empty_width(grid.x, grid.y, width, node.id);
 
                                     node_new_x = grid.x;
                                     node_new_y = grid.y;
