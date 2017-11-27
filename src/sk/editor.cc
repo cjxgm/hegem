@@ -157,6 +157,8 @@ namespace rt::sk
                             auto id = entry.first;
                             auto& op = entry.second;
 
+                            ImGui::PushID(int(id));
+
                             if (op.kind != prev_kind) {
                                 prev_kind = op.kind;
                                 ImGui::AlignFirstTextHeightToWidgets();
@@ -188,6 +190,8 @@ namespace rt::sk
                                 tooltip_kind = op.kind;
                             }
                             ImGui::PopStyleColor(4);
+
+                            ImGui::PopID();
                         }
 
                         if (tooltip) {
