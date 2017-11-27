@@ -22,10 +22,13 @@ namespace rt::sk
             auto scaling_factor(float & scaling_level) -> float
             {
                 static constexpr float scalers[] = {
+                    1.0000f, 1.0000f,
                     1.0000f, 1.3333f, 1.5000f, 1.6667f,
                     2.0000f, 2.5000f,
                     3.0000f,
                     4.0000f,
+                    6.0000f,
+                    8.0000f,
                 };
                 static constexpr auto scaler_count = float(sizeof(scalers) / sizeof(scalers[0]));
                 static constexpr auto scaler_upperbound = scaler_count - 1.0f;
