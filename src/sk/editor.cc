@@ -19,10 +19,29 @@ namespace rt::sk
             auto to_imgui(glm::vec2 a) { return ImVec2{a.x, a.y}; }
             auto to_imcolor(op::color_type a) { return ImColor{a.x, a.y, a.z}; }
 
+            auto scaling_factor(float & scaling_level) -> float
+            {
+                static constexpr float scalers[] = {
+                    1.0000f, 1.3333f, 1.5000f, 1.6667f,
+                    2.0000f, 2.5000f,
+                    3.0000f,
+                    4.0000f,
+                };
+                static constexpr auto scaler_count = float(sizeof(scalers) / sizeof(scalers[0]));
+                static constexpr auto scaler_upperbound = scaler_count - 1.0f;
+
+                scaling_level = std::min(std::max(scaling_level, -scaler_upperbound), scaler_upperbound);
+                auto selector = int(std::abs(scaling_level));
+                auto scaler = scalers[selector];
+                if (scaling_level < 0.0f) scaler = 1.0f / scaler;
+                return scaler;
+            }
+
             void draw_editor(
                 graph & g,
                 node_id_type & previewing_node,
-                glm::vec2 & grid_size,
+                float & scaling_level,
+                glm::vec2 & initial_grid_size,
                 glm::vec2 & origin,
                 int & default_node_width,
                 temporary_state & tmp)
@@ -30,6 +49,13 @@ namespace rt::sk
                 auto& io = ImGui::GetIO();
                 ImGui::BeginChild("sk editor region", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
+                if (ImGui::IsWindowHovered()) scaling_level += io.MouseWheel;
+                auto scaling = scaling_factor(scaling_level);
+                auto font_scaling = scaling < 1.0f ? scaling * 0.5f + 0.5f : scaling * 0.4f + 0.6f;
+
+                ImGui::SetWindowFontScale(font_scaling);
+
+                auto grid_size = initial_grid_size * scaling;
                 auto window_origin = to_glm(ImGui::GetCursorScreenPos());
                 auto origin_offset = to_glm(ImGui::GetCursorPos());
 
@@ -248,7 +274,7 @@ namespace rt::sk
             ImGui::PushStyleColor(ImGuiCol_Border, ImColor{30, 30, 30});
             ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
-            draw_editor(g, previewing_node, grid_size, origin, default_node_width, *tmp);
+            draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
 
             ImGui::PopStyleColor(4);
         }
