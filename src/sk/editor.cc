@@ -60,9 +60,11 @@ namespace rt::sk
                     ImGui::SetCursorPos(cpos);
                 }
 
+                if (ImGui::Button("DELETE")) n.is_garbage = true;
+                ImGui::SameLine();
                 ImGui::Text("%s (%s)", op.name, kind.name);
-                ImGui::Spacing();
 
+                ImGui::PushID("fields");
                 switch (inst.id) {
                     #define OP(KIND, ID, ARITY, NAME, TOOLTIP, FIELDS...) \
                         case op_id::KIND##_##ID: { \
@@ -77,6 +79,7 @@ namespace rt::sk
                         ImGui::PopID();
                     #include "op.inl"
                 }
+                ImGui::PopID();
             }
 
             void draw_editor(
@@ -267,15 +270,23 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_FrameBg, to_imcolor(kind.color_bg));
                             ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, to_imcolor(kind.color_fg_accent));
                             ImGui::PushStyleColor(ImGuiCol_FrameBgActive, to_imcolor(kind.color_bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_fg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_bg_accent));
                             ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, to_imcolor(kind.color_bg_accent));
                             if (ImGui::BeginPopup("fields")) {
                                 auto pos = grid_to_screen({ node.x, node.y });
                                 ImGui::SetWindowPos(to_imgui(pos));
                                 tooltip_kind = &kind;
                                 draw_fields(node, tooltip);
+                                if (node.is_garbage) {
+                                    if (previewing_node == node.id)
+                                        previewing_node = 0;
+                                    ImGui::CloseCurrentPopup();
+                                }
                                 ImGui::EndPopup();
                             }
-                            ImGui::PopStyleColor(6);
+                            ImGui::PopStyleColor(9);
                         }
 
                         { // node resize button
@@ -351,6 +362,7 @@ namespace rt::sk
             ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
             draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
+            g.collect_garbage();
 
             ImGui::PopStyleColor(4);
         }
