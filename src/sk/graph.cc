@@ -3,7 +3,7 @@
 
 namespace rt::sk
 {
-    node& graph::emplace(int x, int y, int width, op_id id)
+    auto graph::emplace(int x, int y, int width, op_id id) -> node&
     {
         return nodes.emplace_back(node{
             .id = ++latest_id,
@@ -15,7 +15,7 @@ namespace rt::sk
         });
     }
 
-    node* graph::find_node(node_id_type id)
+    auto graph::find_node(node_id_type id) -> node*
     {
         for (auto& node: node_range())
             if (node.id == id)
@@ -23,7 +23,7 @@ namespace rt::sk
         return nullptr;
     }
 
-    node* graph::find_node(int x, int y, node_id_type ignored)
+    auto graph::find_node(int x, int y, node_id_type ignored) -> node*
     {
         for (auto& node: node_range())
             if (node.id != ignored && contains(node, x, y))
@@ -31,16 +31,7 @@ namespace rt::sk
         return nullptr;
     }
 
-    std::vector<node*> graph::find_nodes(int x, int y, node_id_type ignored)
-    {
-        std::vector<node*> found;
-        for (auto& node: node_range())
-            if (node.id != ignored && contains(node, x, y))
-                found.emplace_back(&node);
-        return found;
-    }
-
-    int graph::find_empty_width(int x, int y, int width, node_id_type ignored)
+    auto graph::find_empty_width(int x, int y, int width, node_id_type ignored) -> int
     {
         for (auto& node: node_range()) {
             if (node.id == ignored) continue;
@@ -51,7 +42,7 @@ namespace rt::sk
         return width;
     }
 
-    int graph::find_empty_x(int x, int y, node_id_type ignored)
+    auto graph::find_empty_x(int x, int y, node_id_type ignored) -> int
     {
         while (auto node = find_node(x, y, ignored))
             x = node->x + node->width;

@@ -10,12 +10,11 @@ namespace rt::sk
 {
     struct graph: util::constraints::only_movable
     {
-        node& emplace(int x, int y, int width, op_id id);
-        node* find_node(node_id_type id);
-        node* find_node(int x, int y, node_id_type ignored=0);
-        std::vector<node*> find_nodes(int x, int y, node_id_type ignored=0);
-        int find_empty_width(int x, int y, int max_width, node_id_type ignored=0);
-        int find_empty_x(int x, int y, node_id_type ignored=0);
+        auto emplace(int x, int y, int width, op_id id) -> node&;
+        auto find_node(node_id_type id) -> node*;
+        auto find_node(int x, int y, node_id_type ignored=0) -> node*;
+        auto find_empty_width(int x, int y, int max_width, node_id_type ignored=0) -> int;
+        auto find_empty_x(int x, int y, node_id_type ignored=0) -> int;
 
         auto inputs_of(node const* n) -> std::vector<node*>;
         auto count_inputs_of(node const* n) -> int;

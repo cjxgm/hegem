@@ -1,7 +1,7 @@
 #pragma once
-#include <cstddef>
 #include "op.hh"
 #include "op-registry.hh"
+#include <cstddef>
 
 namespace rt::sk
 {
@@ -14,11 +14,7 @@ namespace rt::sk
         int y;
         int width;
         op_instance instance;
-
-        // cache
         op_metadata const* metadata;
-
-        // flags
         bool is_garbage{};
     };
 
