@@ -17,6 +17,9 @@ namespace rt::sk
         int find_empty_width(int x, int y, int max_width, node_id_type ignored=0);
         int find_empty_x(int x, int y, node_id_type ignored=0);
 
+        auto inputs_of(node const* n) -> std::vector<node*>;
+        auto count_inputs_of(node const* n) -> int;
+
         auto node_range() { return util::range{begin(nodes), end(nodes)}; }
         auto op_metadata_range() { return util::range{begin(reg.ops), end(reg.ops)}; }
 

@@ -58,6 +58,33 @@ namespace rt::sk
         return x;
     }
 
+    auto graph::inputs_of(node const* n) -> std::vector<node*>
+    {
+        std::vector<node*> result;
+
+        for (auto& input: node_range())
+            if (connects(input, *n))
+                result.emplace_back(&input);
+
+        std::sort(
+            begin(result),
+            end(result),
+            [] (auto a, auto b) { return a->x < b->x; });
+
+        return result;
+    }
+
+    auto graph::count_inputs_of(node const* n) -> int
+    {
+        int result = 0;
+
+        for (auto& input: node_range())
+            if (connects(input, *n))
+                result++;
+
+        return result;
+    }
+
     void graph::collect_garbage()
     {
         nodes.erase(
