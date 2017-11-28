@@ -20,6 +20,8 @@ namespace rt::sk
         auto node_range() { return util::range{begin(nodes), end(nodes)}; }
         auto op_metadata_range() { return util::range{begin(reg.ops), end(reg.ops)}; }
 
+        void collect_garbage();
+
     private:
         op_registry reg;
         std::vector<node> nodes;

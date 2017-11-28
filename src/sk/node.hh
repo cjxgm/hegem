@@ -17,6 +17,9 @@ namespace rt::sk
 
         // cache
         op_metadata const* metadata;
+
+        // flags
+        bool is_garbage{};
     };
 
     bool contains(node const& n, int x, int y);

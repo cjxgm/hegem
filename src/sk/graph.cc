@@ -57,5 +57,15 @@ namespace rt::sk
             x = node->x + node->width;
         return x;
     }
+
+    void graph::collect_garbage()
+    {
+        nodes.erase(
+            std::remove_if(
+                begin(nodes),
+                end(nodes),
+                [] (auto& node) { return node.is_garbage; }),
+            end(nodes));
+    }
 }
 
