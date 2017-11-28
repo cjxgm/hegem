@@ -63,6 +63,7 @@ namespace rt::sk
                 if (ImGui::Button("DELETE")) n.is_garbage = true;
                 ImGui::SameLine();
                 ImGui::Text("%s (%s)", op.name, kind.name);
+                if (ImGui::IsItemHovered()) tooltip = op.tooltip;
 
                 ImGui::PushID("fields");
                 switch (inst.id) {
