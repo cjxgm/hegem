@@ -1,6 +1,7 @@
 #include "../lib/glm/op/common.hh"
 #include "../lib/imgui.hh"
 #include "editor.hh"
+#include "palette.hh"
 #include <algorithm>
 
 namespace rt::sk
@@ -17,7 +18,7 @@ namespace rt::sk
         {
             auto to_glm(ImVec2 a) { return glm::vec2{a.x, a.y}; }
             auto to_imgui(glm::vec2 a) { return ImVec2{a.x, a.y}; }
-            auto to_imcolor(op::color_type a) { return ImColor{a.x, a.y, a.z}; }
+            auto to_imcolor(palette_color_type a) { return ImColor{a.x, a.y, a.z}; }
 
             auto scaling_factor(float & scaling_level) -> float
             {
@@ -128,7 +129,7 @@ namespace rt::sk
                 };
 
                 char const* tooltip{};
-                kind_metadata const* tooltip_kind;
+                palette_type const* tooltip_palette{};
 
                 { // new node placeholder button and popup menu
                     if (ImGui::IsWindowHovered() && !ImGui::IsMouseDragging(0)) {
@@ -160,26 +161,28 @@ namespace rt::sk
                         for (auto& entry: g.op_metadata_range()) {
                             auto id = entry.first;
                             auto& op = entry.second;
+                            auto& kind = *op.kind;
+                            auto& palette = kind.palette;
 
                             ImGui::PushID(int(id));
 
-                            if (op.kind != prev_kind) {
-                                prev_kind = op.kind;
+                            if (prev_kind != &kind) {
+                                prev_kind = &kind;
                                 ImGui::AlignFirstTextHeightToWidgets();
-                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(op.kind->color_fg_accent));
-                                ImGui::Text(prev_kind->name);
+                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.fg_accent));
+                                ImGui::Text(kind.name);
                                 if (ImGui::IsItemHovered()) {
-                                    tooltip = prev_kind->tooltip;
-                                    tooltip_kind = prev_kind;
+                                    tooltip = kind.tooltip;
+                                    tooltip_palette = &palette;
                                 }
                                 ImGui::PopStyleColor(1);
                             }
                             ImGui::SameLine();
 
-                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(op.kind->color_fg));
+                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.fg));
                             ImGui::PushStyleColor(ImGuiCol_Button, ImColor{0, 0, 0, 0});
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(op.kind->color_bg));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(op.kind->color_bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(palette.bg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.bg_accent));
                             if (ImGui::Button(op.name)) {
                                 auto& node = g.emplace(
                                     tmp.node_pos.x,
@@ -191,7 +194,7 @@ namespace rt::sk
                             }
                             if (ImGui::IsItemHovered()) {
                                 tooltip = op.tooltip;
-                                tooltip_kind = op.kind;
+                                tooltip_palette = &palette;
                             }
                             ImGui::PopStyleColor(4);
 
@@ -207,6 +210,7 @@ namespace rt::sk
                     for (auto& node: g.node_range()) {
                         auto& op = *node.metadata;
                         auto& kind = *op.kind;
+                        auto& palette = kind.palette;
 
                         ImGui::PushID(node.id);
                         auto node_new_x = node.x;
@@ -218,15 +222,15 @@ namespace rt::sk
                             auto size = glm::vec2{float(node.width) - 0.3f, 1.0f} * grid_size;
 
                             if (node.id == previewing_node) {
-                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_bg));
-                                ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg));
-                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
-                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.bg));
+                                ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(palette.fg));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(palette.bg_accent));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.fg_accent));
                             } else {
-                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
-                                ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
-                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_bg_accent));
-                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_fg_accent));
+                                ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.fg));
+                                ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(palette.bg));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(palette.bg_accent));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.fg_accent));
                             }
 
                             ImGui::PushID("operator");
@@ -266,19 +270,19 @@ namespace rt::sk
                                 ImGui::OpenPopup("fields");
                             }
 
-                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(kind.color_fg));
-                            ImGui::PushStyleColor(ImGuiCol_Border, to_imcolor(kind.color_fg));
-                            ImGui::PushStyleColor(ImGuiCol_FrameBg, to_imcolor(kind.color_bg));
-                            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, to_imcolor(kind.color_fg_accent));
-                            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, to_imcolor(kind.color_bg_accent));
-                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_bg));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_fg_accent));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_bg_accent));
-                            ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, to_imcolor(kind.color_bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.fg));
+                            ImGui::PushStyleColor(ImGuiCol_Border, to_imcolor(palette.fg));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBg, to_imcolor(palette.bg));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, to_imcolor(palette.fg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, to_imcolor(palette.bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(palette.bg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(palette.fg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, to_imcolor(palette.bg_accent));
                             if (ImGui::BeginPopup("fields")) {
                                 auto pos = grid_to_screen({ node.x, node.y });
                                 ImGui::SetWindowPos(to_imgui(pos));
-                                tooltip_kind = &kind;
+                                tooltip_palette = &palette;
                                 draw_fields(node, tooltip);
                                 if (node.is_garbage) {
                                     if (previewing_node == node.id)
@@ -295,9 +299,9 @@ namespace rt::sk
                             auto size = glm::vec2{0.3f, 1.0f} * grid_size;
                             pos.x -= 0.3f * grid_size.x;
 
-                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(kind.color_fg_accent));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(kind.color_fg));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(kind.color_bg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(palette.fg_accent));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(palette.fg));
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.bg_accent));
 
                             ImGui::SetCursorPos(to_imgui(pos));
                             ImGui::Button("##resize", to_imgui(size));
@@ -330,7 +334,7 @@ namespace rt::sk
                 }
 
                 if (tooltip && tooltip[0] != '\0') {
-                    ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_kind->color_fg));
+                    ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(tooltip_palette->fg));
                     ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{20, 20, 20, 200});
                     auto pos = window_origin + glm::vec2{10.0f};
                     ImGui::SetNextWindowPos(to_imgui(pos));

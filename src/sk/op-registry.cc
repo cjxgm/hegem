@@ -1,24 +1,9 @@
-#include "../lib/imgui.hh"
 #include "op-registry.hh"
 
 namespace rt::sk
 {
     namespace op
     {
-        namespace
-        {
-            // TODO: rainbow colors in Lch color space
-            color_type color_from_hsv(float h, float s, float v)
-            {
-                auto imcolor = ImVec4{ImColor::HSV(h, s, v)};
-                return {
-                    imcolor.x,
-                    imcolor.y,
-                    imcolor.z,
-                };
-            }
-        }
-
         op_registry::op_registry()
         {
             #define KIND(ID, ...) auto& kind_metadata_##ID = kinds[kind_id::ID];
@@ -34,10 +19,7 @@ namespace rt::sk
                         .id = #ID, \
                         .name = NAME, \
                         .tooltip = TOOLTIP, \
-                        .color_fg = color_from_hsv(hue, 0.5f, 0.8f), \
-                        .color_bg = color_from_hsv(hue, 0.3f, 0.3f), \
-                        .color_fg_accent = color_from_hsv(hue, 0.4f, 0.5f), \
-                        .color_bg_accent = color_from_hsv(hue, 0.3f, 0.2f), \
+                        .palette = { hue }, \
                     }; \
                 }
                 #include "op.inl"

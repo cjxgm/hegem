@@ -1,27 +1,19 @@
 #pragma once
-#include "../lib/glm/vec3.hh"
 #include "../util/constraints.hh"
-#include "../image/color.hh"
 #include "op.hh"
+#include "palette.hh"
 #include <map>
 
 namespace rt::sk
 {
     namespace op
     {
-        using color_type = image::color::linear_rgb;
-
         struct kind_metadata
         {
             char const* id;
             char const* name;
             char const* tooltip;
-
-            // palette
-            color_type color_fg;
-            color_type color_bg;
-            color_type color_fg_accent;
-            color_type color_bg_accent;
+            palette_type palette;
         };
 
         struct op_metadata
