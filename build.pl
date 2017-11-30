@@ -28,7 +28,7 @@ $build__output_bin = "raytracer";
 &output__variable__bool('::sanitize');
 @compiler__sanitizers = qw[undefined address] if $::sanitize;
 $compiler__flags__standard = "c++1z";
-@compiler__flags__extra = qw[-g];
+@compiler__flags__extra = qw[-Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-unused-parameter -g];
 @loader__flags__extra = qw[-pthread -lstdc++fs -g];    # FIXME: feature detection on "libstdc++fs" / C++17 filesystem
 
 $makefile__show_commands = exists $opt{"-c"};

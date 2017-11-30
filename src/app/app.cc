@@ -420,10 +420,10 @@ namespace rt::app
                             *selected = id;
                         }
                         ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
                         if (ImGui::Button("Load")) {
                             try {
                                 get_or_load(scene);

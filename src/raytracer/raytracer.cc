@@ -232,8 +232,6 @@ namespace rt::raytracer::raytracer_details
 
         image::image<std::vector<int>> shading_point_roots{{tile.w, tile.h}};
         shading_point_roots.each([&] (auto& sp_ids, auto pos) {
-            float sum_extent{};
-            float sum_extent2{};
             for (int i=0; i<max_samples; i++) {
                 counter.pixel++;
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};

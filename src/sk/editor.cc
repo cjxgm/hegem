@@ -71,6 +71,7 @@ namespace rt::sk
                     #define OP(KIND, ID, ARITY, NAME, TOOLTIP, FIELDS...) \
                         case op_id::KIND##_##ID: { \
                             auto& fields = inst.fields.KIND##_##ID; \
+                            (void) fields; \
                             FIELDS \
                         } break;
                     #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP) \

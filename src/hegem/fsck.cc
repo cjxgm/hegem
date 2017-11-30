@@ -112,7 +112,8 @@ namespace rt::hegem
             #define STRUCT(TYPE, VAR) \
                 for (auto& node: m.VAR##s.nodes) { \
                     if (frees.find(&node) != end(frees)) continue; \
-                    auto struct_name = #VAR;
+                    auto struct_name = #VAR; \
+                    (void) struct_name;
             #define END_STRUCT() \
                 }
             #define CHILD_PARENT_RELATION(CHILD, PARENT) \
@@ -122,7 +123,8 @@ namespace rt::hegem
             #define STRUCT(TYPE, VAR) \
                 for (auto& node: m.VAR##s.nodes) { \
                     if (frees.find(&node) != end(frees)) continue; \
-                    auto struct_name = #VAR;
+                    auto struct_name = #VAR; \
+                    (void) struct_name;
             #define END_STRUCT() \
                 }
             #define CHILDREN_PARENT_RELATION_CUSTOM_NEXT(CHILD_FIRST, PARENT, NEXT) \

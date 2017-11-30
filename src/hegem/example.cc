@@ -55,11 +55,6 @@ namespace rt::hegem
             m.diagnose("after a disk's creation");
 
             // ">>" shape (it's actually "<<" shape)
-            //  _______
-            //   \     \
-            //    \     \
-            //    /     /
-            //   /_____/
             auto hdisk = make_polygon_disk(m, 6, 1.0f);
             auto arrow = hdisk->ring->face->body;
             hdisk->start->pos = {};
