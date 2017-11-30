@@ -2,6 +2,7 @@
 #include "op.hh"
 #include "op-registry.hh"
 #include <cstddef>
+#include <string>
 
 namespace rt::sk
 {
@@ -16,6 +17,8 @@ namespace rt::sk
         op_instance instance;
         op_metadata const* metadata;
         bool is_garbage{};
+        std::string sanity_error;
+        std::string runtime_error;
     };
 
     bool contains(node const& n, int x, int y);
