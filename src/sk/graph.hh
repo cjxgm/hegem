@@ -3,7 +3,7 @@
 #include "../util/range.hh"
 #include "op.hh"
 #include "node.hh"
-#include "op-registry.hh"
+#include "registry.hh"
 #include <vector>
 
 namespace rt::sk

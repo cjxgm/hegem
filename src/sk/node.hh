@@ -1,6 +1,6 @@
 #pragma once
 #include "op.hh"
-#include "op-registry.hh"
+#include "registry.hh"
 #include <cstddef>
 #include <string>
 

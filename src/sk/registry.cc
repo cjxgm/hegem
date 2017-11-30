@@ -1,4 +1,4 @@
-#include "op-registry.hh"
+#include "registry.hh"
 
 namespace rt::sk
 {
