@@ -47,19 +47,20 @@ namespace rt::sk
 
             namespace draw_edit
             {
-                void number(char const* label, float & x)
+                bool number(char const* label, float & x)
                 {
-                    ImGui::DragFloat(label, &x);
+                    return ImGui::DragFloat(label, &x);
                 }
 
-                void number(char const* label, int & x)
+                bool number(char const* label, int & x)
                 {
-                    ImGui::DragInt(label, &x);
+                    return ImGui::DragInt(label, &x);
                 }
             }
 
-            void draw_fields(node & n, char const*& tooltip)
+            bool draw_fields(node & n, char const*& tooltip)
             {
+                auto changed = false;
                 auto& inst = n.instance;
                 auto& op = *n.metadata;
                 auto& kind = *op.kind;
@@ -86,15 +87,17 @@ namespace rt::sk
                     #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP) \
                         ImGui::PushItemWidth(-100); \
                         ImGui::PushID(#VAR); \
-                        draw_edit::EDITING_WIDGET(NAME, fields.VAR); \
+                        changed |= draw_edit::EDITING_WIDGET(NAME, fields.VAR); \
                         if (ImGui::IsItemHovered()) tooltip = TOOLTIP; \
                         ImGui::PopID();
                     #include "op.inl"
                 }
                 ImGui::PopID();
+
+                return changed;
             }
 
-            void draw_editor(
+            bool draw_editor(
                 graph & g,
                 node_id_type & previewing_node,
                 float & scaling_level,
@@ -103,6 +106,7 @@ namespace rt::sk
                 int & default_node_width,
                 temporary_state & tmp)
             {
+                auto changed = false;
                 auto& io = ImGui::GetIO();
                 ImGui::BeginChild("sk editor region", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
@@ -204,6 +208,7 @@ namespace rt::sk
                                     tmp.node_width,
                                     id);
                                 ImGui::CloseCurrentPopup();
+                                changed |= true;
                             }
                             if (ImGui::IsItemHovered()) {
                                 tooltip = op.tooltip;
@@ -274,6 +279,7 @@ namespace rt::sk
                             if (ImGui::IsItemActive()) {
                                 if (ImGui::IsMouseDoubleClicked(0)) {
                                     previewing_node = node.id;
+                                    changed |= true;
                                 }
 
                                 else if (ImGui::IsMouseClicked(0)) {
@@ -318,11 +324,12 @@ namespace rt::sk
                                 auto pos = grid_to_screen({ node.x, node.y });
                                 ImGui::SetWindowPos(to_imgui(pos));
                                 tooltip_palette = &palette;
-                                draw_fields(node, tooltip);
+                                changed |= draw_fields(node, tooltip);
                                 if (node.is_garbage) {
                                     if (previewing_node == node.id)
                                         previewing_node = 0;
                                     ImGui::CloseCurrentPopup();
+                                    changed |= true;
                                 }
                                 ImGui::EndPopup();
                             }
@@ -359,6 +366,9 @@ namespace rt::sk
                             ImGui::PopStyleColor(3);
                         }
 
+                        changed |= (node.x != node_new_x);
+                        changed |= (node.y != node_new_y);
+                        changed |= (node.width != node_new_w);
                         node.x = node_new_x;
                         node.y = node_new_y;
                         node.width = node_new_w;
@@ -385,6 +395,8 @@ namespace rt::sk
                     auto delta = to_glm(io.MouseDelta);
                     origin += delta;
                 }
+
+                return changed;
             }
         }
 
@@ -401,11 +413,10 @@ namespace rt::sk
             ImGui::PushStyleColor(ImGuiCol_Border, ImColor{30, 30, 30});
             ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
-            auto old_previewing = previewing_node;
-            draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
+            auto changed = draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
             g.collect_garbage();
             engine::sanity_check(g);
-            if (previewing_node != 0 && previewing_node != old_previewing) {
+            if (previewing_node != 0 && changed) {
                 engine::execute(g, g.find_node(previewing_node));
             }
 
