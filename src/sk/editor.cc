@@ -185,12 +185,11 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, to_imcolor(palette.bg));
                             ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.bg_accent));
                             if (ImGui::Button(op.name)) {
-                                auto& node = g.emplace(
+                                g.emplace(
                                     tmp.node_pos.x,
                                     tmp.node_pos.y,
                                     tmp.node_width,
                                     id);
-                                previewing_node = node.id;
                                 ImGui::CloseCurrentPopup();
                             }
                             if (ImGui::IsItemHovered()) {
