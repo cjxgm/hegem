@@ -7,7 +7,7 @@ namespace rt::sk::op::invoke_impl
 {
     auto invoke(op_fields_system_nop const& fields, util::span<lib::any> args) -> lib::any
     {
-        return {};
+        return std::move(args[0]);
     }
 }
 
