@@ -8,9 +8,6 @@
 #include <stdexcept>
 #include <vector>
 
-// DEBUG
-#include <iostream>
-
 namespace rt::sk
 {
     namespace engine
