@@ -2,7 +2,9 @@
 #include "../lib/imgui.hh"
 #include "editor.hh"
 #include "palette.hh"
+#include "engine.hh"
 #include <algorithm>
+#include <string>
 
 namespace rt::sk
 {
@@ -12,6 +14,8 @@ namespace rt::sk
         {
             glm::ivec2 node_pos;
             int node_width;
+            std::string error_message;
+            palette_type error_palette{0.96f};
         };
 
         namespace
@@ -117,6 +121,10 @@ namespace rt::sk
                 auto grid_size = round(initial_grid_size * scaling);
                 ImGui::SetWindowFontScale(font_scaling);
 
+                auto local_to_screen = [=] (glm::vec2 local) {
+                    return local + window_origin;
+                };
+
                 auto screen_to_grid = [=] (glm::vec2 screen) {
                     return glm::ivec2{floor((screen - window_origin - origin) / grid_size)};
                 };
@@ -221,6 +229,14 @@ namespace rt::sk
                             auto pos = grid_to_local({ node.x, node.y });
                             auto size = glm::vec2{float(node.width) - 0.3f, 1.0f} * grid_size;
 
+                            std::string error_message;
+                            if (!node.sanity_error.empty())
+                                error_message += node.sanity_error;
+                            if (!node.runtime_error.empty()) {
+                                if (!error_message.empty()) error_message += "\n";
+                                error_message += node.runtime_error;
+                            }
+
                             if (node.id == previewing_node) {
                                 ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.bg));
                                 ImGui::PushStyleColor(ImGuiCol_Button, to_imcolor(palette.fg));
@@ -236,6 +252,20 @@ namespace rt::sk
                             ImGui::PushID("operator");
                             ImGui::SetCursorPos(to_imgui(pos));
                             ImGui::Button(op.name, to_imgui(size));
+                            if (!error_message.empty()) {
+                                if (ImGui::IsItemHovered()) {
+                                    tmp.error_message = std::move(error_message);
+                                    tooltip = tmp.error_message.data();
+                                    tooltip_palette = &tmp.error_palette;
+                                }
+
+                                auto base = local_to_screen(pos);
+                                auto p0 = base + 0.1f * grid_size;
+                                auto p1 = base + 0.3f * grid_size;
+                                auto color = (node.id == previewing_node ? tmp.error_palette.fg_accent : tmp.error_palette.fg);
+                                auto& draw_list = *ImGui::GetWindowDrawList();
+                                draw_list.AddRectFilled(to_imgui(p0), to_imgui(p1), to_imcolor(color));
+                            }
                             if (ImGui::IsItemActive()) {
                                 if (ImGui::IsMouseDoubleClicked(0)) {
                                     previewing_node = node.id;
@@ -366,8 +396,13 @@ namespace rt::sk
             ImGui::PushStyleColor(ImGuiCol_Border, ImColor{30, 30, 30});
             ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
+            auto old_previewing = previewing_node;
             draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
             g.collect_garbage();
+            engine::sanity_check(g);
+            if (previewing_node != 0 && previewing_node != old_previewing) {
+                engine::execute(g, g.find_node(previewing_node));
+            }
 
             ImGui::PopStyleColor(4);
         }
