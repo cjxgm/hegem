@@ -51,6 +51,11 @@ namespace rt::sk
                 {
                     ImGui::DragFloat(label, &x);
                 }
+
+                void number(char const* label, int & x)
+                {
+                    ImGui::DragInt(label, &x);
+                }
             }
 
             void draw_fields(node & n, char const*& tooltip)
