@@ -88,7 +88,7 @@ namespace rt::util
             storage_type build_storage(face_soup_type faces, glm::vec3 const& partition_pivot) const
             {
                 if (faces.size() == 0)
-                    throw std::logic_error{"unreachable: assert(faces.size() > 0)"};
+                    throw std::logic_error{"assert(faces.size() > 0)"};
 
                 if (static_cast<int>(faces.size()) < face_capacity())
                     return std::move(faces);

@@ -70,8 +70,8 @@ namespace rt::app::imgui
                 gl::ubyte_type* pixels;
                 int w, h;
                 ImFontConfig config;
-                config.OversampleH = 2;
-                config.OversampleV = 2;
+                config.OversampleH = 4;
+                config.OversampleV = 4;
                 config.GlyphExtraSpacing.x = 0.0f;
                 config.PixelSnapH = true;
                 io.Fonts->AddFontFromFileTTF("support/fonts/ui.ttf", 16, &config);
@@ -86,8 +86,9 @@ namespace rt::app::imgui
                         0, 0, w, h,                     // geometry
                         gl::red, gl::unsigned_byte,     // format
                         pixels);
-                gl::texture_parameteri(tex_font, gl::texture_min_filter, gl::linear);
+                gl::texture_parameteri(tex_font, gl::texture_min_filter, gl::linear_mipmap_linear);
                 gl::texture_parameteri(tex_font, gl::texture_mag_filter, gl::linear);
+                gl::generate_texture_mipmap(tex_font);
 
                 io.Fonts->TexID = glu::cast::id_to_ptr(tex_font);
             }

@@ -149,7 +149,6 @@ namespace rt::rasterizer
         gl::uniform3fv(3, 1, &cam_apex[0]);
         for (auto& voxel: s.geometry.voxels) {
             auto& shape = voxel.shape;
-            auto model = voxel.model_to_world;
             auto cell_size = shape.voxelized.cell_size();
             shape.voxelized.each([&] (auto& cell, auto& pos) {
                 if (cell.size() == 0) return;

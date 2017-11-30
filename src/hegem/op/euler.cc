@@ -15,7 +15,7 @@ namespace rt::hegem
                 auto b = m.make_body();
                 auto f = m.make_face(b);
                 auto v = m.make_vert();
-                auto r = m.make_ring(f, v);
+                m.make_ring(f, v);
                 v->pos = pos;
                 return b;
             }

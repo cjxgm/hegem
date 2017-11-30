@@ -1,7 +1,7 @@
 #pragma once
+#include "../util/slab.hh"
 #include "hemesh.fwd.hh"
 #include "primitive.hh"
-#include "slab.hh"
 
 namespace rt::hegem
 {
@@ -46,7 +46,7 @@ namespace rt::hegem
         body_type* any_body{};
 
         // Expands to `unbound_slab<body_type> bodys;` and etc.
-        #define STRUCT(NAME, VAR) unbound_trivial_slab<NAME> VAR ## s;
+        #define STRUCT(NAME, VAR) util::unbound_trivial_slab<NAME> VAR ## s;
         #include "primitive.inl"
     };
 }

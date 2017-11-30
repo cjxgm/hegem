@@ -1,6 +1,7 @@
 #include "../../lib/glm/vec3.hh"
 #include "../../lib/glm/op/geom.hh"
 #include "../../lib/glm/op/common.hh"
+#include "../../util/unreachable.macro.hh"
 #include "../../math/direction.hh"
 #include "../../scene/material.hh"
 #include "../../scene/lamp.hh"
@@ -9,7 +10,6 @@
 #include "../intersect.hh"
 #include "unified-lamp.hh"
 #include <limits>
-#include <stdexcept>
 
 namespace rt::raytracer::shading_details
 {
@@ -51,7 +51,7 @@ namespace rt::raytracer::shading_details
         private:
             color_type impl(materials::solid_color const& /*mat*/) const
             {
-                throw std::logic_error{"unreachable"};
+                RT_UNREACHABLE();
             }
 
             // Blinn-phong
