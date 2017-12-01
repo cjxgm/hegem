@@ -33,7 +33,7 @@ namespace rt::hegem
             glm::mat3 space;
         };
 
-        scene::shapes::mesh triangulate_face(face_type* face)
+        scene::shapes::mesh triangulate_face(face_type* face, float bias)
         {
             auto n = normal(face->boundary->any_hege);
             scene::shapes::mesh tri_mesh;
@@ -48,7 +48,7 @@ namespace rt::hegem
 
                     for (auto& h: iterate(r.any_hege)) {
                         auto v = h.start;
-                        tri_mesh.verts.push_back({ v->pos, n });
+                        tri_mesh.verts.push_back({ v->pos + n*bias, n });
                         er.emplace_back(project(v->pos));
                     }
                 }
@@ -121,12 +121,12 @@ namespace rt::hegem
         }
     }
 
-    scene::shapes::mesh build_mesh(hemesh const& m)
+    scene::shapes::mesh build_mesh(hemesh const& m, float bias)
     {
         scene::shapes::mesh tri_mesh;
         for (auto& b: iterate(m.any_body)) {
             for (auto& f: iterate(b.any_face)) {
-                extend(tri_mesh, triangulate_face(&f));
+                extend(tri_mesh, triangulate_face(&f, bias));
             }
         }
         return tri_mesh;
