@@ -23,6 +23,7 @@
 #include <utility>      // for std::forward and std::move
 #include <functional>
 #include <algorithm>
+#include <memory>
 
 namespace rt::app
 {
@@ -178,15 +179,17 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io render_combined_view_progressively(scene_type const& scene, view_type view, hdr_texture& hdr)
+        util::task_io render_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
             using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& tman = ctx.tman;
+            auto shared_scene = std::make_shared<scene_type>(std::move(scene));
+            shared_scene->rebuild_cache();
 
-            auto make_task = [&] (bool should_mark, int samples, auto view, auto tile) {
+            auto make_task = [&hdr, &shared_scene] (bool should_mark, int samples, auto view, auto tile) {
                 view.samples = samples;
-                return [&, view, tile, should_mark] (auto tx, auto shared_canceled) {
+                return [&hdr, view, tile, should_mark, shared_scene] (auto tx, auto shared_canceled) {
                     if (should_mark) {
                         tx.send(gl_job{
                             shared_canceled,
@@ -194,7 +197,7 @@ namespace rt::app
                         });
                     }
 
-                    auto result = raytracer::raytrace(scene, view, tile);
+                    auto result = raytracer::raytrace(*shared_scene, view, tile);
                     auto& image = std::get<0>(result);
 
                     tx.send(gl_job{
