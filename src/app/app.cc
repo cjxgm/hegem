@@ -69,6 +69,7 @@ namespace rt::app
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
             sk::editor sk_editor;
+            visualization* sk_visualization{};
 
             static context& instance()
             {
@@ -516,6 +517,12 @@ namespace rt::app
                     ImGui::End();
                 }
 
+                if (ctx.sk_visualization == nullptr || !ctx.sk_visualization->show) {
+                    auto& scene = ctx.sk_editor.scene;
+                    auto& view = scene.views.front();
+                    ctx.sk_visualization = &vis.emplace_back(scene.name + ": " + view.name, scene, view, false);
+                }
+
                 vis.remove_if([] (auto& vi) { return !vi.show; });
                 int vi_idx = 0;
                 for (auto& vi: vis) {
@@ -544,7 +551,12 @@ namespace rt::app
                 ImGui::SetNextWindowPos(ImVec2(400, 100), ImGuiSetCond_Appearing);
                 ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                 ImGui::Begin("Sk Editor");
-                ctx.sk_editor.draw();
+                if (ctx.sk_editor.draw()) {
+                    auto& vi = *ctx.sk_visualization;
+                    vi.update_rasterization_state();
+                    vi.reset_raytracing_task_io();
+                    vi.suppress_raytracing = 10;
+                }
                 ImGui::End();
 
                 process_pending_gl_jobs();

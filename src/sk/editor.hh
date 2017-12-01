@@ -1,6 +1,7 @@
 #pragma once
 #include "../lib/glm/vec2.hh"
 #include "../util/constraints.hh"
+#include "../scene/scene.hh"
 #include "graph.hh"
 #include <vector>
 #include <memory>
@@ -13,10 +14,13 @@ namespace rt::sk
 
         struct editor: util::constraints::only_movable
         {
+            scene::scene_type scene;
+
             editor();
             ~editor(); // = default in implementation
 
-            void draw();
+            // Returns true if changed
+            bool draw();
 
         private:
             graph g;

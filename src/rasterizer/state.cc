@@ -173,5 +173,10 @@ namespace rt::rasterizer::state_details
         static_vertices_buffer = ctx.static_vertices_buffer;
         static_elements_buffer = ctx.static_elements_buffer;
     }
+
+    void state::update_geometry()
+    {
+        geometry = sort_geometry(scene);
+    }
 }
 

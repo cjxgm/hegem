@@ -1,5 +1,7 @@
 #include "../lib/glm/op/common.hh"
 #include "../lib/imgui.hh"
+#include "../hegem/mesh.hh"
+#include "invoke.impl/model.hh"
 #include "editor.hh"
 #include "palette.hh"
 #include "engine.hh"
@@ -400,13 +402,91 @@ namespace rt::sk
             }
         }
 
+        void update_preview(scene::scene_type& s, lib::any result)
+        {
+            auto& nodes = s.root.get<scene::nodes::group>().nodes;
+            nodes.clear();
+
+            if (result.type() == typeid(op::invoke_impl::model)) {
+                auto m = std::any_cast<op::invoke_impl::model>(result);
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        2,
+                        build_outline_mesh(m.hmesh),
+                    });
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        1,
+                        std::move(m.hmesh),
+                    });
+            }
+
+            s.rebuild_cache();
+        }
+
         editor::editor()
             : tmp{std::make_unique<temporary_state>()}
-        {}
+        {
+            scene.name = "sk";
+            scene.views.emplace_back(scene::view_type {
+                "Preview",
+                { 800, 450 },
+                1,
+                16,
+                scene::cameras::pin_hole {
+                    glm::vec3{ 0.0f, 0.0f, 5.0f },
+                    glm::vec3{ 0.0f, 0.0f, -1.0f },
+                    glm::vec3{ 0.0f, 1.0f, 0.0f },
+                    glm::radians(30.0f),
+                },
+            });
+
+            auto lamp_main = scene::lamps::sun {
+                glm::vec3{ 2.0f, -2.0f, -1.0f },
+                glm::vec3{ 1.0f, 0.9f, 0.8f } * 20.0f,
+            };
+            auto lamp_rim = scene::lamps::sun {
+                glm::vec3{ -1.0f, 1.0f, -1.0f },
+                glm::vec3{ 0.2f, 0.4f, 1.0f } * 16.0f,
+            };
+            auto lamp_back = scene::lamps::sun {
+                glm::vec3{ -0.2f, 0.2f, 0.8f },
+                glm::vec3{ 0.6f, 0.6f, 0.6f } * 10.0f,
+            };
+            scene.lamps.emplace_back(std::move(lamp_main));
+            scene.lamps.emplace_back(std::move(lamp_rim));
+            scene.lamps.emplace_back(std::move(lamp_back));
+
+            auto mat_sky = scene::materials::solid_color {
+                glm::vec3{0.3f, 0.3f, 1.0f} * 10.0f,
+            };
+            auto mat_object = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{1.0f, 0.4f, 0.1f},
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.2f,
+                0.05f,
+                1.5f,
+            };
+            auto mat_outline = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{0.0f, 0.0f, 0.0f},
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.8f,
+                0.1f,
+                1.5f,
+            };
+            scene.materials.emplace_back(std::move(mat_sky));
+            scene.materials.emplace_back(std::move(mat_object));
+            scene.materials.emplace_back(std::move(mat_outline));
+            scene.environment = 0;
+
+            scene.root = scene::nodes::group{};
+
+            scene.rebuild_cache();
+        }
 
         editor::~editor() = default;
 
-        void editor::draw()
+        bool editor::draw()
         {
             ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor{40, 40, 40});
             ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{50, 50, 50});
@@ -416,11 +496,16 @@ namespace rt::sk
             auto changed = draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
             g.collect_garbage();
             engine::sanity_check(g);
-            if (previewing_node != 0 && changed) {
-                engine::execute(g, g.find_node(previewing_node));
+            if (changed) {
+                auto result = previewing_node == 0
+                    ? lib::any{}
+                    : engine::execute(g, g.find_node(previewing_node));
+                update_preview(scene, std::move(result));
             }
 
             ImGui::PopStyleColor(4);
+
+            return changed;
         }
     }
 }
