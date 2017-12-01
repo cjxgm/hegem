@@ -3,6 +3,7 @@
 #include "../../hegem/op/shape.hh"
 #include "../op.hh"
 #include "model.hh"
+#include "select.hh"
 #include <utility>      // for std::move
 
 namespace rt::sk::op::invoke_impl
@@ -13,6 +14,7 @@ namespace rt::sk::op::invoke_impl
         auto radius = (fields.radius < 1e-3f ? 1e-3f : fields.radius);
         auto ngon = (fields.ngon < 3 ? 3 : fields.ngon);
         hegem::make_polygon_disk(m.hmesh, ngon, radius);
+        select_all(m);
         return std::move(m);
     }
 
@@ -20,6 +22,7 @@ namespace rt::sk::op::invoke_impl
     {
         model m;
         hegem::make_cube(m.hmesh);
+        select_all(m);
         return std::move(m);
     }
 }

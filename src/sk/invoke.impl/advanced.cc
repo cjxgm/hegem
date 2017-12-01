@@ -2,6 +2,7 @@
 #include "../../util/span.hh"
 #include "../op.hh"
 #include "model.hh"
+#include "select.hh"
 #include <utility>      // for std::move
 #include <stdexcept>
 
@@ -16,6 +17,9 @@ namespace rt::sk::op::invoke_impl
             auto m2 = std::any_cast<model>(std::move(arg));
             m.hmesh.extend(m2.hmesh);
         }
+
+        select_all(m);
+
         return m;
     }
 }
