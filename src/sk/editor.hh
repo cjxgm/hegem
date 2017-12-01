@@ -29,7 +29,7 @@ namespace rt::sk
 
             glm::vec2 grid_size{30.0f, 30.0f};
             glm::vec2 origin{0.0f, 0.0f};
-            int default_node_width = 5;
+            int default_node_width = 4;
 
             std::unique_ptr<temporary_state> tmp;
         };
