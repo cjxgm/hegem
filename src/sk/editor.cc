@@ -18,6 +18,7 @@ namespace rt::sk
             int node_width;
             std::string error_message;
             palette_type error_palette{0.96f};
+            bool showing_new_node_popup{};
         };
 
         namespace
@@ -177,14 +178,27 @@ namespace rt::sk
                             if (ImGui::Button("+", to_imgui(size))) {
                                 tmp.node_pos = mouse_grid;
                                 tmp.node_width = placeholder_width;
+                                tmp.showing_new_node_popup = true;
                                 ImGui::OpenPopup("new node");
                             }
                             ImGui::PopStyleColor(4);
                         }
                     }
 
+                    if (tmp.showing_new_node_popup) {
+                        auto pos = grid_to_local(tmp.node_pos);
+                        auto size = glm::vec2{float(tmp.node_width), 1.0f} * grid_size;
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImColor{80, 80, 80});
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImColor{50, 50, 50});
+                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor{50, 50, 50});
+                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
+                        ImGui::SetCursorPos(to_imgui(pos));
+                        ImGui::Button("+", to_imgui(size));
+                        ImGui::PopStyleColor(4);
+                    }
+
                     if (ImGui::BeginPopup("new node")) {
-                        auto pos = grid_to_screen(tmp.node_pos);
+                        auto pos = grid_to_screen(tmp.node_pos + glm::ivec2{0, 1});
                         ImGui::SetWindowPos(to_imgui(pos));
 
                         kind_metadata const* prev_kind = nullptr;
@@ -232,6 +246,8 @@ namespace rt::sk
                         }
 
                         ImGui::EndPopup();
+                    } else {
+                        tmp.showing_new_node_popup = false;
                     }
                 }
 
