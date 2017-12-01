@@ -333,7 +333,7 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.bg_accent));
                             ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, to_imcolor(palette.bg_accent));
                             if (ImGui::BeginPopup("fields")) {
-                                auto pos = grid_to_screen({ node.x, node.y });
+                                auto pos = grid_to_screen({ node.x, node.y + 1 });
                                 ImGui::SetWindowPos(to_imgui(pos));
                                 tooltip_palette = &palette;
                                 changed |= draw_fields(node, tooltip);
