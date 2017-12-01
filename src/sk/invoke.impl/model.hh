@@ -1,7 +1,7 @@
 #pragma once
 // A model is an hemesh with selections
 #include "../../hegem/hemesh.hh"
-#include <vector>
+#include <unordered_set>
 
 namespace rt::sk
 {
@@ -10,7 +10,8 @@ namespace rt::sk
         struct model
         {
             hegem::hemesh hmesh;
-            std::vector<hegem::face_type*> selected_faces;
+            std::unordered_set<hegem::face_type*> face_selection;
+            std::unordered_set<hegem::vert_type*> vert_selection;
         };
     }
 }
