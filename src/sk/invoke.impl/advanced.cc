@@ -3,8 +3,8 @@
 #include "../op.hh"
 #include "model.hh"
 #include "select.hh"
+#include "util.hh"
 #include <utility>      // for std::move
-#include <stdexcept>
 
 namespace rt::sk::op::invoke_impl
 {
@@ -12,9 +12,7 @@ namespace rt::sk::op::invoke_impl
     {
         model m;
         for (auto& arg: args.range()) {
-            if (arg.type() != typeid(model))
-                throw std::runtime_error{"Arguments must be models"};
-            auto m2 = std::any_cast<model>(std::move(arg));
+            auto m2 = extract_or_croak<model>(arg, "Arguments must be models.");
             m.hmesh.extend(m2.hmesh);
         }
 
