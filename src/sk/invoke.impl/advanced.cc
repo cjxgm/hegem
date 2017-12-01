@@ -13,7 +13,7 @@ namespace rt::sk::op::invoke_impl
         for (auto& arg: args.range()) {
             if (arg.type() != typeid(model))
                 throw std::runtime_error{"Arguments must be models"};
-            auto m2 = std::any_cast<model>(arg);
+            auto m2 = std::any_cast<model>(std::move(arg));
             m.hmesh.extend(m2.hmesh);
         }
         return m;
