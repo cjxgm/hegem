@@ -513,6 +513,7 @@ namespace rt::app
                     ImGui::End();
                 }
 
+                vis.remove_if([] (auto& vi) { return !vi.show; });
                 int vi_idx = 0;
                 for (auto& vi: vis) {
                     ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
@@ -523,7 +524,6 @@ namespace rt::app
                     ImGui::End();
                     if (!vi.show) vi.reset_raytracing_task_io();
                 }
-                vis.remove_if([] (auto& vi) { return !vi.show; });
 
                 ImGui::SetNextWindowPos(ImVec2(50, 500), ImGuiSetCond_Appearing);
                 ImGui::Begin("Framerates", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
