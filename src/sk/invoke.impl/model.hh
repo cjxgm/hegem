@@ -9,6 +9,18 @@ namespace rt::sk
     {
         struct model
         {
+            model() = default;
+            model(model &&) = default;
+            model& operator = (model &&) = default;
+            model(model const& m);
+            model& operator = (model const& m)
+            {
+                using std::swap;
+                model x{m};
+                swap(*this, x);
+                return *this;
+            }
+
             hegem::hemesh hmesh;
             std::unordered_set<hegem::face_type*> face_selection;
             std::unordered_set<hegem::vert_type*> vert_selection;
