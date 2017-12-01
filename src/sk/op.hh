@@ -1,9 +1,12 @@
 #pragma once
+#include <array>
 
 namespace rt::sk
 {
     namespace op
     {
+        using float3 = std::array<float, 3>;
+
         enum class kind_id
         {
             #define KIND(KIND, ...) KIND,

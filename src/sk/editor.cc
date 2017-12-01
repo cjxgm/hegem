@@ -49,14 +49,24 @@ namespace rt::sk
 
             namespace draw_edit
             {
-                bool number(char const* label, float & x)
+                bool value(char const* label, float& x)
                 {
-                    return ImGui::DragFloat(label, &x);
+                    return ImGui::DragFloat(label, &x, 0.01f);
                 }
 
-                bool number(char const* label, int & x)
+                bool value(char const* label, int& x)
                 {
-                    return ImGui::DragInt(label, &x);
+                    return ImGui::DragInt(label, &x, 0.1f);
+                }
+
+                bool value(char const* label, bool& x)
+                {
+                    return ImGui::Checkbox(label, &x);
+                }
+
+                bool value(char const* label, op::float3& x)
+                {
+                    return ImGui::DragFloat3(label, x.data(), 0.01f);
                 }
             }
 
