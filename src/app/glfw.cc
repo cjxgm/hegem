@@ -42,6 +42,9 @@ namespace rt::app::glfw
                 if (id == 131185) return;
                 if (id == 131169) return;
                 if (id == 131140) return;
+                if (id == 45) return;
+                if (id == 46) return;
+                if (id == 47) return;
                 journal{"GL"}
                     << "debug:\n"
                     << severity_to_ansi_escape_sequence(severity)
