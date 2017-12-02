@@ -341,6 +341,7 @@ namespace rt::sk
 
                             ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.fg));
                             ImGui::PushStyleColor(ImGuiCol_Border, to_imcolor(palette.fg));
+                            ImGui::PushStyleColor(ImGuiCol_CheckMark, to_imcolor(palette.fg));
                             ImGui::PushStyleColor(ImGuiCol_FrameBg, to_imcolor(palette.bg));
                             ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, to_imcolor(palette.fg_accent));
                             ImGui::PushStyleColor(ImGuiCol_FrameBgActive, to_imcolor(palette.bg_accent));
@@ -361,7 +362,7 @@ namespace rt::sk
                                 }
                                 ImGui::EndPopup();
                             }
-                            ImGui::PopStyleColor(9);
+                            ImGui::PopStyleColor(10);
                         }
 
                         { // node resize button
