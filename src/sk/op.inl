@@ -87,7 +87,12 @@ OP(transform, rotate, 1, "Rotate", "Rotate selected vertices.",
     FIELD(bool, use_median, true, value, "Use median point as pivot", "Use the barycenter/averaged point as the pivot.")
 )
 
-OP(advanced, merge, -1, "Merge", "Combine 2 models into 1 model with extra bodies. This is NOT a gluing operation.")
+OP(advanced, merge, -1, "Merge", "Combine 2 models into 1 model with extra bodies.\nThis is NOT a gluing operation.")
+
+OP(advanced, extrude, 1, "Extrude", "Extrude a face along its normal positively.",
+    FIELD(float, amount, 1.0f, value, "Amount", "How much to extrude.")
+    FIELD(bool, select_verts, true, value, "Select new vertices", "Exclusively select the new vertices added by the extrusion")
+)
 
 #undef KIND
 #undef OP
