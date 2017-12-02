@@ -15,7 +15,7 @@ namespace rt::sk
             color_type fg_accent;
             color_type bg_accent;
 
-            palette_type() = default;
+            palette_type(): palette_type{0.0f} {}
             palette_type(float hue);
         };
     }

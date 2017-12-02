@@ -17,7 +17,7 @@ namespace rt::sk
             glm::ivec2 node_pos;
             int node_width;
             std::string error_message;
-            palette_type error_palette{0.96f};
+            palette_type error_palette;
             bool showing_new_node_popup{};
         };
 

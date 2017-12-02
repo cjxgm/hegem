@@ -1,4 +1,5 @@
 #include "registry.hh"
+#include <algorithm>
 
 namespace rt::sk
 {
@@ -11,10 +12,10 @@ namespace rt::sk
 
             {
                 auto kind_index = 0.0f;
-                auto kind_count = float(kinds.size());
+                auto max_kind = std::max(1.0f, float(kinds.size()) - 1.0f);
                 #define KIND(ID, NAME, TOOLTIP) \
                 { \
-                    auto hue = kind_index++ / kind_count * 0.95f + 0.05f; \
+                    auto hue = kind_index++ / max_kind * 0.70f + 0.15f; \
                     kind_metadata_##ID = { \
                         .id = #ID, \
                         .name = NAME, \
