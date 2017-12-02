@@ -3,5 +3,6 @@
 #include "primitive.pull"
 #include "selection.pull"
 #include "transform.pull"
+#include "repetition.pull"
 #include "advanced.pull"
 

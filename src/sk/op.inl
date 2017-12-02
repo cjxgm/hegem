@@ -18,6 +18,7 @@ KIND(system, "System", "Core operators.")
 KIND(primitive, "Primitive", "Basic shapes.")
 KIND(selection, "Selection", "(De)select vertices and faces as operation targets.")
 KIND(transform, "Transform", "Affine transformations.")
+KIND(repetition, "Repetition", "Repeatedly clone bodies.")
 KIND(advanced, "Advanced", "Advanced modeling operations.")
 
 OP(system, nop, 1, "Nop", "No operation. This is used to fill gaps between nodes.")
@@ -85,6 +86,22 @@ OP(transform, rotate, 1, "Rotate", "Rotate selected vertices.",
     FIELD(float, amount, {}, value, "Degrees", "How much to rotate around the rotation axis.")
     FIELD(float3, pivot, {}, value, "Pivot", "Rotating around this point.")
     FIELD(bool, use_median, true, value, "Use median point as pivot", "Use the barycenter/averaged point as the pivot.")
+)
+
+OP(repetition, array, 1, "Array", "Repeatedly clone the whole model along a straight line.",
+    FIELD(float3, offset, float3({2.0f, 0.0f, 0.0f}), value, "Offset", "Offset of each clone.")
+    FIELD(int, count, 3, value, "Count", "How many to clone.")
+    FIELD(bool, recenter, false, value, "Re-center", "Move the cloned models from their barycenter to the origin.")
+)
+
+OP(repetition, spin, 1, "Spin",
+    "Repeatedly clone the whole model along a circle centered at origin pointing at y+ axis.",
+    FIELD(bool, local_rotation, false, value, "Local rotation", "Rotate each clone locally.")
+    FIELD(float, start, 0.0f, value, "Start", "Starting angle.")
+    FIELD(float, radius, 1.0f, value, "Radius", "Radius of the circle.")
+    FIELD(float, fraction, 1.0f, value, "Fraction", "Fraction of the circle.")
+    FIELD(bool, exclusive_end, true, value, "Exclusive end", "Exclude the arc end.")
+    FIELD(int, count, 3, value, "Count", "How many clones to make.")
 )
 
 OP(advanced, merge, -1, "Merge", "Combine 2 models into 1 model with extra bodies.\nThis is NOT a gluing operation.")
