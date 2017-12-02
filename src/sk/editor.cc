@@ -24,7 +24,7 @@ namespace rt::sk
         namespace
         {
             auto to_glm(ImVec2 a) { return glm::vec2{a.x, a.y}; }
-            auto to_imgui(glm::vec2 a) { return ImVec2{a.x, a.y}; }
+            auto to_imgui(glm::vec2 a) { return ImVec2{std::round(a.x), std::round(a.y)}; }
             auto to_imcolor(palette_color_type a) { return ImColor{a.x, a.y, a.z}; }
 
             auto scaling_factor(float & scaling_level) -> float
@@ -140,7 +140,7 @@ namespace rt::sk
                 auto font_scaling = scaling < 1.0f
                     ? scaling * 0.5f + 0.5f
                     : std::min(2.0f, scaling * 0.4f + 0.6f);
-                auto grid_size = round(initial_grid_size * scaling);
+                auto grid_size = initial_grid_size * scaling;
                 ImGui::SetWindowFontScale(font_scaling);
 
                 auto local_to_screen = [=] (glm::vec2 local) {
@@ -152,11 +152,11 @@ namespace rt::sk
                 };
 
                 auto grid_to_screen = [=] (glm::ivec2 grid) {
-                    return glm::vec2{grid} * grid_size + origin + window_origin;
+                    return round(glm::vec2{grid} * grid_size + origin + window_origin);
                 };
 
                 auto grid_to_local = [=] (glm::ivec2 grid) {
-                    return glm::vec2{grid} * grid_size + origin + origin_offset;
+                    return round(glm::vec2{grid} * grid_size + origin + origin_offset);
                 };
 
                 char const* tooltip{};
