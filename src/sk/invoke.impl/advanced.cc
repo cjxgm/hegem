@@ -91,27 +91,26 @@ namespace rt::sk::op::invoke_impl
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
-        if (fields.amount >= 1e-2f) {
-            std::vector<hegem::vert_type*> verts;
+        std::vector<hegem::vert_type*> verts;
 
-            for (auto face: m.face_selection) {
-                auto n = hegem::normal(face->boundary->any_hege);
-                try {
-                    hegem::extrude(m.hmesh, face, n * fields.amount);
-                }
-                catch (std::invalid_argument const& e) {
-                    throw std::runtime_error(e.what());
-                }
-
-                if (fields.select_verts) {
-                    for (auto& h: hegem::list::iterate(face->boundary->any_hege))
-                        verts.emplace_back(h.start);
-                }
+        for (auto face: m.face_selection) {
+            auto n = hegem::normal(face->boundary->any_hege);
+            try {
+                hegem::extrude(m.hmesh, face, n * fields.amount);
+            }
+            catch (std::invalid_argument const& e) {
+                throw std::runtime_error(e.what());
             }
 
-            if (fields.select_verts)
-                select_verts(m, true, verts, false);
+            if (fields.select_verts) {
+                for (auto& r: hegem::list::iterate(face->boundary))
+                    for (auto& h: hegem::list::iterate(r.any_hege))
+                        verts.emplace_back(h.start);
+            }
         }
+
+        if (fields.select_verts)
+            select_verts(m, true, verts, false);
 
         return std::move(m);
     }

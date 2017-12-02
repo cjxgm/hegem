@@ -106,7 +106,7 @@ OP(repetition, spin, 1, "Spin",
 
 OP(advanced, merge, -1, "Merge", "Combine 2 models into 1 model with extra bodies.\nThis is NOT a gluing operation.")
 
-OP(advanced, extrude, 1, "Extrude", "Extrude a face along its normal positively.",
+OP(advanced, extrude, 1, "Extrude", "Extrude a face along its normal positively.\nYou may extrude inward with negative amount, but it will NOT produce holes.",
     FIELD(float, amount, 1.0f, value, "Amount", "How much to extrude.")
     FIELD(bool, select_verts, true, value, "Select new vertices", "Exclusively select the new vertices added by the extrusion")
 )
