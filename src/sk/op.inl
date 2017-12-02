@@ -94,6 +94,14 @@ OP(advanced, extrude, 1, "Extrude", "Extrude a face along its normal positively.
     FIELD(bool, select_verts, true, value, "Select new vertices", "Exclusively select the new vertices added by the extrusion")
 )
 
+OP(advanced, embed, 2, "Embed",
+    "Project and glue double-sided faces onto a face of another model.\n"
+    "Each body must be a single double-sided face.\n"
+    "The double-sided faces cannot contain inner rings.\n"
+    "Do not support gluing solid models.",
+    FIELD(bool, no_holes, false, value, "No holes", "Do not attempt to punch holes even if applicable.")
+)
+
 #undef KIND
 #undef OP
 #undef FIELD
