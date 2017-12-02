@@ -3,6 +3,7 @@
 #include "../../util/span.hh"
 #include "../../math/direction.hh"
 #include "../../hegem/list.hh"
+#include "../../hegem/iteration.hh"
 #include "../../hegem/geometry.hh"
 #include "../op.hh"
 #include "model.hh"
@@ -18,6 +19,21 @@ namespace rt::sk::op::invoke_impl
         {
             auto delta = pos - center;
             return (dot(delta, delta) <= radius*radius);
+        }
+
+        auto front_facing(hegem::face_type const* f, math::direction_type front) -> bool
+        {
+            auto n = hegem::normal(f->boundary->any_hege);
+            return (dot(*n, *front) > 1e-5f);
+        }
+
+        auto match_no_backfaces(hegem::face_type const* f, float3 front3, bool no_backfaces) -> bool
+        {
+            if (no_backfaces) {
+                auto front = math::direction_type{to_glm(front3)};
+                if (!front_facing(f, front)) return false;
+            }
+            return true;
         }
 
         auto match(hegem::vert_type const* v, op_fields_selection_select_verts const& fields) -> bool
@@ -40,12 +56,8 @@ namespace rt::sk::op::invoke_impl
             if (!in_sphere(median, to_glm(fields.center), fields.radius))
                 return false;
 
-            if (fields.no_backfaces) {
-                auto n = hegem::normal(f->boundary->any_hege);
-                auto front = math::direction_type{to_glm(fields.front)};
-                if (!hegem::is_same_side(n, front))
-                    return false;
-            }
+            if (!match_no_backfaces(f, fields.front, fields.no_backfaces))
+                return false;
 
             return true;
         }
@@ -86,11 +98,44 @@ namespace rt::sk::op::invoke_impl
 
         if (fields.affect_verts) {
             std::vector<hegem::vert_type*> verts;
-            if (fields.radius >= 0.0f) {
-                for (auto face: faces)
+            for (auto face: faces)
+                for (auto& r: hegem::list::iterate(face->boundary))
+                    for (auto& h: hegem::list::iterate(r.any_hege))
+                        verts.emplace_back(h.start);
+            select_verts(m, fields.exclusive, verts, fields.inverse);
+        }
+
+        return std::move(m);
+    }
+
+    auto invoke(op_fields_selection_containing_faces const& fields, util::span<lib::any> args) -> lib::any
+    {
+        auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
+
+        std::vector<hegem::face_type*> faces;
+        for (auto vert: m.vert_selection) {
+            for (auto& h: hegem::iter::heges_around_vert(vert->any_hege)) {
+                auto face = h.ring->face;
+                if (fields.only_boundary && face->boundary != h.ring)
+                    continue;
+                if (!match_no_backfaces(face, fields.front, fields.no_backfaces))
+                    continue;
+                faces.emplace_back(face);
+            }
+        }
+        select_faces(m, fields.exclusive, faces, fields.inverse);
+
+        if (fields.affect_verts) {
+            std::vector<hegem::vert_type*> verts;
+            for (auto face: faces) {
+                if (fields.only_boundary) {
+                    for (auto& h: hegem::list::iterate(face->boundary->any_hege))
+                        verts.emplace_back(h.start);
+                } else {
                     for (auto& r: hegem::list::iterate(face->boundary))
                         for (auto& h: hegem::list::iterate(r.any_hege))
                             verts.emplace_back(h.start);
+                }
             }
             select_verts(m, fields.exclusive, verts, fields.inverse);
         }
