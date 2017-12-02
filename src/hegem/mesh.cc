@@ -4,6 +4,7 @@
 #include "mesh.hh"
 #include "hemesh.hh"
 #include "list.hh"
+#include "iteration.hh"
 #include "geometry.hh"
 #include <vector>
 #include <array>
@@ -47,8 +48,18 @@ namespace rt::hegem
                     auto& er = polygon.back();
 
                     for (auto& h: iterate(r.any_hege)) {
+                        auto smooth_normal = [&] () -> direction_type {
+                            glm::vec3 smoothed;
+                            for (auto& h: iter::heges_around_vert(&h)) {
+                                auto nf = normal(&h);
+                                auto d = dot(*nf, *n);
+                                if (d >   1.0f - 1e-2f ) smoothed += *nf;
+                                if (d < -(1.0f - 1e-2f)) smoothed -= *nf;
+                            }
+                            return smoothed;
+                        } ();
                         auto v = h.start;
-                        tri_mesh.verts.push_back({ v->pos + n*bias, n });
+                        tri_mesh.verts.push_back({ v->pos + n*bias, smooth_normal });
                         er.emplace_back(project(v->pos));
                     }
                 }
