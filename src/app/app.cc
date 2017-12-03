@@ -526,7 +526,7 @@ namespace rt::app
                 if (ctx.sk_visualization == nullptr || !ctx.sk_visualization->show) {
                     auto& scene = ctx.sk_editor.scene;
                     auto& view = scene.views.front();
-                    ctx.sk_visualization = &vis.emplace_back(scene.name + ": " + view.name, scene, view, false);
+                    ctx.sk_visualization = &vis.emplace_back("Hegem Preview", scene, view, false);
                 }
 
                 vis.remove_if([] (auto& vi) { return !vi.show; });
