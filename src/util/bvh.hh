@@ -48,12 +48,12 @@ namespace rt::util
             {
                 bound_type bound;
                 storage_type storage;
-                int face_count;
+                int face_count{};
             };
 
             bvh(face_trait state, face_soup_type face_soup)
                 : face_trait_state{std::move(state)}
-                , root{build_node(std::move(face_soup))}
+                , root{safe_build_node(std::move(face_soup))}
             {}
 
             shape_hit_type intersect(ray_type const& ray) const
@@ -72,6 +72,12 @@ namespace rt::util
             auto face_minmax(face_id_type id) const { return face_trait_state.minmax(id); }
             glm::vec3 face_pivot(face_id_type id) const { return face_trait_state.pivot(id); }
 
+            node safe_build_node(face_soup_type faces) const
+            {
+                if (faces.empty()) return {};
+                return build_node(std::move(faces));
+            }
+
             node build_node(face_soup_type faces) const
             {
                 auto bound = bound_of(faces);
@@ -88,7 +94,7 @@ namespace rt::util
             storage_type build_storage(face_soup_type faces, glm::vec3 const& partition_pivot) const
             {
                 if (faces.size() == 0)
-                    throw std::logic_error{"unreachable: assert(faces.size() > 0)"};
+                    throw std::logic_error{"assert(faces.size() > 0)"};
 
                 if (static_cast<int>(faces.size()) < face_capacity())
                     return std::move(faces);

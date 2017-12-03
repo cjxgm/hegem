@@ -1,3 +1,4 @@
+#include "../hegem/mesh.hh"
 #include "cache.hh"
 #include "scene.hh"
 #include "node.hh"
@@ -32,20 +33,26 @@ namespace rt::scene::cache_details
 
             node->match(
                 [&] (nodes::object const& node) {
-                    node.shape.match(
-                        [&] (shapes::mesh m) {
-                            mesh_bvh_type::face_soup_type face_ids;
-                            auto face_count = static_cast<int>(m.faces.size());
-                            face_ids.reserve(face_count);
-                            for (int i=0; i<face_count; i++)
-                                face_ids.emplace_back(i);
+                    node.shape
+                        .match(
+                            [&] (shapes::hemesh const& hm) -> shape_type {
+                                return build_mesh(hm, 1e-5f);
+                            },
+                            [&] (auto shape) -> shape_type { return std::move(shape); })
+                        .match(
+                            [&] (shapes::mesh m) {
+                                mesh_bvh_type::face_soup_type face_ids;
+                                auto face_count = static_cast<int>(m.faces.size());
+                                face_ids.reserve(face_count);
+                                for (int i=0; i<face_count; i++)
+                                    face_ids.emplace_back(i);
 
-                            mesh_bvh_type bvh{mesh_face_trait{m}, std::move(face_ids)};
-                            sc.objects.emplace_back(node.material_id, std::move(m), xform, std::move(bvh));
-                        },
-                        [&] (auto& shape) {
-                            sc.objects.emplace_back(node.material_id, std::move(shape), xform);
-                        });
+                                mesh_bvh_type bvh{mesh_face_trait{m}, std::move(face_ids)};
+                                sc.objects.emplace_back(node.material_id, std::move(m), xform, std::move(bvh));
+                            },
+                            [&] (auto& shape) {
+                                sc.objects.emplace_back(node.material_id, std::move(shape), xform);
+                            });
                 },
                 [&] (nodes::xform const& node) {
                     pending_nodes.emplace_back(&node.node);

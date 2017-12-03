@@ -33,12 +33,11 @@ namespace rt::rasterizer
         gl::draw_arrays(gl::points, 0, 1);
 
         // shapes geometry pass
-        sm.enable_only({ gl::depth_test });
-
         // - mesh based
         if (wireframed) gl::funcs::polygon_mode(gl::front_and_back, gl::line);
 
         // -- spheres
+        sm.enable_only({ gl::depth_test });
         gl::bind_vertex_array(s.vao_sphere);
         gl::use_program(s.prog_sphere);
         gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
@@ -56,6 +55,8 @@ namespace rt::rasterizer
         }
 
         // -- triangle meshes
+        if (wireframed) sm.enable_only({ gl::depth_test });
+        else sm.enable_only({ gl::depth_test, gl::enums::cull_face });
         gl::use_program(s.prog_mesh);
         gl::uniform_matrix4fv(0, 1, false, &proj_view[0][0]);
         for (auto& mesh: s.geometry.meshes) {
@@ -148,7 +149,6 @@ namespace rt::rasterizer
         gl::uniform3fv(3, 1, &cam_apex[0]);
         for (auto& voxel: s.geometry.voxels) {
             auto& shape = voxel.shape;
-            auto model = voxel.model_to_world;
             auto cell_size = shape.voxelized.cell_size();
             shape.voxelized.each([&] (auto& cell, auto& pos) {
                 if (cell.size() == 0) return;

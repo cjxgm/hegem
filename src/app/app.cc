@@ -11,6 +11,7 @@
 #include "../raytracer/shade.hh"
 #include "../rasterizer/rasterizer.hh"
 #include "../rasterizer/state.hh"
+#include "../sk/editor.hh"
 #include "app.hh"
 #include "glfw.hh"
 #include "hdr-texture.hh"
@@ -22,6 +23,7 @@
 #include <utility>      // for std::forward and std::move
 #include <functional>
 #include <algorithm>
+#include <memory>
 
 namespace rt::app
 {
@@ -66,6 +68,8 @@ namespace rt::app
             int tile_size[2] = {64, 64};
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
+            sk::editor sk_editor;
+            visualization* sk_visualization{};
 
             static context& instance()
             {
@@ -176,15 +180,17 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io render_combined_view_progressively(scene_type const& scene, view_type view, hdr_texture& hdr)
+        util::task_io render_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
             using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& tman = ctx.tman;
+            auto shared_scene = std::make_shared<scene_type>(std::move(scene));
+            shared_scene->rebuild_cache();
 
-            auto make_task = [&] (bool should_mark, int samples, auto view, auto tile) {
+            auto make_task = [&hdr, &shared_scene] (bool should_mark, int samples, auto view, auto tile) {
                 view.samples = samples;
-                return [&, view, tile, should_mark] (auto tx, auto shared_canceled) {
+                return [&hdr, view, tile, should_mark, shared_scene] (auto tx, auto shared_canceled) {
                     if (should_mark) {
                         tx.send(gl_job{
                             shared_canceled,
@@ -192,7 +198,7 @@ namespace rt::app
                         });
                     }
 
-                    auto result = raytracer::raytrace(scene, view, tile);
+                    auto result = raytracer::raytrace(*shared_scene, view, tile);
                     auto& image = std::get<0>(result);
 
                     tx.send(gl_job{
@@ -418,10 +424,10 @@ namespace rt::app
                             *selected = id;
                         }
                         ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
-                        ImGui::Text(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
+                        ImGui::TextUnformatted(""); ImGui::NextColumn();
                         if (ImGui::Button("Load")) {
                             try {
                                 get_or_load(scene);
@@ -464,23 +470,29 @@ namespace rt::app
                 auto& images = ctx.images;
                 auto& vis = ctx.visualizations;
                 static bool show_test_window = false;
-                static bool show_scene_list = true;
+                static bool show_scene_list = false;
                 static bool show_hdr_viewer = false;
-                static bool show_statistics = true;
+                static bool show_statistics = false;
+                static bool show_framerates = false;
                 static int selected_hdr_image = 0;
                 static ImGuiID selected_scene_view = 0;
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
                 ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiSetCond_Appearing);
-                ImGui::Begin("Properties");
+                ImGui::Begin("Options");
                 if (ImGui::CollapsingHeader("Windows")) {
-                    if (ImGui::Button("Scenes")) show_scene_list ^= 1;
+                    ImGui::Checkbox("Scenes", &show_scene_list);
                     ImGui::SameLine();
-                    if (ImGui::Button("HDR Viewer")) show_hdr_viewer ^= 1;
+                    ImGui::Checkbox("HDR Viewer", &show_hdr_viewer);
+
+                    ImGui::Checkbox("Statistics", &show_statistics);
+                    ImGui::SameLine();
+                    ImGui::Checkbox("Framerates", &show_framerates);
+
                     ImGui::Separator();
-                    if (ImGui::Button("ImGui Demo")) show_test_window ^= 1;
+                    ImGui::Checkbox("ImGui Demo", &show_test_window);
                 }
-                if (ImGui::CollapsingHeader("Render Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader("Raytracing Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::PushItemWidth(-100);
                     ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
                     ImGui::PopItemWidth();
@@ -511,9 +523,16 @@ namespace rt::app
                     ImGui::End();
                 }
 
+                if (ctx.sk_visualization == nullptr || !ctx.sk_visualization->show) {
+                    auto& scene = ctx.sk_editor.scene;
+                    auto& view = scene.views.front();
+                    ctx.sk_visualization = &vis.emplace_back("Hegem Preview", scene, view, false);
+                }
+
+                vis.remove_if([] (auto& vi) { return !vi.show; });
                 int vi_idx = 0;
                 for (auto& vi: vis) {
-                    ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
+                    ImGui::SetNextWindowPos(ImVec2(50, 250), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
                     ImGui::Begin(name.data(), &vi.show);
@@ -521,12 +540,13 @@ namespace rt::app
                     ImGui::End();
                     if (!vi.show) vi.reset_raytracing_task_io();
                 }
-                vis.remove_if([] (auto& vi) { return !vi.show; });
 
-                ImGui::SetNextWindowPos(ImVec2(50, 500), ImGuiSetCond_Appearing);
-                ImGui::Begin("Framerates", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-                framerates();
-                ImGui::End();
+                if (show_framerates) {
+                    ImGui::SetNextWindowPos(ImVec2(50, 500), ImGuiSetCond_Appearing);
+                    ImGui::Begin("Framerates", &show_framerates, ImGuiWindowFlags_AlwaysAutoResize);
+                    framerates();
+                    ImGui::End();
+                }
 
                 if (show_statistics) {
                     ImGui::SetNextWindowPos(ImVec2(50, 600), ImGuiSetCond_FirstUseEver);
@@ -535,6 +555,26 @@ namespace rt::app
                     view::statistics("statistics");
                     ImGui::End();
                 }
+
+                ImGui::SetNextWindowPos(ImVec2{0.0f, 0.0f});
+                ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+                auto& style = ImGui::GetStyle();
+                auto padding = style.WindowPadding;
+                style.WindowPadding = ImVec2{0.0f, 0.0f};
+                ImGui::Begin("Sk Editor", nullptr,
+                    ImGuiWindowFlags_NoTitleBar |
+                    ImGuiWindowFlags_NoResize |
+                    ImGuiWindowFlags_NoMove |
+                    ImGuiWindowFlags_NoScrollbar |
+                    ImGuiWindowFlags_NoBringToFrontOnFocus);
+                style.WindowPadding = padding;
+                if (ctx.sk_editor.draw()) {
+                    auto& vi = *ctx.sk_visualization;
+                    vi.update_rasterization_state();
+                    vi.reset_raytracing_task_io();
+                    vi.suppress_raytracing = 10;
+                }
+                ImGui::End();
 
                 process_pending_gl_jobs();
             }

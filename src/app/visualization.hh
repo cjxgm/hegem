@@ -29,6 +29,7 @@ namespace rt::app
             visualization(std::string name, scene_type& scene, view_type& view, bool raytrace);
             void reset_raytracing_task_io();
             void reset_raytracing_task_io(util::task_io io);
+            void update_rasterization_state();
         };
     }
 

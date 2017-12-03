@@ -1,6 +1,7 @@
 #include "../lib/gl/glfw.hh"
 #include "../lib/gl/gl.hh"
 #include "../util/journal.hh"
+#include "../util/unreachable.macro.hh"
 #include "glfw.hh"
 #include "imgui.hh"
 #include <stdexcept>
@@ -23,7 +24,7 @@ namespace rt::app::glfw
                 case gl::debug_severity_low: return "\e[0;33m";
                 case gl::debug_severity_medium: return "\e[0;35m";
                 case gl::debug_severity_high: return "\e[1;31m";
-                default: throw std::logic_error{"unreachable"};
+                default: RT_UNREACHABLE();
             }
         }
 
@@ -41,6 +42,9 @@ namespace rt::app::glfw
                 if (id == 131185) return;
                 if (id == 131169) return;
                 if (id == 131140) return;
+                if (id == 45) return;
+                if (id == 46) return;
+                if (id == 47) return;
                 journal{"GL"}
                     << "debug:\n"
                     << severity_to_ansi_escape_sequence(severity)
@@ -53,8 +57,8 @@ namespace rt::app::glfw
                 if (id == 131218) return;
                 if (id == 131204) return;
                 if (id == 131216) return;
-                if (severity == gl::debug_severity_notification)
-                    return;
+                if (severity == gl::debug_severity_notification) return;
+                if (type == gl::debug_type_performance) return;
                 if (severity == gl::debug_severity_high
                         || type == gl::debug_type_error
                         || source == gl::debug_source_shader_compiler
@@ -84,7 +88,7 @@ namespace rt::app::glfw
                     case GLFW_REPEAT:
                         // ignored intentionally
                         break;
-                    default: throw std::logic_error{"unreachable"};
+                    default: RT_UNREACHABLE();
                 }
             }
 
@@ -102,7 +106,7 @@ namespace rt::app::glfw
                     case GLFW_RELEASE:
                         imgui::on_mouse_button(win, button, false);
                         break;
-                    default: throw std::logic_error{"unreachable"};
+                    default: RT_UNREACHABLE();
                 }
             }
 

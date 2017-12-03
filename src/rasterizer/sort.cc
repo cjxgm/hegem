@@ -4,6 +4,7 @@
 #include "../util/journal.hh"
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
 
 namespace rt::rasterizer::sort_details
 {
@@ -112,6 +113,11 @@ namespace rt::rasterizer::sort_details
                 void operator () (shapes::voxel shape)
                 {
                     sg.voxels.emplace_back(shape, material_id, model_to_world, world_to_model);
+                }
+
+                void operator () (shapes::hemesh const& /*shape*/)
+                {
+                    throw std::logic_error{"hemeshes should have been converted into meshes."};
                 }
 
                 void operator () (shapes::mesh shape)
