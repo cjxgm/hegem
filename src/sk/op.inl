@@ -21,7 +21,23 @@ KIND(transform, "Transform", "Affine transformations.")
 KIND(repetition, "Repetition", "Repeatedly clone bodies.")
 KIND(advanced, "Advanced", "Advanced modeling operations.")
 
-OP(system, nop, 1, "Nop", "No operation. This is used to fill gaps between nodes.")
+OP(system, nop, 1, "Nop",
+    "No operation but passthrough its input to output.\n"
+    "This is used to fill gaps between nodes."
+)
+
+OP(system, pack, -1, "Pack",
+    "Merge multiple inputs into one single pack.\n"
+    "Each input can be extracted by Unpack in desired order."
+)
+
+OP(system, unpack, 1, "Unpack", "Extract a value out of a pack.",
+    FIELD(bool, exclusive, true, value, "Exclusive",
+        "When off, copy the value out of the pack.\n"
+        "When on, move the value out of the pack, making later extraction at the same index fail."
+    )
+    FIELD(int, index, 0, value, "Index", "Which value to extract")
+)
 
 OP(primitive, poly_disk, 0, "Poly Disk", "Polygonal disk centered at origin and facing y+ axis.",
     FIELD(float, radius, 1.0f, value, "Radius", "")
