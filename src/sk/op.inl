@@ -14,24 +14,24 @@
     #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP)
 #endif
 
-KIND(system, "System", "Core operators.")
+KIND(indirection, "Indirection",
+    "All problems in computer science can be solved by another level of indirection.\n"
+    "--- David J. Wheeler"
+)
 KIND(primitive, "Primitive", "Basic shapes.")
 KIND(selection, "Selection", "(De)select vertices and faces as operation targets.")
 KIND(transform, "Transform", "Affine transformations.")
 KIND(repetition, "Repetition", "Repeatedly clone bodies.")
 KIND(advanced, "Advanced", "Advanced modeling operations.")
 
-OP(system, nop, 1, "Nop",
-    "No operation but passthrough its input to output.\n"
-    "This is used to fill gaps between nodes."
-)
+OP(indirection, nop, 1, "Nop", "No operation but passthrough the input to output.")
 
-OP(system, pack, -1, "Pack",
+OP(indirection, pack, -1, "Pack",
     "Merge multiple inputs into one single pack.\n"
     "Each input can be extracted by Unpack in desired order."
 )
 
-OP(system, unpack, 1, "Unpack", "Extract a value out of a pack.",
+OP(indirection, unpack, 1, "Unpack", "Extract a value out of a pack.",
     FIELD(bool, exclusive, true, value, "Exclusive",
         "When off, copy the value out of the pack.\n"
         "When on, move the value out of the pack, making later extraction at the same index fail."

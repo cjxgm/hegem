@@ -15,12 +15,12 @@ namespace rt::sk::op::invoke_impl
         using pack_type = std::shared_ptr<pack_content_type>;
     }
 
-    auto invoke(op_fields_system_nop const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_indirection_nop const& fields, util::span<lib::any> args) -> lib::any
     {
         return std::move(args[0]);
     }
 
-    auto invoke(op_fields_system_pack const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_indirection_pack const& fields, util::span<lib::any> args) -> lib::any
     {
         pack_content_type content;
         for (auto& arg: args.range())
@@ -28,7 +28,7 @@ namespace rt::sk::op::invoke_impl
         return std::make_shared<decltype(content)>(std::move(content));
     }
 
-    auto invoke(op_fields_system_unpack const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_indirection_unpack const& fields, util::span<lib::any> args) -> lib::any
     {
         auto pack = extract_or_croak<pack_type>(args[0], "Argument must be a pack.");
         auto& content = *pack;

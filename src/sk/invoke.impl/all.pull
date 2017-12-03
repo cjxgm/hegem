@@ -1,5 +1,5 @@
 // Pull in dependency
-#include "system.pull"
+#include "indirection.pull"
 #include "primitive.pull"
 #include "selection.pull"
 #include "transform.pull"
