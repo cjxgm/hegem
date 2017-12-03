@@ -46,7 +46,7 @@ OP(selection, select_verts, 1, "Select Verts", "(De)select vertices lied in a sp
     )
 )
 
-OP(selection, select_faces, 1, "Select Faces", "(De)select faces lied in a sphere.",
+OP(selection, select_faces, 1, "Select Faces", "(De)select faces whose barycenters lie in a sphere.",
     FIELD(bool, inverse, false, value, "Inverse",
         "When off, select the matching faces.\n"
         "When on, select the non-matching faces."
@@ -88,7 +88,7 @@ OP(selection, containing_faces, 1, "Containing Faces", "(De)select faces that co
 
 OP(transform, move, 1, "Move", "Move selected vertices.",
     FIELD(float3, offset, {}, value, "Offset", "How much to move.")
-    FIELD(bool, use_median, false, value, "Use median point as offset", "Use the barycenter/averaged point as the offset.")
+    FIELD(bool, use_median, false, value, "Use median point as offset", "Use the middle point as the offset.")
     FIELD(bool, reverse, false, value, "Reverse direction", "Negate the offset.")
 )
 
@@ -96,20 +96,20 @@ OP(transform, scale, 1, "Scale", "Scale selected vertices.",
     FIELD(float3, amount, float3({1.0f, 1.0f, 1.0f}), value, "Amount", "Scaling amount per axis.")
     FIELD(float, uniform_amount, 1.0f, value, "Uniform", "Uniform scaling amount.")
     FIELD(float3, pivot, {}, value, "Pivot", "Scaling around this point.")
-    FIELD(bool, use_median, true, value, "Use median point as pivot", "Use the barycenter/averaged point as the pivot.")
+    FIELD(bool, use_median, false, value, "Use median point as pivot", "Use the middle point as the pivot.")
 )
 
 OP(transform, rotate, 1, "Rotate", "Rotate selected vertices.",
     FIELD(float3, axis, float3({0.0f, 1.0f, 0.0f}), value, "Axis", "Rotation axis.")
     FIELD(float, amount, {}, value, "Degrees", "How much to rotate around the rotation axis.")
     FIELD(float3, pivot, {}, value, "Pivot", "Rotating around this point.")
-    FIELD(bool, use_median, true, value, "Use median point as pivot", "Use the barycenter/averaged point as the pivot.")
+    FIELD(bool, use_median, false, value, "Use median point as pivot", "Use the middle point as the pivot.")
 )
 
 OP(repetition, array, 1, "Array", "Repeatedly clone the whole model along a straight line.",
     FIELD(float3, offset, float3({2.0f, 0.0f, 0.0f}), value, "Offset", "Offset of each clone.")
     FIELD(int, count, 3, value, "Count", "How many to clone.")
-    FIELD(bool, recenter, false, value, "Re-center", "Move the cloned models from their barycenter to the origin.")
+    FIELD(bool, recenter, false, value, "Re-center", "Move the cloned models from their pivots to the origin.")
 )
 
 OP(repetition, spin, 1, "Spin",

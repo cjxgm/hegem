@@ -15,14 +15,14 @@ namespace rt::sk::op::invoke_impl
         auto median_or_custom(model const& m, float3 custom, bool use_median) -> glm::vec3
         {
             if (use_median) {
-                glm::vec3 median;
-                int count{};
+                if (m.vert_selection.empty()) return {};
+                auto min = (*m.vert_selection.begin())->pos;
+                auto max = min;
                 for (auto vert: m.vert_selection) {
-                    median += vert->pos;
-                    count++;
+                    min = glm::min(min, vert->pos);
+                    max = glm::max(max, vert->pos);
                 }
-                if (count > 0) median /= float(count);
-                return median;
+                return (min + max) * 0.5f;
             } else {
                 return to_glm(custom);
             }
