@@ -4,6 +4,7 @@
 #include "mesh.hh"
 #include "hemesh.hh"
 #include "list.hh"
+#include "iteration.hh"
 #include "geometry.hh"
 #include <vector>
 #include <array>
@@ -33,7 +34,7 @@ namespace rt::hegem
             glm::mat3 space;
         };
 
-        scene::shapes::mesh triangulate_face(face_type* face)
+        scene::shapes::mesh triangulate_face(face_type* face, float bias)
         {
             auto n = normal(face->boundary->any_hege);
             scene::shapes::mesh tri_mesh;
@@ -47,8 +48,18 @@ namespace rt::hegem
                     auto& er = polygon.back();
 
                     for (auto& h: iterate(r.any_hege)) {
+                        auto smooth_normal = [&] () -> direction_type {
+                            glm::vec3 smoothed;
+                            for (auto& h: iter::heges_around_vert(&h)) {
+                                auto nf = normal(&h);
+                                auto d = dot(*nf, *n);
+                                if (d >   1.0f - 1e-2f ) smoothed += *nf;
+                                if (d < -(1.0f - 1e-2f)) smoothed -= *nf;
+                            }
+                            return smoothed;
+                        } ();
                         auto v = h.start;
-                        tri_mesh.verts.push_back({ v->pos, n });
+                        tri_mesh.verts.push_back({ v->pos + n*bias, smooth_normal });
                         er.emplace_back(project(v->pos));
                     }
                 }
@@ -74,6 +85,36 @@ namespace rt::hegem
             auto p0 = hege->start->pos;
             auto p1 = hege->twin->start->pos;
 
+            auto dist = distance(p0, p1);
+            auto arrow_approx_length = (
+                arrow_head_length +
+                arrow_tail_length +
+                (arrow_center_sliding - 0.5f) * dist
+            );
+            auto outline_shown_threshold = arrow_approx_length * 0.5f;
+            auto arrow_shown_threshold = arrow_approx_length * 3.0f;
+
+            // No outline if next and prev heges are both too short
+            if (hege->next != hege->twin && hege->prev != hege->twin) {
+                auto p00 = hege->next->start->pos;
+                auto p01 = hege->next->twin->start->pos;
+                auto p10 = hege->prev->start->pos;
+                auto p11 = hege->prev->twin->start->pos;
+                auto d0 = distance(p00, p01);
+                auto d1 = distance(p10, p11);
+                auto s0 = (d0 < outline_shown_threshold);
+                auto s1 = (d1 < outline_shown_threshold);
+                if (s0 && s1) return tri_mesh;
+            }
+
+            // No outline if the edge looks smooth but not flat
+            {
+                auto n = hegem::normal(hege->twin);
+                auto d = dot(*normal, *n);
+                if (d > 1.0f - 1e-2f && d < 1.0f - 1e-5f)
+                    return tri_mesh;
+            }
+
             // Build local axis
             //      z: normal
             //      y: the same direction as hege
@@ -90,7 +131,7 @@ namespace rt::hegem
             tri_mesh.faces.emplace_back(3, 2, 1);
 
             // No arrow if too close
-            if (distance(p0, p1) < 0.1f) return tri_mesh;
+            if (dist < arrow_shown_threshold) return tri_mesh;
 
             // arrow
             auto arrow_center = mix(p0, p1, arrow_center_sliding) - x * width;
@@ -121,12 +162,12 @@ namespace rt::hegem
         }
     }
 
-    scene::shapes::mesh build_mesh(hemesh const& m)
+    scene::shapes::mesh build_mesh(hemesh const& m, float bias)
     {
         scene::shapes::mesh tri_mesh;
         for (auto& b: iterate(m.any_body)) {
             for (auto& f: iterate(b.any_face)) {
-                extend(tri_mesh, triangulate_face(&f));
+                extend(tri_mesh, triangulate_face(&f, bias));
             }
         }
         return tri_mesh;

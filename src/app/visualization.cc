@@ -32,5 +32,10 @@ namespace rt::app::visualization_details
             raytracing_task_io->cancel();
         raytracing_task_io = std::move(io);
     }
+
+    void visualization::update_rasterization_state()
+    {
+        s.update_geometry();
+    }
 }
 

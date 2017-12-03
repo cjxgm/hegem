@@ -36,7 +36,7 @@ namespace rt::scene::cache_details
                     node.shape
                         .match(
                             [&] (shapes::hemesh const& hm) -> shape_type {
-                                return build_mesh(hm);
+                                return build_mesh(hm, 1e-5f);
                             },
                             [&] (auto shape) -> shape_type { return std::move(shape); })
                         .match(

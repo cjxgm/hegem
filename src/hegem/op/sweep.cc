@@ -28,21 +28,8 @@ namespace rt::hegem
                 }
             }
 
-            void extrude(hemesh & m, face_type* face, offset_type offset, float eps)
+            void extrude(hemesh & m, face_type* face, offset_type offset)
             {
-                if (dot(offset, offset) <= eps*eps) {
-                    throw std::invalid_argument{
-                        "Extrusion offset too small."
-                    };
-                }
-
-                auto n = normal(face->boundary->any_hege, eps);
-                if (!is_same_side(n, offset, eps)) {
-                    throw std::invalid_argument{
-                        "Extruding inwards is not allowed."
-                    };
-                }
-
                 for (auto& r: list::iterate(face->boundary))
                     extrude_ring(m, &r, offset);
             }

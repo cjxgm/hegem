@@ -1,5 +1,7 @@
 #include "../lib/glm/op/common.hh"
 #include "../lib/imgui.hh"
+#include "../hegem/mesh.hh"
+#include "invoke.impl/model.hh"
 #include "editor.hh"
 #include "palette.hh"
 #include "engine.hh"
@@ -15,13 +17,14 @@ namespace rt::sk
             glm::ivec2 node_pos;
             int node_width;
             std::string error_message;
-            palette_type error_palette{0.96f};
+            palette_type error_palette;
+            bool showing_new_node_popup{};
         };
 
         namespace
         {
             auto to_glm(ImVec2 a) { return glm::vec2{a.x, a.y}; }
-            auto to_imgui(glm::vec2 a) { return ImVec2{a.x, a.y}; }
+            auto to_imgui(glm::vec2 a) { return ImVec2{std::round(a.x), std::round(a.y)}; }
             auto to_imcolor(palette_color_type a) { return ImColor{a.x, a.y, a.z}; }
 
             auto scaling_factor(float & scaling_level) -> float
@@ -47,14 +50,24 @@ namespace rt::sk
 
             namespace draw_edit
             {
-                bool number(char const* label, float & x)
+                bool value(char const* label, float& x)
                 {
-                    return ImGui::DragFloat(label, &x);
+                    return ImGui::DragFloat(label, &x, 0.01f);
                 }
 
-                bool number(char const* label, int & x)
+                bool value(char const* label, int& x)
                 {
-                    return ImGui::DragInt(label, &x);
+                    return ImGui::DragInt(label, &x, 0.1f);
+                }
+
+                bool value(char const* label, bool& x)
+                {
+                    return ImGui::Checkbox(label, &x);
+                }
+
+                bool value(char const* label, op::float3& x)
+                {
+                    return ImGui::DragFloat3(label, x.data(), 0.01f);
                 }
             }
 
@@ -127,7 +140,7 @@ namespace rt::sk
                 auto font_scaling = scaling < 1.0f
                     ? scaling * 0.5f + 0.5f
                     : std::min(2.0f, scaling * 0.4f + 0.6f);
-                auto grid_size = round(initial_grid_size * scaling);
+                auto grid_size = initial_grid_size * scaling;
                 ImGui::SetWindowFontScale(font_scaling);
 
                 auto local_to_screen = [=] (glm::vec2 local) {
@@ -139,11 +152,11 @@ namespace rt::sk
                 };
 
                 auto grid_to_screen = [=] (glm::ivec2 grid) {
-                    return glm::vec2{grid} * grid_size + origin + window_origin;
+                    return round(glm::vec2{grid} * grid_size + origin + window_origin);
                 };
 
                 auto grid_to_local = [=] (glm::ivec2 grid) {
-                    return glm::vec2{grid} * grid_size + origin + origin_offset;
+                    return round(glm::vec2{grid} * grid_size + origin + origin_offset);
                 };
 
                 char const* tooltip{};
@@ -165,14 +178,27 @@ namespace rt::sk
                             if (ImGui::Button("+", to_imgui(size))) {
                                 tmp.node_pos = mouse_grid;
                                 tmp.node_width = placeholder_width;
+                                tmp.showing_new_node_popup = true;
                                 ImGui::OpenPopup("new node");
                             }
                             ImGui::PopStyleColor(4);
                         }
                     }
 
+                    if (tmp.showing_new_node_popup) {
+                        auto pos = grid_to_local(tmp.node_pos);
+                        auto size = glm::vec2{float(tmp.node_width), 1.0f} * grid_size;
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImColor{80, 80, 80});
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImColor{50, 50, 50});
+                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor{50, 50, 50});
+                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor{45, 45, 45});
+                        ImGui::SetCursorPos(to_imgui(pos));
+                        ImGui::Button("+", to_imgui(size));
+                        ImGui::PopStyleColor(4);
+                    }
+
                     if (ImGui::BeginPopup("new node")) {
-                        auto pos = grid_to_screen(tmp.node_pos);
+                        auto pos = grid_to_screen(tmp.node_pos + glm::ivec2{0, 1});
                         ImGui::SetWindowPos(to_imgui(pos));
 
                         kind_metadata const* prev_kind = nullptr;
@@ -220,6 +246,8 @@ namespace rt::sk
                         }
 
                         ImGui::EndPopup();
+                    } else {
+                        tmp.showing_new_node_popup = false;
                     }
                 }
 
@@ -313,6 +341,7 @@ namespace rt::sk
 
                             ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.fg));
                             ImGui::PushStyleColor(ImGuiCol_Border, to_imcolor(palette.fg));
+                            ImGui::PushStyleColor(ImGuiCol_CheckMark, to_imcolor(palette.fg));
                             ImGui::PushStyleColor(ImGuiCol_FrameBg, to_imcolor(palette.bg));
                             ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, to_imcolor(palette.fg_accent));
                             ImGui::PushStyleColor(ImGuiCol_FrameBgActive, to_imcolor(palette.bg_accent));
@@ -321,7 +350,7 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_ButtonActive, to_imcolor(palette.bg_accent));
                             ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, to_imcolor(palette.bg_accent));
                             if (ImGui::BeginPopup("fields")) {
-                                auto pos = grid_to_screen({ node.x, node.y });
+                                auto pos = grid_to_screen({ node.x, node.y + 1 });
                                 ImGui::SetWindowPos(to_imgui(pos));
                                 tooltip_palette = &palette;
                                 changed |= draw_fields(node, tooltip);
@@ -333,7 +362,7 @@ namespace rt::sk
                                 }
                                 ImGui::EndPopup();
                             }
-                            ImGui::PopStyleColor(9);
+                            ImGui::PopStyleColor(10);
                         }
 
                         { // node resize button
@@ -400,13 +429,91 @@ namespace rt::sk
             }
         }
 
+        void update_preview(scene::scene_type& s, lib::any result)
+        {
+            auto& nodes = s.root.get<scene::nodes::group>().nodes;
+            nodes.clear();
+
+            if (result.type() == typeid(op::invoke_impl::model)) {
+                auto m = std::any_cast<op::invoke_impl::model>(result);
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        2,
+                        build_outline_mesh(m.hmesh),
+                    });
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        1,
+                        std::move(m.hmesh),
+                    });
+            }
+
+            s.rebuild_cache();
+        }
+
         editor::editor()
             : tmp{std::make_unique<temporary_state>()}
-        {}
+        {
+            scene.name = "sk";
+            scene.views.emplace_back(scene::view_type {
+                "Preview",
+                { 800, 450 },
+                1,
+                16,
+                scene::cameras::pin_hole {
+                    glm::vec3{ 0.0f, 0.0f, 5.0f },
+                    glm::vec3{ 0.0f, 0.0f, -1.0f },
+                    glm::vec3{ 0.0f, 1.0f, 0.0f },
+                    glm::radians(30.0f),
+                },
+            });
+
+            auto lamp_main = scene::lamps::sun {
+                glm::vec3{ 2.0f, -2.0f, -1.0f },
+                glm::vec3{ 1.0f, 0.9f, 0.8f } * 20.0f,
+            };
+            auto lamp_rim = scene::lamps::sun {
+                glm::vec3{ -1.0f, 1.0f, -1.0f },
+                glm::vec3{ 0.2f, 0.4f, 1.0f } * 16.0f,
+            };
+            auto lamp_back = scene::lamps::sun {
+                glm::vec3{ -0.2f, 0.2f, 0.8f },
+                glm::vec3{ 0.6f, 0.6f, 0.6f } * 10.0f,
+            };
+            scene.lamps.emplace_back(std::move(lamp_main));
+            scene.lamps.emplace_back(std::move(lamp_rim));
+            scene.lamps.emplace_back(std::move(lamp_back));
+
+            auto mat_sky = scene::materials::solid_color {
+                glm::vec3{0.3f, 0.3f, 1.0f} * 10.0f,
+            };
+            auto mat_object = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{1.0f, 0.4f, 0.1f},
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.2f,
+                0.05f,
+                1.5f,
+            };
+            auto mat_outline = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{0.0f, 0.0f, 0.0f},
+                glm::vec3{1.0f, 1.0f, 1.0f} * 0.8f,
+                0.1f,
+                1.5f,
+            };
+            scene.materials.emplace_back(std::move(mat_sky));
+            scene.materials.emplace_back(std::move(mat_object));
+            scene.materials.emplace_back(std::move(mat_outline));
+            scene.environment = 0;
+
+            scene.root = scene::nodes::group{};
+
+            scene.rebuild_cache();
+        }
 
         editor::~editor() = default;
 
-        void editor::draw()
+        bool editor::draw()
         {
             ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor{40, 40, 40});
             ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{50, 50, 50});
@@ -416,11 +523,16 @@ namespace rt::sk
             auto changed = draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
             g.collect_garbage();
             engine::sanity_check(g);
-            if (previewing_node != 0 && changed) {
-                engine::execute(g, g.find_node(previewing_node));
+            if (changed) {
+                auto result = previewing_node == 0
+                    ? lib::any{}
+                    : engine::execute(g, g.find_node(previewing_node));
+                update_preview(scene, std::move(result));
             }
 
             ImGui::PopStyleColor(4);
+
+            return changed;
         }
     }
 }

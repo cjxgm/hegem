@@ -10,6 +10,7 @@ namespace rt::util
     {
         using value_type = T;
 
+        span(): span{nullptr, 0} {}
         span(value_type* ptr, int size): ptr_{ptr}, size_{size} {}
 
         template <int N>
@@ -35,6 +36,7 @@ namespace rt::util
     {
         using value_type = T;
 
+        const_span(): const_span{nullptr, 0} {}
         const_span(value_type const* ptr, int size): ptr_{ptr}, size_{size} {}
 
         template <int N>

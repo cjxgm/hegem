@@ -1,8 +1,10 @@
+#include "../../lib/glm/op/transform.hh"
 #include "../../math/constants.hh"
 #include "../primitive.hh"
 #include "shape.hh"
 #include "euler.hh"
 #include "sweep.hh"
+#include "transform.hh"
 #include <utility>      // for std::swap
 #include <stdexcept>
 #include <vector>
@@ -102,7 +104,10 @@ namespace rt::hegem
 
                 hege_type* make_cube(hemesh & m)
                 {
-                    return make_polygon_cylinder(m, 4, math::inv_sqrt_2, 1, 1.0f);
+                    auto h = make_polygon_cylinder(m, 4, math::inv_sqrt_2, 1, 1.0f);
+                    auto b = h->ring->face->body;
+                    affine_transform(b, glm::rotate(glm::radians(45.0f), glm::vec3{0.0f, 1.0f, 0.0f}));
+                    return h;
                 }
             }
         }
