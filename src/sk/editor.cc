@@ -5,6 +5,7 @@
 #include "editor.hh"
 #include "palette.hh"
 #include "engine.hh"
+#include "mesh.hh"
 #include <algorithm>
 #include <string>
 
@@ -435,7 +436,12 @@ namespace rt::sk
             nodes.clear();
 
             if (result.type() == typeid(op::invoke_impl::model)) {
-                auto m = std::any_cast<op::invoke_impl::model>(result);
+                auto m = std::any_cast<op::invoke_impl::model>(std::move(result));
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        3,
+                        build_selection_mesh(m),
+                    });
                 nodes.emplace_back(
                     scene::nodes::object {
                         2,
@@ -501,9 +507,17 @@ namespace rt::sk
                 0.1f,
                 1.5f,
             };
+            auto mat_selection = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{0.3f, 1.0f, 0.5f} * 0.6f,
+                glm::vec3{0.3f, 1.0f, 0.5f} * 1.0f,
+                0.1f,
+                1.5f,
+            };
             scene.materials.emplace_back(std::move(mat_sky));
             scene.materials.emplace_back(std::move(mat_object));
             scene.materials.emplace_back(std::move(mat_outline));
+            scene.materials.emplace_back(std::move(mat_selection));
             scene.environment = 0;
 
             scene.root = scene::nodes::group{};
