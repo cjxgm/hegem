@@ -30,7 +30,7 @@ build() {
 package() {
     cd "hegem"
     install -Dm 755 "support/scripts/hegem" "$pkgdir/usr/bin/hegem"
-    install -Dm 755 "build/hegem" "$pkgdir/usr/bin/hegem"
+    install -Dm 755 "build/hegem" "$pkgdir/usr/lib/hegem"
 
     install -dm 755 "$pkgdir/usr/share/hegem/support/"
     cp -r support/{inputs,models,shaders} "$pkgdir/usr/share/hegem/support/"
