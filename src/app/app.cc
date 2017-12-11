@@ -80,6 +80,9 @@ namespace rt::app
             ~context()
             {
                 j() << "context: (dtor)\n";
+                j() << "canceling raytracing process...\n";
+                for (auto& vi: visualizations)
+                    vi.reset_raytracing_task_io();
             }
 
         private:
