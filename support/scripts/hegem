@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+cd /usr/share/hegem
+/usr/lib/hegem support/inputs
+
