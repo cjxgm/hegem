@@ -18,6 +18,7 @@ $::sanitize = exists $opt{"-s"};
     'cpptoml/include',          # TOML parser
 );
 @library__pkg_config = qw{
+    gtkmm-3.0
     glfw3
     gl
 };
