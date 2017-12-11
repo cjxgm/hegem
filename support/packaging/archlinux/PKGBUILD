@@ -23,6 +23,8 @@ pkgver() {
 
 build() {
     cd "hegem"
+    ln -sf ../../../../../build build
+    ln -sf ../../../../../build.cache build.cache
     ./configure
     make
 }
