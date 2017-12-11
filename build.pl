@@ -23,7 +23,7 @@ $::sanitize = exists $opt{"-s"};
 
 $compiler__bin = "g++";
 $loader__bin = $compiler__bin;
-$build__output_bin = "raytracer";
+$build__output_bin = "hegem";
 
 &output__variable__bool('::sanitize');
 @compiler__sanitizers = qw[undefined address] if $::sanitize;

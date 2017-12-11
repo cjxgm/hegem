@@ -1,0 +1,41 @@
+# Maintainer: Giumo Clanjor (哆啦比猫/兰威举) <cjxgm2@gmail.com>
+pkgname=hegem-git
+pkgver=0
+pkgrel=1
+makedepends=('git')
+depends=('glfw' 'ttf-roboto')
+arch=('x86_64')
+pkgdesc="Half-edge based mesh generator and renderers."
+provides=('hegem')
+conflicts=('hegem' 'hegem-dev-git')
+license=('MIT')
+source=(
+    'hegem::git+file://'$(realpath ../../..)
+)
+sha256sums=(
+    SKIP
+)
+
+pkgver() {
+    cd "hegem"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "hegem"
+    ./configure
+    make
+}
+
+package() {
+    cd "hegem"
+    install -Dm 755 "support/scripts/hegem" "$pkgdir/usr/bin/hegem"
+    install -Dm 755 "build/hegem" "$pkgdir/usr/bin/hegem"
+
+    install -dm 755 "$pkgdir/usr/share/hegem/support/"
+    cp -r support/{inputs,models,shaders} "$pkgdir/usr/share/hegem/support/"
+
+    install -dm 755 "$pkgdir/usr/share/hegem/support/fonts/"
+    ln -s "/usr/share/fonts/TTF/Roboto-Regular.ttf" "$pkgdir/usr/share/hegem/support/fonts/ui.ttf"
+}
+
