@@ -517,7 +517,7 @@ namespace rt::app
                 static ImGuiID selected_scene_view = 0;
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiSetCond_Appearing);
                 ImGui::Begin("Options");
                 if (ImGui::CollapsingHeader("Windows")) {
                     ImGui::Checkbox("Scenes", &show_scene_list);
@@ -594,7 +594,7 @@ namespace rt::app
                 vis.remove_if([] (auto& vi) { return !vi.show; });
                 int vi_idx = 0;
                 for (auto& vi: vis) {
-                    ImGui::SetNextWindowPos(ImVec2(50, 250), ImGuiSetCond_Appearing);
+                    ImGui::SetNextWindowPos(ImVec2(50, 300), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
                     ImGui::Begin(name.data(), &vi.show);
