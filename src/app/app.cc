@@ -6,6 +6,7 @@
 #include "../util/tile.hh"
 #include "../util/task-manager.hh"
 #include "../util/scheduler.hh"
+#include "../util/file-dialog.hh"
 #include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
@@ -70,6 +71,8 @@ namespace rt::app
             int framerate_history_offset{};
             sk::editor sk_editor;
             visualization* sk_visualization{};
+            util::file_dialog sk_file_open_dialog;
+            util::file_dialog sk_file_save_dialog;
 
             static context& instance()
             {
@@ -225,6 +228,15 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
+        void update_sk_visualization()
+        {
+            auto& ctx = context::instance();
+            auto& vi = *ctx.sk_visualization;
+            vi.update_rasterization_state();
+            vi.reset_raytracing_task_io();
+            vi.suppress_raytracing = 10;
+        }
+
         void process_pending_gl_jobs()
         {
             auto& ctx = context::instance();
@@ -237,6 +249,30 @@ namespace rt::app
                     break;
                 }
             }
+        }
+
+        void process_pending_dialog_jobs()
+        {
+            auto& ctx = context::instance();
+
+            if (auto opt_path = ctx.sk_file_save_dialog()) {
+                auto path = std::move(*opt_path);
+                if (path.size() < 5 || path.substr(path.size() - 5) != ".toml")
+                    path += ".toml";
+                ctx.sk_editor.save_toml(path);
+            }
+
+            if (auto opt_path = ctx.sk_file_open_dialog()) {
+                auto path = std::move(*opt_path);
+                ctx.sk_editor.load_toml(path);
+                update_sk_visualization();
+            }
+        }
+
+        void process_pending_jobs()
+        {
+            process_pending_gl_jobs();
+            process_pending_dialog_jobs();
         }
 
         namespace gui
@@ -500,6 +536,29 @@ namespace rt::app
                     ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
                     ImGui::PopItemWidth();
                 }
+                if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (ctx.sk_file_open_dialog) {
+                        ImGui::TextDisabled("Open");
+                    } else {
+                        if (ImGui::Button("Open")) {
+                            ctx.sk_file_open_dialog.open(
+                                util::file_dialog::action::open,
+                                "Open stack graph",
+                                "/usr/share/hegem/support/graph");
+                        }
+                    }
+                    ImGui::SameLine();
+                    if (ctx.sk_file_save_dialog) {
+                        ImGui::TextDisabled("Save");
+                    } else {
+                        if (ImGui::Button("Save")) {
+                            ctx.sk_file_save_dialog.open(
+                                util::file_dialog::action::save,
+                                "Save stack graph");
+                        }
+                    }
+                }
+
                 ImGui::End();
 
                 if (show_test_window) {
@@ -571,15 +630,11 @@ namespace rt::app
                     ImGuiWindowFlags_NoScrollbar |
                     ImGuiWindowFlags_NoBringToFrontOnFocus);
                 style.WindowPadding = padding;
-                if (ctx.sk_editor.draw()) {
-                    auto& vi = *ctx.sk_visualization;
-                    vi.update_rasterization_state();
-                    vi.reset_raytracing_task_io();
-                    vi.suppress_raytracing = 10;
-                }
+                if (ctx.sk_editor.draw())
+                    update_sk_visualization();
                 ImGui::End();
 
-                process_pending_gl_jobs();
+                process_pending_jobs();
             }
         }
     }
