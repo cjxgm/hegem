@@ -22,6 +22,8 @@ namespace rt::sk
             // Returns true if changed
             bool draw();
 
+            void save_toml(std::string const& path);
+
         private:
             graph g;
             node_id_type previewing_node{};

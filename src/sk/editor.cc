@@ -6,6 +6,8 @@
 #include "palette.hh"
 #include "engine.hh"
 #include "mesh.hh"
+#include "serialize.hh"
+#include "serializer.hh"
 #include <algorithm>
 #include <string>
 
@@ -547,6 +549,12 @@ namespace rt::sk
             ImGui::PopStyleColor(4);
 
             return changed;
+        }
+
+        void editor::save_toml(std::string const& path)
+        {
+            sk::serializer::toml sr{path};
+            sk::serialize(sr, g, previewing_node);
         }
     }
 }
