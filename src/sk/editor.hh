@@ -21,8 +21,10 @@ namespace rt::sk
 
             // Returns true if changed
             bool draw();
+            void force_execute();
 
             void save_toml(std::string const& path);
+            void load_toml(std::string const& path);
 
         private:
             graph g;
