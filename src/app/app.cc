@@ -538,6 +538,7 @@ namespace rt::app
                 }
                 if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
                     if (ctx.sk_file_open_dialog) {
+                        ImGui::AlignFirstTextHeightToWidgets();
                         ImGui::TextDisabled("Open");
                     } else {
                         if (ImGui::Button("Open")) {
