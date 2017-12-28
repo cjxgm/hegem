@@ -34,6 +34,7 @@ namespace rt::app
     {
         if (argc > 1) scene_basedir = argv[1];
 
+        j() << "making example scene\n";
         scenes.emplace_back(hegem::make_example_scene());
         populate_scenes(*this);
     }

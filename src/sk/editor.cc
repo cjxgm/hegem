@@ -6,6 +6,9 @@
 #include "palette.hh"
 #include "engine.hh"
 #include "mesh.hh"
+#include "serialize.hh"
+#include "serializer.hh"
+#include "parse.hh"
 #include <algorithm>
 #include <string>
 
@@ -535,18 +538,35 @@ namespace rt::sk
             ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
             auto changed = draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
-            g.collect_garbage();
-            engine::sanity_check(g);
-            if (changed) {
-                auto result = previewing_node == 0
-                    ? lib::any{}
-                    : engine::execute(g, g.find_node(previewing_node));
-                update_preview(scene, std::move(result));
-            }
+            if (changed) force_execute();
 
             ImGui::PopStyleColor(4);
 
             return changed;
+        }
+
+        void editor::force_execute()
+        {
+            g.collect_garbage();
+            engine::sanity_check(g);
+            auto result = previewing_node == 0
+                ? lib::any{}
+                : engine::execute(g, g.find_node(previewing_node));
+            update_preview(scene, std::move(result));
+        }
+
+        void editor::save_toml(std::string const& path)
+        {
+            sk::serializer::toml sr{path};
+            sk::serialize(sr, g, previewing_node);
+        }
+
+        void editor::load_toml(std::string const& path)
+        {
+            auto [g, preview] = sk::parse(path.data());
+            this->g = std::move(g);
+            this->previewing_node = preview;
+            force_execute();
         }
     }
 }

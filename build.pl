@@ -15,8 +15,10 @@ $::sanitize = exists $opt{"-s"};
     'earcut/include',           # polygon triangulation
     'observer-ptr/include',     # observer_ptr<T>
     'cxxpool/src',              # thread pool
+    'cpptoml/include',          # TOML parser
 );
 @library__pkg_config = qw{
+    gtkmm-3.0
     glfw3
     gl
 };

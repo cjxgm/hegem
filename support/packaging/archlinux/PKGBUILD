@@ -3,7 +3,7 @@ pkgname=hegem-git
 pkgver=0
 pkgrel=1
 makedepends=('git')
-depends=('glfw' 'ttf-roboto')
+depends=('glfw' 'ttf-roboto' 'gtkmm3')
 arch=('x86_64')
 pkgdesc="Half-edge based mesh generator and renderers."
 provides=('hegem')
@@ -23,6 +23,8 @@ pkgver() {
 
 build() {
     cd "hegem"
+    ln -sf ../../../../../build build
+    ln -sf ../../../../../build.cache build.cache
     ./configure
     make
 }
@@ -30,7 +32,7 @@ build() {
 package() {
     cd "hegem"
     install -Dm 755 "support/scripts/hegem" "$pkgdir/usr/bin/hegem"
-    install -Dm 755 "build/hegem" "$pkgdir/usr/bin/hegem"
+    install -Dm 755 "build/hegem" "$pkgdir/usr/lib/hegem"
 
     install -dm 755 "$pkgdir/usr/share/hegem/support/"
     cp -r support/{inputs,models,shaders} "$pkgdir/usr/share/hegem/support/"
