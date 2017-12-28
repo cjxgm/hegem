@@ -1,0 +1,116 @@
+[[node]]
+pos = [41, 14]
+width = 4
+[node.instance.primitive_poly_disk]
+radius = 1.0
+ngon = 1
+
+[[node]]
+pos = [41, 15]
+width = 4
+[node.instance.selection_select_verts]
+inverse = false
+exclusive = true
+center = [0.67, 0.0, 0.0]
+radius = 0.46
+
+[[node]]
+pos = [41, 16]
+width = 4
+[node.instance.transform_move]
+offset = [9.21, 0.0, 0.0]
+use_median = false
+reverse = false
+
+[[node]]
+pos = [41, 17]
+width = 4
+[node.instance.selection_select_faces]
+inverse = true
+exclusive = true
+affect_verts = true
+center = [0.0, 0.0, 0.0]
+radius = -2.61
+no_backfaces = true
+front = [0.0, 1.0, 0.0]
+
+[[node]]
+pos = [41, 18]
+width = 4
+[node.instance.transform_scale]
+amount = [1.0, 1.0, 1.0]
+uniform_amount = 0.34
+pivot = [0.0, 0.0, 0.0]
+use_median = false
+
+[[node]]
+pos = [41, 19]
+width = 4
+[node.instance.transform_move]
+offset = [0.0, 0.0, 0.0]
+use_median = true
+reverse = true
+
+[[node]]
+pos = [41, 21]
+width = 8
+[node.instance.repetition_spin]
+local_rotation = true
+start = 0.0
+radius = 0.53
+fraction = 1.0
+exclusive_end = true
+count = 3
+
+[[node]]
+pos = [41, 20]
+width = 4
+[node.instance.transform_rotate]
+axis = [0.21, 1.0, 0.0]
+amount = -62.21
+pivot = [0.0, 0.0, 0.0]
+use_median = false
+
+[[node]]
+pos = [41, 24]
+width = 4
+preview = true
+[node.instance.selection_select_faces]
+inverse = false
+exclusive = true
+affect_verts = true
+center = [0.0, 0.0, 0.0]
+radius = -1.08
+no_backfaces = true
+front = [0.0, 1.0, 0.0]
+
+[[node]]
+pos = [41, 23]
+width = 4
+[node.instance.advanced_extrude]
+amount = 0.06
+select_verts = true
+
+[[node]]
+pos = [45, 22]
+width = 4
+[node.instance.selection_select_faces]
+inverse = false
+exclusive = true
+affect_verts = true
+center = [0.0, 0.0, 0.0]
+radius = -1.94
+no_backfaces = true
+front = [0.0, 1.0, 0.0]
+
+[[node]]
+pos = [41, 22]
+width = 4
+[node.instance.selection_containing_faces]
+inverse = false
+exclusive = true
+affect_verts = true
+only_boundary = true
+no_backfaces = true
+front = [0.0, 1.0, 0.0]
+
