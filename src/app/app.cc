@@ -12,6 +12,7 @@
 #include "../raytracer/shade.hh"
 #include "../rasterizer/rasterizer.hh"
 #include "../rasterizer/state.hh"
+#include "../swrast/rasterizer.hh"
 #include "../sk/editor.hh"
 #include "app.hh"
 #include "glfw.hh"
@@ -83,9 +84,11 @@ namespace rt::app
             ~context()
             {
                 j() << "context: (dtor)\n";
-                j() << "canceling raytracing process...\n";
-                for (auto& vi: visualizations)
+                j() << "canceling raytracing and swrast process...\n";
+                for (auto& vi: visualizations) {
                     vi.reset_raytracing_task_io();
+                    vi.reset_swrast_task_io();
+                }
             }
 
         private:
@@ -228,13 +231,39 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
+        util::task_io swrast_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        {
+            using task_type = util::task_type<gl_job>;
+            auto& ctx = context::instance();
+            auto& tman = ctx.tman;
+            auto tile = util::tile{0, 0, view.size.x, view.size.y};
+
+            scene.rebuild_cache();
+
+            std::vector<task_type> tasks;
+            tasks.emplace_back(
+                [&hdr, tile, scene=std::move(scene), view=std::move(view)]
+                (auto tx, auto shared_canceled) mutable {
+                    auto image = swrast::rasterize(scene, std::move(view));
+
+                    tx.send(gl_job{
+                        shared_canceled,
+                        job::upload{ hdr, std::move(image), tile },
+                    });
+                });
+
+            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
+        }
+
         void update_sk_visualization()
         {
             auto& ctx = context::instance();
             auto& vi = *ctx.sk_visualization;
             vi.update_rasterization_state();
             vi.reset_raytracing_task_io();
+            vi.reset_swrast_task_io();
             vi.suppress_raytracing = 10;
+            vi.suppress_swrast = 1;
         }
 
         void process_pending_gl_jobs()
@@ -294,11 +323,20 @@ namespace rt::app
 
             void visualizer(visualization& vi)
             {
-                if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
-                    vi.reset_raytracing_task_io();
-                    vi.suppress_raytracing = 1;
+                if (!vi.show_swrast_overlay) {
+                    if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
+                        vi.reset_raytracing_task_io();
+                        vi.suppress_raytracing = 1;
+                    }
                 }
                 if (!vi.show_raytracing_overlay) {
+                    if (!vi.show_swrast_overlay) ImGui::SameLine();
+                    if (ImGui::Checkbox("Software Rasterize", &vi.show_swrast_overlay)) {
+                        vi.reset_swrast_task_io();
+                        vi.suppress_swrast = 1;
+                    }
+                }
+                if (!vi.show_raytracing_overlay && !vi.show_swrast_overlay) {
                     ImGui::SameLine();
                     ImGui::Checkbox("Wireframed", &vi.wireframed);
                 }
@@ -309,6 +347,10 @@ namespace rt::app
                         vi.reset_raytracing_task_io();
                         vi.suppress_raytracing = 10;
                     }
+                    if (vi.show_swrast_overlay) {
+                        vi.reset_swrast_task_io();
+                        vi.suppress_swrast = 10;
+                    }
                     vi.s.view.camera.match([&] (auto& cam) {
                         // TODO: make parameters adjustable
                         cam.tt.angles += vi.hdr.drag_offset * 0.01f;
@@ -317,7 +359,9 @@ namespace rt::app
                 }
                 if (vi.hdr.double_clicked) {
                     vi.show_raytracing_overlay = false;
+                    vi.show_swrast_overlay = false;
                     vi.reset_raytracing_task_io();
+                    vi.reset_swrast_task_io();
                     auto rvs = raytracer::raytrace(vi.s.scene, vi.s.view, vi.hdr.image_local_clicked_pos);
                     for (auto& rv: rvs)
                         vi.s.segments.emplace_back(rv.ray, rv.extent, rv.color, rv.width);
@@ -330,7 +374,9 @@ namespace rt::app
                     auto wheel = ImGui::GetIO().MouseWheel;
                     if (wheel != 0.0f) {
                         vi.reset_raytracing_task_io();
+                        vi.reset_swrast_task_io();
                         vi.suppress_raytracing = 10;
+                        vi.suppress_swrast = 10;
                     }
                     vi.s.view.camera.match(
                         [&] (scene::cameras::pin_hole& cam) {
@@ -349,7 +395,14 @@ namespace rt::app
                     vi.reset_raytracing_task_io(std::move(io));
                 }
 
-                if (!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
+                if (vi.suppress_swrast >= 0) vi.suppress_swrast--;
+                if (vi.suppress_swrast == 0 && vi.show_swrast_overlay) {
+                    auto io = swrast_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr);
+                    vi.reset_swrast_task_io(std::move(io));
+                }
+
+                if ((!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
+                        && (!vi.show_swrast_overlay || vi.suppress_swrast > 0))
                     rasterizer::rasterize(vi.s, vi.wireframed, ImGui::GetTime());
             }
 
@@ -601,7 +654,10 @@ namespace rt::app
                     ImGui::Begin(name.data(), &vi.show);
                     visualizer(vi);
                     ImGui::End();
-                    if (!vi.show) vi.reset_raytracing_task_io();
+                    if (!vi.show) {
+                        vi.reset_raytracing_task_io();
+                        vi.reset_swrast_task_io();
+                    }
                 }
 
                 if (show_framerates) {

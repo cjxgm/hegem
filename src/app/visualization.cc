@@ -33,6 +33,20 @@ namespace rt::app::visualization_details
         raytracing_task_io = std::move(io);
     }
 
+    void visualization::reset_swrast_task_io()
+    {
+        if (swrast_task_io)
+            swrast_task_io->cancel();
+        swrast_task_io.reset();
+    }
+
+    void visualization::reset_swrast_task_io(util::task_io io)
+    {
+        if (swrast_task_io)
+            swrast_task_io->cancel();
+        swrast_task_io = std::move(io);
+    }
+
     void visualization::update_rasterization_state()
     {
         s.update_geometry();
