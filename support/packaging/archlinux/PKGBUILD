@@ -2,12 +2,12 @@
 pkgname=hegem-git
 pkgver=0
 pkgrel=1
-makedepends=('git')
-depends=('glfw' 'ttf-roboto' 'gtkmm3')
+makedepends=('git' 'boost')
+depends=('glfw' 'ttf-roboto' 'gtkmm3' 'libgl')
 arch=('x86_64')
 pkgdesc="Half-edge based mesh generator and renderers."
 provides=('hegem')
-conflicts=('hegem' 'hegem-dev-git')
+conflicts=('hegem')
 license=('MIT')
 source=(
     'hegem::git+file://'$(realpath ../../..)
