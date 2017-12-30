@@ -699,7 +699,7 @@ namespace rt::app
     void run_once(options opts)
     {
         j() << "run\n";
-        glfw::init_once("Raytracer");
+        glfw::init_once("Hegem");
         glu::init_all_resource_pools_once();
 
         glfw::mainloop_once([&] () {
