@@ -133,19 +133,13 @@ namespace rt::app::glfw
                 glfwSetErrorCallback(on_error);
 
                 j() << "glfw: requesting OpenGL 4.5 Core Profile context, windowed fullscreen mode\n";
-                auto monitor = glfwGetPrimaryMonitor();
-                auto& mode = *glfwGetVideoMode(monitor);
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
                 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
                 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
                 glfwWindowHint(GLFW_AUTO_ICONIFY, false);
-                glfwWindowHint(GLFW_RED_BITS, mode.redBits);
-                glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits);
-                glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits);
-                glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate);
-                win = glfwCreateWindow(mode.width, mode.height, title.data(), monitor, nullptr);
+                win = glfwCreateWindow(1600, 900, title.data(), nullptr, nullptr);
                 if (win == nullptr) throw std::runtime_error{"[WSI] glfw: create context failed."};
 
                 j() << "glfw: making context current\n";
