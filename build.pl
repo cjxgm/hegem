@@ -15,19 +15,22 @@ $::sanitize = exists $opt{"-s"};
     'earcut/include',           # polygon triangulation
     'observer-ptr/include',     # observer_ptr<T>
     'cxxpool/src',              # thread pool
+    'cpptoml/include',          # TOML parser
 );
 @library__pkg_config = qw{
+    gtkmm-3.0
     glfw3
     gl
 };
 
 $compiler__bin = "g++";
 $loader__bin = $compiler__bin;
-$build__output_bin = "raytracer";
+$build__output_bin = "hegem";
 
 &output__variable__bool('::sanitize');
 @compiler__sanitizers = qw[undefined address] if $::sanitize;
-$compiler__flags__standard = "c++1z";
+$compiler__flags__standard = "c++17";
+$compiler__flags__architecture = "ivybridge";
 @compiler__flags__extra = qw[-Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-unused-parameter -g];
 @loader__flags__extra = qw[-pthread -lstdc++fs -g];    # FIXME: feature detection on "libstdc++fs" / C++17 filesystem
 

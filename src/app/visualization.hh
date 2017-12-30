@@ -20,15 +20,23 @@ namespace rt::app
             hdr_texture hdr;
             glu::shared_framebuffer fbo;
             rasterizer::state s;
+
             lib::optional<util::task_io> raytracing_task_io;
             int suppress_raytracing{};
             bool show_raytracing_overlay{false};
+
+            lib::optional<util::task_io> swrast_task_io;
+            int suppress_swrast{};
+            bool show_swrast_overlay{false};
+
             bool wireframed{false};
             bool show{true};
 
             visualization(std::string name, scene_type& scene, view_type& view, bool raytrace);
             void reset_raytracing_task_io();
             void reset_raytracing_task_io(util::task_io io);
+            void reset_swrast_task_io();
+            void reset_swrast_task_io(util::task_io io);
             void update_rasterization_state();
         };
     }

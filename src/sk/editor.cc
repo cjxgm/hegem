@@ -5,6 +5,10 @@
 #include "editor.hh"
 #include "palette.hh"
 #include "engine.hh"
+#include "mesh.hh"
+#include "serialize.hh"
+#include "serializer.hh"
+#include "parse.hh"
 #include <algorithm>
 #include <string>
 
@@ -435,7 +439,12 @@ namespace rt::sk
             nodes.clear();
 
             if (result.type() == typeid(op::invoke_impl::model)) {
-                auto m = std::any_cast<op::invoke_impl::model>(result);
+                auto m = std::any_cast<op::invoke_impl::model>(std::move(result));
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        3,
+                        build_selection_mesh(m),
+                    });
                 nodes.emplace_back(
                     scene::nodes::object {
                         2,
@@ -501,9 +510,17 @@ namespace rt::sk
                 0.1f,
                 1.5f,
             };
+            auto mat_selection = scene::materials::physically_based {
+                scene::texture_packs::pure{},
+                glm::vec3{0.3f, 1.0f, 0.5f} * 0.6f,
+                glm::vec3{0.3f, 1.0f, 0.5f} * 1.0f,
+                0.1f,
+                1.5f,
+            };
             scene.materials.emplace_back(std::move(mat_sky));
             scene.materials.emplace_back(std::move(mat_object));
             scene.materials.emplace_back(std::move(mat_outline));
+            scene.materials.emplace_back(std::move(mat_selection));
             scene.environment = 0;
 
             scene.root = scene::nodes::group{};
@@ -521,18 +538,35 @@ namespace rt::sk
             ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
             auto changed = draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
-            g.collect_garbage();
-            engine::sanity_check(g);
-            if (changed) {
-                auto result = previewing_node == 0
-                    ? lib::any{}
-                    : engine::execute(g, g.find_node(previewing_node));
-                update_preview(scene, std::move(result));
-            }
+            if (changed) force_execute();
 
             ImGui::PopStyleColor(4);
 
             return changed;
+        }
+
+        void editor::force_execute()
+        {
+            g.collect_garbage();
+            engine::sanity_check(g);
+            auto result = previewing_node == 0
+                ? lib::any{}
+                : engine::execute(g, g.find_node(previewing_node));
+            update_preview(scene, std::move(result));
+        }
+
+        void editor::save_toml(std::string const& path)
+        {
+            sk::serializer::toml sr{path};
+            sk::serialize(sr, g, previewing_node);
+        }
+
+        void editor::load_toml(std::string const& path)
+        {
+            auto [g, preview] = sk::parse(path.data());
+            this->g = std::move(g);
+            this->previewing_node = preview;
+            force_execute();
         }
     }
 }

@@ -31,12 +31,8 @@ namespace rt::image
 
             image(dimension_type size)
                 : size_{size}
-                , pixels{}
-            {
-                auto count = size.x*size.y;
-                for (int i=0; i < count; i++)
-                    pixels.emplace_back();
-            }
+                , pixels(size.x * size.y)
+            {}
 
             void put_repeat(position_type const& pos, color_type color)
             {

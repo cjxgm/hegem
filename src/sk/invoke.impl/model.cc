@@ -15,8 +15,10 @@ namespace rt::sk
 
                 std::unordered_map<T const*, T*> old_to_new;
                 auto new_it = begin(new_slab.nodes);
-                for (auto& old: old_slab.nodes)
+                for (auto& old: old_slab.nodes) {
+                    if (frees.count(&old)) continue;
                     old_to_new.emplace(&old, &*new_it++);
+                }
 
                 std::unordered_set<T*> result;
                 for (auto ptr: ptrs)

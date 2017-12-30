@@ -61,17 +61,11 @@ namespace rt::hegem
             extrude(m, hdisk->ring->face, {0, 2, 0});
             m.diagnose("after an arrow's creation");
 
-            dump_pretty(m);
-
             affine_transform(cube, glm::translate(glm::vec3{ 0.0f, 0.0f, -2.0f }));
             affine_transform(arrow, glm::translate(glm::vec3{ -2.0f, 0.0f, 0.0f }));
             affine_transform(cylinder, glm::translate(glm::vec3{ 0.0f, 0.5f, 0.0f }));
             affine_transform(disk, glm::translate(glm::vec3{ 2.5f, 1.0f, 0.0f }));
             affine_transform_all(cube, glm::translate(glm::vec3{ 0.0f, -1.0f, 0.0f }));
-
-            auto tm = build_mesh(m);
-            write_obj(tm, std::cerr);
-            write_obj(tm, "/tmp/hegem.obj");
 
             return m;
         }

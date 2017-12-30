@@ -6,11 +6,13 @@
 #include "../util/tile.hh"
 #include "../util/task-manager.hh"
 #include "../util/scheduler.hh"
+#include "../util/file-dialog.hh"
 #include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
 #include "../rasterizer/rasterizer.hh"
 #include "../rasterizer/state.hh"
+#include "../swrast/rasterizer.hh"
 #include "../sk/editor.hh"
 #include "app.hh"
 #include "glfw.hh"
@@ -70,6 +72,8 @@ namespace rt::app
             int framerate_history_offset{};
             sk::editor sk_editor;
             visualization* sk_visualization{};
+            util::file_dialog sk_file_open_dialog;
+            util::file_dialog sk_file_save_dialog;
 
             static context& instance()
             {
@@ -80,6 +84,11 @@ namespace rt::app
             ~context()
             {
                 j() << "context: (dtor)\n";
+                j() << "canceling raytracing and swrast process...\n";
+                for (auto& vi: visualizations) {
+                    vi.reset_raytracing_task_io();
+                    vi.reset_swrast_task_io();
+                }
             }
 
         private:
@@ -222,6 +231,41 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
+        util::task_io swrast_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        {
+            using task_type = util::task_type<gl_job>;
+            auto& ctx = context::instance();
+            auto& tman = ctx.tman;
+            auto tile = util::tile{0, 0, view.size.x, view.size.y};
+
+            scene.rebuild_cache();
+
+            std::vector<task_type> tasks;
+            tasks.emplace_back(
+                [&hdr, tile, scene=std::move(scene), view=std::move(view)]
+                (auto tx, auto shared_canceled) mutable {
+                    auto image = swrast::rasterize(scene, std::move(view));
+
+                    tx.send(gl_job{
+                        shared_canceled,
+                        job::upload{ hdr, std::move(image), tile },
+                    });
+                });
+
+            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
+        }
+
+        void update_sk_visualization()
+        {
+            auto& ctx = context::instance();
+            auto& vi = *ctx.sk_visualization;
+            vi.update_rasterization_state();
+            vi.reset_raytracing_task_io();
+            vi.reset_swrast_task_io();
+            vi.suppress_raytracing = 10;
+            vi.suppress_swrast = 1;
+        }
+
         void process_pending_gl_jobs()
         {
             auto& ctx = context::instance();
@@ -234,6 +278,30 @@ namespace rt::app
                     break;
                 }
             }
+        }
+
+        void process_pending_dialog_jobs()
+        {
+            auto& ctx = context::instance();
+
+            if (auto opt_path = ctx.sk_file_save_dialog()) {
+                auto path = std::move(*opt_path);
+                if (path.size() < 5 || path.substr(path.size() - 5) != ".toml")
+                    path += ".toml";
+                ctx.sk_editor.save_toml(path);
+            }
+
+            if (auto opt_path = ctx.sk_file_open_dialog()) {
+                auto path = std::move(*opt_path);
+                ctx.sk_editor.load_toml(path);
+                update_sk_visualization();
+            }
+        }
+
+        void process_pending_jobs()
+        {
+            process_pending_gl_jobs();
+            process_pending_dialog_jobs();
         }
 
         namespace gui
@@ -255,11 +323,20 @@ namespace rt::app
 
             void visualizer(visualization& vi)
             {
-                if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
-                    vi.reset_raytracing_task_io();
-                    vi.suppress_raytracing = 1;
+                if (!vi.show_swrast_overlay) {
+                    if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
+                        vi.reset_raytracing_task_io();
+                        vi.suppress_raytracing = 1;
+                    }
                 }
                 if (!vi.show_raytracing_overlay) {
+                    if (!vi.show_swrast_overlay) ImGui::SameLine();
+                    if (ImGui::Checkbox("Software Rasterize", &vi.show_swrast_overlay)) {
+                        vi.reset_swrast_task_io();
+                        vi.suppress_swrast = 1;
+                    }
+                }
+                if (!vi.show_raytracing_overlay && !vi.show_swrast_overlay) {
                     ImGui::SameLine();
                     ImGui::Checkbox("Wireframed", &vi.wireframed);
                 }
@@ -270,6 +347,10 @@ namespace rt::app
                         vi.reset_raytracing_task_io();
                         vi.suppress_raytracing = 10;
                     }
+                    if (vi.show_swrast_overlay) {
+                        vi.reset_swrast_task_io();
+                        vi.suppress_swrast = 10;
+                    }
                     vi.s.view.camera.match([&] (auto& cam) {
                         // TODO: make parameters adjustable
                         cam.tt.angles += vi.hdr.drag_offset * 0.01f;
@@ -278,7 +359,9 @@ namespace rt::app
                 }
                 if (vi.hdr.double_clicked) {
                     vi.show_raytracing_overlay = false;
+                    vi.show_swrast_overlay = false;
                     vi.reset_raytracing_task_io();
+                    vi.reset_swrast_task_io();
                     auto rvs = raytracer::raytrace(vi.s.scene, vi.s.view, vi.hdr.image_local_clicked_pos);
                     for (auto& rv: rvs)
                         vi.s.segments.emplace_back(rv.ray, rv.extent, rv.color, rv.width);
@@ -291,7 +374,9 @@ namespace rt::app
                     auto wheel = ImGui::GetIO().MouseWheel;
                     if (wheel != 0.0f) {
                         vi.reset_raytracing_task_io();
+                        vi.reset_swrast_task_io();
                         vi.suppress_raytracing = 10;
+                        vi.suppress_swrast = 10;
                     }
                     vi.s.view.camera.match(
                         [&] (scene::cameras::pin_hole& cam) {
@@ -310,7 +395,14 @@ namespace rt::app
                     vi.reset_raytracing_task_io(std::move(io));
                 }
 
-                if (!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
+                if (vi.suppress_swrast >= 0) vi.suppress_swrast--;
+                if (vi.suppress_swrast == 0 && vi.show_swrast_overlay) {
+                    auto io = swrast_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr);
+                    vi.reset_swrast_task_io(std::move(io));
+                }
+
+                if ((!vi.show_raytracing_overlay || vi.suppress_raytracing > 0)
+                        && (!vi.show_swrast_overlay || vi.suppress_swrast > 0))
                     rasterizer::rasterize(vi.s, vi.wireframed, ImGui::GetTime());
             }
 
@@ -478,7 +570,7 @@ namespace rt::app
                 static ImGuiID selected_scene_view = 0;
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiSetCond_Appearing);
                 ImGui::Begin("Options");
                 if (ImGui::CollapsingHeader("Windows")) {
                     ImGui::Checkbox("Scenes", &show_scene_list);
@@ -497,6 +589,30 @@ namespace rt::app
                     ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
                     ImGui::PopItemWidth();
                 }
+                if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (ctx.sk_file_open_dialog) {
+                        ImGui::AlignFirstTextHeightToWidgets();
+                        ImGui::TextDisabled("Open");
+                    } else {
+                        if (ImGui::Button("Open")) {
+                            ctx.sk_file_open_dialog.open(
+                                util::file_dialog::action::open,
+                                "Open stack graph",
+                                "/usr/share/hegem/support/graph");
+                        }
+                    }
+                    ImGui::SameLine();
+                    if (ctx.sk_file_save_dialog) {
+                        ImGui::TextDisabled("Save");
+                    } else {
+                        if (ImGui::Button("Save")) {
+                            ctx.sk_file_save_dialog.open(
+                                util::file_dialog::action::save,
+                                "Save stack graph");
+                        }
+                    }
+                }
+
                 ImGui::End();
 
                 if (show_test_window) {
@@ -532,13 +648,16 @@ namespace rt::app
                 vis.remove_if([] (auto& vi) { return !vi.show; });
                 int vi_idx = 0;
                 for (auto& vi: vis) {
-                    ImGui::SetNextWindowPos(ImVec2(50, 250), ImGuiSetCond_Appearing);
+                    ImGui::SetNextWindowPos(ImVec2(50, 300), ImGuiSetCond_Appearing);
                     ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
                     ImGui::Begin(name.data(), &vi.show);
                     visualizer(vi);
                     ImGui::End();
-                    if (!vi.show) vi.reset_raytracing_task_io();
+                    if (!vi.show) {
+                        vi.reset_raytracing_task_io();
+                        vi.reset_swrast_task_io();
+                    }
                 }
 
                 if (show_framerates) {
@@ -568,15 +687,11 @@ namespace rt::app
                     ImGuiWindowFlags_NoScrollbar |
                     ImGuiWindowFlags_NoBringToFrontOnFocus);
                 style.WindowPadding = padding;
-                if (ctx.sk_editor.draw()) {
-                    auto& vi = *ctx.sk_visualization;
-                    vi.update_rasterization_state();
-                    vi.reset_raytracing_task_io();
-                    vi.suppress_raytracing = 10;
-                }
+                if (ctx.sk_editor.draw())
+                    update_sk_visualization();
                 ImGui::End();
 
-                process_pending_gl_jobs();
+                process_pending_jobs();
             }
         }
     }
@@ -584,7 +699,7 @@ namespace rt::app
     void run_once(options opts)
     {
         j() << "run\n";
-        glfw::init_once("Raytracer");
+        glfw::init_once("Hegem");
         glu::init_all_resource_pools_once();
 
         glfw::mainloop_once([&] () {
