@@ -59,11 +59,6 @@ namespace rt::app::glfw
                 if (id == 131216) return;
                 if (severity == gl::debug_severity_notification) return;
                 if (type == gl::debug_type_performance) return;
-                if (severity == gl::debug_severity_high
-                        || type == gl::debug_type_error
-                        || source == gl::debug_source_shader_compiler
-                        || source == gl::debug_source_api)
-                    throw std::logic_error{"OpenGL error."};
             }
 
             void on_error(int err, char const* desc)
