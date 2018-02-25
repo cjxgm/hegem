@@ -110,7 +110,7 @@ namespace rt::hegem
     {
         if (h0->twin->start != h1->start) {
             throw std::logic_error{
-                "Cannot only close consecutive heges that share an intermediate point."
+                "Can only close consecutive heges that share an intermediate point."
             };
         }
 
