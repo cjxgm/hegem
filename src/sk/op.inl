@@ -23,6 +23,7 @@ KIND(selection, "Selection", "(De)select vertices and faces as operation targets
 KIND(transform, "Transform", "Affine transformations.")
 KIND(repetition, "Repetition", "Repeatedly clone bodies.")
 KIND(advanced, "Advanced", "Advanced modeling operations.")
+KIND(subdivision, "Subdivision", "Subdivision surface operations.")
 
 OP(indirection, nop, 1, "Nop", "No operation but passthrough the input to output.")
 
@@ -151,6 +152,11 @@ OP(advanced, embed, 2, "Embed",
     "The double-sided faces cannot contain inner rings.\n"
     "Do not support gluing solid models.",
     FIELD(bool, no_holes, false, value, "No holes", "Do not attempt to punch holes even if applicable.")
+)
+
+OP(subdivision, catmull_clark, 1, "Catmull Clark", "Catmull Clark subdivision surface.",
+    FIELD(bool, triangulate, false, value, "Triangulate", "Triangulate before subdividing.\nRemove holes and concaves to work around subdivision limitations.")
+    FIELD(int, level, 3, value, "Level", "Subdivision level.")
 )
 
 #undef KIND
