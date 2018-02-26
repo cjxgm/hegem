@@ -22,8 +22,13 @@ namespace rt::sk::op::invoke_impl
             level < 0 ? 0 :
             level > 4 ? 4 :
             level;
-        while (level--)
-            subdivide_catmull_clark(m);
+        try {
+            while (level--)
+                subdivide_catmull_clark(m);
+        }
+        catch (std::invalid_argument const& e) {
+            throw std::runtime_error{e.what()};
+        }
 
         select_none(md);
         return std::move(md);

@@ -156,6 +156,15 @@ namespace rt::hegem
 
             void subdivide_catmull_clark(hemesh& m)
             {
+                for (auto& ring: m.rings.nodes) {
+                    if (ring.any_hege == nullptr) continue;
+                    if (ring.next == &ring) continue;
+                    throw std::invalid_argument{
+                        "Only support simple polygons, "
+                        "but at least 1 hole detected."
+                    };
+                }
+
                 std::unordered_map<face_type*, position_type> face_coords;
                 for (auto& ring: m.rings.nodes) {
                     if (ring.any_hege == nullptr) continue;
