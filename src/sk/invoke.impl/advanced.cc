@@ -99,7 +99,7 @@ namespace rt::sk::op::invoke_impl
                 hegem::extrude(m.hmesh, face, n * fields.amount);
             }
             catch (std::invalid_argument const& e) {
-                throw std::runtime_error(e.what());
+                throw std::runtime_error{e.what()};
             }
 
             if (fields.select_verts) {
