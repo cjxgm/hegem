@@ -136,6 +136,9 @@ namespace rt::hegem
                 }
 
                 auto ring = p0->ring;
+                if (ring->face->boundary == p1->ring)
+                    ring->face->boundary = ring;
+                list::remove(p1->ring);
                 m.free(p1->ring);
 
                 for (auto& h: list::iterate(p1))
