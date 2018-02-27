@@ -30,9 +30,10 @@ $build__output_bin = "hegem";
 &output__variable__bool('::sanitize');
 @compiler__sanitizers = qw[undefined address] if $::sanitize;
 $compiler__flags__standard = "c++17";
+$compiler__flags__optimization_level = "0" if exists $opt{"-g"};
 $compiler__flags__architecture = "ivybridge";
-@compiler__flags__extra = qw[-Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-unused-parameter -g];
-@loader__flags__extra = qw[-pthread -lstdc++fs -g];    # FIXME: feature detection on "libstdc++fs" / C++17 filesystem
+@compiler__flags__extra = qw[-Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-unused-parameter -ggdb];
+@loader__flags__extra = qw[-pthread -lstdc++fs -ggdb];    # FIXME: feature detection on "libstdc++fs" / C++17 filesystem
 
 $makefile__show_commands = exists $opt{"-c"};
 @makefile__commands__test = (

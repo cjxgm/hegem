@@ -20,11 +20,11 @@ namespace rt::sk
             ~editor(); // = default in implementation
 
             // Returns true if changed
-            bool draw();
-            void force_execute();
+            bool draw(bool with_gizmo);
+            void force_execute(bool with_gizmo);
 
             void save_toml(std::string const& path);
-            void load_toml(std::string const& path);
+            void load_toml(std::string const& path, bool with_gizmo);
 
         private:
             graph g;

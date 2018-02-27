@@ -605,7 +605,7 @@ BUILD = $build
 BIN = $bin
 
 # user options
-CONFIGURE =
+CONFIGURE = @ARGV
 
 # phonies
 $phonies

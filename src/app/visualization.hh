@@ -30,6 +30,7 @@ namespace rt::app
             bool show_swrast_overlay{false};
 
             bool wireframed{false};
+            bool with_gizmo{false};
             bool show{true};
 
             visualization(std::string name, scene_type& scene, view_type& view, bool raytrace);

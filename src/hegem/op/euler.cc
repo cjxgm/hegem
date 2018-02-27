@@ -117,6 +117,33 @@ namespace rt::hegem
 
                 return ring;
             }
+
+            edge_type* split_edge(hemesh& m, edge_type* edge, position_type pos)
+            {
+                auto ha0 = edge->any_hege;
+                auto ha1 = ha0->twin;
+                auto hb0 = list::insert_after(ha1, m.heges.alloc());
+                auto hb1 = list::insert_after(ha0, m.heges.alloc());
+
+                auto v = m.make_vert();
+                v->pos = pos;
+                v->any_hege = hb1;
+
+                hb0->start = v;
+                hb1->start = v;
+
+                ha0->twin = hb0;
+                hb0->twin = ha0;
+                ha1->twin = hb1;
+                hb1->twin = ha1;
+
+                hb0->ring = ha1->ring;
+                hb1->ring = ha0->ring;
+
+                hb0->edge = ha0->edge;
+                ha0->edge->any_hege = ha0;
+                return m.make_edge(hb1);
+            }
         }
 
         inline namespace euler_reverse
@@ -136,6 +163,9 @@ namespace rt::hegem
                 }
 
                 auto ring = p0->ring;
+                if (ring->face->boundary == p1->ring)
+                    ring->face->boundary = ring;
+                list::remove(p1->ring);
                 m.free(p1->ring);
 
                 for (auto& h: list::iterate(p1))

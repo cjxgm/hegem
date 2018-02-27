@@ -15,6 +15,7 @@ namespace rt::hegem
             face_type* make_face(hemesh& m, hege_type* first, hege_type* last);
             ring_type* kill_bridge(hemesh& m, hege_type* bridge_to_inner);
             ring_type* face_to_ring(hemesh& m, face_type* inner_face, face_type* outer_face);
+            edge_type* split_edge(hemesh& m, edge_type* edge, position_type pos);
         }
 
         inline namespace euler_reverse
