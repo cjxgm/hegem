@@ -293,7 +293,7 @@ namespace rt::app
 
             if (auto opt_path = ctx.sk_file_open_dialog()) {
                 auto path = std::move(*opt_path);
-                ctx.sk_editor.load_toml(path);
+                ctx.sk_editor.load_toml(path, ctx.sk_visualization->with_gizmo);
                 update_sk_visualization();
             }
         }
@@ -323,6 +323,8 @@ namespace rt::app
 
             void visualizer(visualization& vi)
             {
+                auto& ctx = context::instance();
+
                 if (!vi.show_swrast_overlay) {
                     if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
                         vi.reset_raytracing_task_io();
@@ -340,6 +342,17 @@ namespace rt::app
                     ImGui::SameLine();
                     ImGui::Checkbox("Wireframed", &vi.wireframed);
                 }
+
+                ImGui::SameLine();
+                if (ImGui::Checkbox("Gizmos", &vi.with_gizmo)) {
+                    ctx.sk_editor.force_execute(vi.with_gizmo);
+                    update_sk_visualization();
+                    vi.reset_raytracing_task_io();
+                    vi.reset_swrast_task_io();
+                    vi.suppress_raytracing = 1;
+                    vi.suppress_swrast = 1;
+                }
+
                 if (vi.hdr.dragging) {
                     ImGui::SameLine();
                     ImGui::Text("Dragging %.1f %.1f", vi.hdr.drag_offset.x, vi.hdr.drag_offset.y);
@@ -643,6 +656,8 @@ namespace rt::app
                     auto& scene = ctx.sk_editor.scene;
                     auto& view = scene.views.front();
                     ctx.sk_visualization = &vis.emplace_back("Hegem Preview", scene, view, false);
+                    ctx.sk_editor.force_execute(ctx.sk_visualization->with_gizmo);
+                    update_sk_visualization();
                 }
 
                 vis.remove_if([] (auto& vi) { return !vi.show; });
@@ -687,7 +702,7 @@ namespace rt::app
                     ImGuiWindowFlags_NoScrollbar |
                     ImGuiWindowFlags_NoBringToFrontOnFocus);
                 style.WindowPadding = padding;
-                if (ctx.sk_editor.draw())
+                if (ctx.sk_editor.draw(ctx.sk_visualization->with_gizmo))
                     update_sk_visualization();
                 ImGui::End();
 

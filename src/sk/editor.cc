@@ -433,23 +433,27 @@ namespace rt::sk
             }
         }
 
-        void update_preview(scene::scene_type& s, lib::any result)
+        void update_preview(scene::scene_type& s, lib::any result, bool with_gizmo)
         {
             auto& nodes = s.root.get<scene::nodes::group>().nodes;
             nodes.clear();
 
             if (result.type() == typeid(op::invoke_impl::model)) {
                 auto m = std::any_cast<op::invoke_impl::model>(std::move(result));
-                nodes.emplace_back(
-                    scene::nodes::object {
-                        3,
-                        build_selection_mesh(m),
-                    });
-                nodes.emplace_back(
-                    scene::nodes::object {
-                        2,
-                        build_outline_mesh(m.hmesh),
-                    });
+
+                if (with_gizmo) {
+                    nodes.emplace_back(
+                        scene::nodes::object {
+                            3,
+                            build_selection_mesh(m),
+                        });
+                    nodes.emplace_back(
+                        scene::nodes::object {
+                            2,
+                            build_outline_mesh(m.hmesh),
+                        });
+                }
+
                 nodes.emplace_back(
                     scene::nodes::object {
                         1,
@@ -530,7 +534,7 @@ namespace rt::sk
 
         editor::~editor() = default;
 
-        bool editor::draw()
+        bool editor::draw(bool with_gizmo)
         {
             ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor{40, 40, 40});
             ImGui::PushStyleColor(ImGuiCol_PopupBg, ImColor{50, 50, 50});
@@ -538,21 +542,21 @@ namespace rt::sk
             ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImColor{0, 0, 0, 0});
 
             auto changed = draw_editor(g, previewing_node, scaling_level, grid_size, origin, default_node_width, *tmp);
-            if (changed) force_execute();
+            if (changed) force_execute(with_gizmo);
 
             ImGui::PopStyleColor(4);
 
             return changed;
         }
 
-        void editor::force_execute()
+        void editor::force_execute(bool with_gizmo)
         {
             g.collect_garbage();
             engine::sanity_check(g);
             auto result = previewing_node == 0
                 ? lib::any{}
                 : engine::execute(g, g.find_node(previewing_node));
-            update_preview(scene, std::move(result));
+            update_preview(scene, std::move(result), with_gizmo);
         }
 
         void editor::save_toml(std::string const& path)
@@ -561,12 +565,12 @@ namespace rt::sk
             sk::serialize(sr, g, previewing_node);
         }
 
-        void editor::load_toml(std::string const& path)
+        void editor::load_toml(std::string const& path, bool with_gizmo)
         {
             auto [g, preview] = sk::parse(path.data());
             this->g = std::move(g);
             this->previewing_node = preview;
-            force_execute();
+            force_execute(with_gizmo);
         }
     }
 }
