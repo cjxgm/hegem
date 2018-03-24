@@ -2,7 +2,6 @@
 #include "../lib/std/optional.hh"
 #include "../image/color.hh"
 #include "../scene/scene.hh"
-#include "../math/sampler.hh"
 #include "../raytracer/ray.hh"
 #include "../raytracer/hit.hh"
 
@@ -33,12 +32,12 @@ namespace rt::pathtracer
 
             shading_point(ray_type ray, color_type color, float probability, color_type emission)
                 : next_ray{ray}
-                , ray_color{color / probability}
+                , ray_color{color / (probability < 1e-4f ? 1e-4f : probability)}
                 , emission{emission}
             {}
         };
 
-        auto shade(scene_type const& scene, object_hit_type const& hit, math::normal_sampler & samp) -> shading_point;
+        auto shade(scene_type const& scene, object_hit_type const& hit) -> shading_point;
     }
 
     using shading_details::shading_point;
