@@ -3,7 +3,9 @@
 #include "../lib/glm/op/trig.hh"
 #include "../lib/glm/op/geom.hh"
 #include "direction.hh"
+#include "constants.hh"
 #include <random>
+#include <cmath>
 
 namespace rt::math
 {
@@ -48,6 +50,23 @@ namespace rt::math
         auto s0 = samp() * r;
         auto s1 = samp() * r;
         direction_type sample = *dir + *x * s0 + *y * s1;
+        return sample;
+    }
+
+    template <class Sampler>
+    inline direction_type sample_hemisphere(Sampler& sample01, direction_type const& normal)
+    {
+        auto axis = (
+            normal->z < 0.1f
+            ? direction_type{{0.0f, 0.0f, 1.0f}}
+            : direction_type{{1.0f, 0.0f, 0.0f}}
+        );
+        auto u = cross(*normal, *axis);
+        auto v = cross(*normal, u);
+
+        auto rnd1 = 2.0f * math::pi * sample01();
+        auto rnd2 = sample01();
+        auto sample = (u * std::cos(rnd1) + v * std::sin(rnd1)) * std::sqrt(rnd2) + normal * std::sqrt(1.0f - rnd2);
         return sample;
     }
 
