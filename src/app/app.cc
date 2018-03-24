@@ -10,6 +10,7 @@
 #include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
+#include "../pathtracer/pathtracer.hh"
 #include "../rasterizer/rasterizer.hh"
 #include "../rasterizer/state.hh"
 #include "../swrast/rasterizer.hh"
@@ -189,7 +190,7 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io render_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        util::task_io render_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr, bool pathtracing)
         {
             using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
@@ -197,9 +198,9 @@ namespace rt::app
             auto shared_scene = std::make_shared<scene_type>(std::move(scene));
             shared_scene->rebuild_cache();
 
-            auto make_task = [&hdr, &shared_scene] (bool should_mark, int samples, auto view, auto tile) {
+            auto make_task = [&hdr, &shared_scene] (bool should_mark, int samples, auto view, auto tile, bool pathtracing) {
                 view.samples = samples;
-                return [&hdr, view, tile, should_mark, shared_scene] (auto tx, auto shared_canceled) {
+                return [&hdr, view, tile, should_mark, shared_scene, pathtracing] (auto tx, auto shared_canceled) {
                     if (should_mark) {
                         tx.send(gl_job{
                             shared_canceled,
@@ -207,8 +208,15 @@ namespace rt::app
                         });
                     }
 
-                    auto result = raytracer::raytrace(*shared_scene, view, tile);
-                    auto& image = std::get<0>(result);
+                    auto image = [&] {
+                        if (pathtracing) {
+                            return pathtracer::pathtrace(*shared_scene, view, tile);
+                        } else {
+                            auto [image, _] = raytracer::raytrace(*shared_scene, view, tile);
+                            (void) _;
+                            return image;
+                        }
+                    } ();
 
                     tx.send(gl_job{
                         shared_canceled,
@@ -220,11 +228,11 @@ namespace rt::app
             auto [tile_w, tile_h] = ctx.tile_size;
             std::vector<task_type> tasks;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                tasks.emplace_back(make_task(false, 1, view, tile));
+                tasks.emplace_back(make_task(false, 1, view, tile, false));
             }
             if (view.samples > 1) {
                 for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                    tasks.emplace_back(make_task(true, view.samples, view, tile));
+                    tasks.emplace_back(make_task(true, view.samples, view, tile, pathtracing));
                 }
             }
 
@@ -326,9 +334,15 @@ namespace rt::app
                 auto& ctx = context::instance();
 
                 if (!vi.show_swrast_overlay) {
-                    if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
+                    if (ImGui::Checkbox(vi.trace_path ? "Pathtrace" : "Raytrace", &vi.show_raytracing_overlay)) {
                         vi.reset_raytracing_task_io();
                         vi.suppress_raytracing = 1;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button(vi.trace_path ? "Switch to Raytracing" : "Switch to Pathtracing")) {
+                        vi.reset_raytracing_task_io();
+                        vi.suppress_raytracing = 1;
+                        vi.trace_path ^= true;
                     }
                 }
                 if (!vi.show_raytracing_overlay) {
@@ -404,7 +418,7 @@ namespace rt::app
 
                 if (vi.suppress_raytracing >= 0) vi.suppress_raytracing--;
                 if (vi.suppress_raytracing == 0 && vi.show_raytracing_overlay) {
-                    auto io = render_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr);
+                    auto io = render_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr, vi.trace_path);
                     vi.reset_raytracing_task_io(std::move(io));
                 }
 

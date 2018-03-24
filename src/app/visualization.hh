@@ -24,6 +24,7 @@ namespace rt::app
             lib::optional<util::task_io> raytracing_task_io;
             int suppress_raytracing{};
             bool show_raytracing_overlay{false};
+            bool trace_path{false};
 
             lib::optional<util::task_io> swrast_task_io;
             int suppress_swrast{};
