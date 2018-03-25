@@ -32,7 +32,7 @@ namespace rt::pathtracer
 
             shading_point(ray_type ray, color_type color, float weight, color_type emission)
                 : next_ray{ray}
-                , ray_color{color * (weight > 1e4f ? 1e4f : weight)}
+                , ray_color{color * (weight > 1.0f ? 1.0f : weight)}
                 , emission{emission}
             {}
         };
