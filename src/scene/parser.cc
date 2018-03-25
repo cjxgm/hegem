@@ -308,6 +308,17 @@ namespace rt::scene
                     float roughness;
                     float metalness;
                     float ior;
+
+                    operator material_type ()
+                    {
+                        return materials::physically_based{
+                            std::move(texture_pack),
+                            color,
+                            metalness,
+                            roughness,
+                            ior,
+                        };
+                    }
                 };
 
                 FN_PARSE_BLOCK(pbr_material, {
@@ -318,21 +329,9 @@ namespace rt::scene
                     PARSE_KV(float, index-of-refraction),
                 });
 
-                FN_PARSE(materials::physically_based)
-                {
-                    auto pbr = PARSE(pbr_material, pbr);
-                    return {
-                        std::move(pbr.texture_pack),
-                        mix(pbr.color, glm::vec3{0, 0, 0}, pbr.metalness),
-                        mix(glm::vec3{1, 1, 1}, pbr.color, pbr.metalness),
-                        pbr.roughness,
-                        pbr.ior,
-                    };
-                }
-
                 FN_PARSE_VARIANT_LIST(material_container_type, material, {
                     RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(materials::phong, phong-material);
-                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(materials::physically_based, pbr-material);
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(pbr_material, pbr-material);
                 });
             }
 
