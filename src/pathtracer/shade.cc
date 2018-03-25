@@ -71,6 +71,9 @@ namespace rt::pathtracer::shading_details
 
             shading_point impl(materials::physically_based const& mat) const
             {
+                auto diffuse_rate = 0.2f;
+                auto volumn_density = 0.01f;
+
                 // m is the microfacet normal
                 auto m = importance_sample_GGX(shape.normal, mat.roughness, canonical_sampler);
 
@@ -99,35 +102,78 @@ namespace rt::pathtracer::shading_details
                     return std::abs(xcosmi / (xcosni * xcosmn)) * G_GGX(o);
                 };
 
-                if (canonical_sampler() < fresnel) {     // reflection
-                    auto into = (cosnv < 0.0f);
-                    auto refl_normal = (into ? 1.0f : -1.0f) * m;
-                    auto o = reflect(*shape.viewing.dir, refl_normal);
+                auto into = (cosnv < 0.0f);
+                if (into) {
+                    if (canonical_sampler() < fresnel) {     // reflection
+                        auto o = reflect(*shape.viewing.dir, *m);
+                        auto shape_info_for_biasing = shape;
+                        shape_info_for_biasing.normal = *m;
+
+                        auto next_ray = biased_ray(ray_type{
+                            shape.hit_point,
+                            o,
+                        }, shape_info_for_biasing);
+
+                        return shading_point{
+                            next_ray,
+                            mat.reflection,
+                            weight_of(o),
+                            color_type{},   // TODO
+                        };
+                    } else {    // transmission (including diffuse)
+                        if (canonical_sampler() > diffuse_rate) {    // refraction
+                            auto eta = 1.0f / mat.ior;
+                            auto o = refract(*shape.viewing.dir, *m, eta);
+                            auto shape_info_for_biasing = shape;
+                            shape_info_for_biasing.normal = -*m;
+
+                            auto next_ray = biased_ray(ray_type{
+                                shape.hit_point,
+                                o,
+                            }, shape_info_for_biasing);
+
+                            return shading_point{
+                                next_ray,
+                                mat.albedo,
+                                weight_of(o),
+                                color_type{},   // TODO
+                            };
+                        } else {    // diffuse
+                            auto o = math::sample_hemisphere(canonical_sampler, shape.normal);
+                            auto next_ray = biased_ray(ray_type{
+                                shape.hit_point,
+                                o,
+                            }, shape);
+                            return shading_point{
+                                next_ray,
+                                mat.albedo,
+                                weight_of(o),
+                                color_type{},   // TODO
+                            };
+                        }
+                    }
+                } else {
+                    auto eta = mat.ior;
+                    auto o = refract(*shape.viewing.dir, -*m, eta);
                     auto shape_info_for_biasing = shape;
-                    shape_info_for_biasing.normal = refl_normal;
+                    shape_info_for_biasing.normal = m;
+
+                    // Holdout total internal reflection
+                    if (o.x == 0.0f && o.y == 0.0f) return {};
 
                     auto next_ray = biased_ray(ray_type{
                         shape.hit_point,
                         o,
                     }, shape_info_for_biasing);
 
+                    auto travel = shape.ray_extent;
+                    auto color = mat.albedo * std::exp(-travel*travel*volumn_density);
+
                     return shading_point{
                         next_ray,
-                        mat.reflection,
-                        weight_of(o),
-                        color_type{},   // TODO
-                    };
-                } else {    // transmission (including diffuse)
-                    auto o = math::sample_hemisphere(canonical_sampler, shape.normal);
-                    auto next_ray = biased_ray(ray_type{
-                        shape.hit_point,
-                        o,
-                    }, shape);
-                    return shading_point{
-                        next_ray,
-                        mat.albedo,
-                        weight_of(o),
-                        color_type{},   // TODO
+                        color,
+                        weight_of(o),   // No internal reflection
+                        color_type{},   // No internal emission
                     };
                 }
             }
