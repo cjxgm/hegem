@@ -1,9 +1,11 @@
 #pragma once
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/mat3.hh"
 #include "../lib/glm/op/trig.hh"
 #include "../lib/glm/op/geom.hh"
 #include "direction.hh"
 #include "constants.hh"
+#include "local-space.hh"
 #include <random>
 #include <cmath>
 
@@ -56,18 +58,16 @@ namespace rt::math
     template <class Sampler>
     inline direction_type sample_hemisphere(Sampler& sample01, direction_type const& normal)
     {
-        auto axis = (
-            normal->z < 0.1f
-            ? direction_type{{0.0f, 0.0f, 1.0f}}
-            : direction_type{{1.0f, 0.0f, 0.0f}}
-        );
-        auto u = cross(*normal, *axis);
-        auto v = cross(*normal, u);
-
         auto rnd1 = 2.0f * math::pi * sample01();
         auto rnd2 = sample01();
-        auto sample = (u * std::cos(rnd1) + v * std::sin(rnd1)) * std::sqrt(rnd2) + normal * std::sqrt(1.0f - rnd2);
-        return sample;
+        auto s2 = std::sqrt(rnd2);
+        auto local = glm::vec3{
+            std::cos(rnd1) * s2,
+            std::sin(rnd1) * s2,
+            std::sqrt(1.0f - rnd2),
+        };
+        auto local_to_world = local_space(normal);
+        return local_to_world * local;
     }
 
     template <class Sampler>
