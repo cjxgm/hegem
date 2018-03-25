@@ -471,7 +471,7 @@ namespace rt::sk
             scene.views.emplace_back(scene::view_type {
                 "Preview",
                 { 800, 450 },
-                1,
+                2,
                 16,
                 scene::cameras::pin_hole {
                     glm::vec3{ 0.0f, 0.0f, 5.0f },
@@ -504,14 +504,14 @@ namespace rt::sk
                 scene::texture_packs::pure{},
                 glm::vec3{1.0f, 0.4f, 0.1f},
                 glm::vec3{1.0f, 1.0f, 1.0f} * 0.2f,
-                0.05f,
+                0.005f,
                 1.5f,
             };
             auto mat_outline = scene::materials::physically_based {
                 scene::texture_packs::pure{},
                 glm::vec3{0.0f, 0.0f, 0.0f},
                 glm::vec3{1.0f, 1.0f, 1.0f} * 0.8f,
-                0.1f,
+                0.001f,
                 1.5f,
             };
             auto mat_selection = scene::materials::physically_based {
