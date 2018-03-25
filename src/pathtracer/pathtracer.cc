@@ -16,7 +16,7 @@ namespace rt::pathtracer::pathtracer_details
         using color_type = image_type::color_type;
         using raytracer::ray_type;
 
-        thread_local math::normal_sampler nsamp{0, 0.2};
+        thread_local math::uniform_sampler pixel_jitter{-0.5, 0.5};
 
         struct pathtracer_impl
         {
@@ -43,29 +43,30 @@ namespace rt::pathtracer::pathtracer_details
         };
     }
 
-    auto pathtrace(scene_type const& scene, view_type const& view, util::tile const& tile) -> image_type
+    auto pathtrace(scene_type const& scene, view_type const& view, util::tile const& tile, update_fn update) -> image_type
     {
         pathtracer_impl impl{scene};
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        const int max_samples = view.samples > 0 ? view.samples : 1;
-
         image_type img{{tile.w, tile.h}};
-        img.each([&] (auto& color, auto pos) {
-            counter.pixel++;
+        counter.pixel += tile.w * tile.h;
 
-            for (int i=0; i<max_samples; i++) {
+        const int max_samples = view.samples > 0 ? view.samples : 1;
+        for (int sample=0; sample<max_samples; sample++) {
+            img.each([&] (auto& color, auto pos) {
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
-                screen_pos.x += nsamp();
-                screen_pos.y += nsamp();
+                screen_pos.x += pixel_jitter();
+                screen_pos.y += pixel_jitter();
                 auto p = s2cp * glm::vec3{screen_pos, 1};
                 auto ray = raytracer::camera_ray_from_camera_plane(glm::vec2{p}, cam);
+                color *= float(sample);
                 color += impl.trace_path(ray, view.bounces);
-            }
+                color /= float(sample + 1);
+            });
 
-            color /= float(max_samples);
-        });
+            if (update && sample > 1) update(img);
+        }
 
         return img;
     }

@@ -190,7 +190,7 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io render_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr, bool pathtracing)
+        util::task_io raytrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
             using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
@@ -198,9 +198,9 @@ namespace rt::app
             auto shared_scene = std::make_shared<scene_type>(std::move(scene));
             shared_scene->rebuild_cache();
 
-            auto make_task = [&hdr, &shared_scene] (bool should_mark, int samples, auto view, auto tile, bool pathtracing) {
+            auto make_task = [&hdr, &shared_scene] (bool should_mark, int samples, auto view, auto tile) {
                 view.samples = samples;
-                return [&hdr, view, tile, should_mark, shared_scene, pathtracing] (auto tx, auto shared_canceled) {
+                return [&hdr, view, tile, should_mark, shared_scene] (auto tx, auto shared_canceled) {
                     if (should_mark) {
                         tx.send(gl_job{
                             shared_canceled,
@@ -208,15 +208,8 @@ namespace rt::app
                         });
                     }
 
-                    auto image = [&] {
-                        if (pathtracing) {
-                            return pathtracer::pathtrace(*shared_scene, view, tile);
-                        } else {
-                            auto [image, _] = raytracer::raytrace(*shared_scene, view, tile);
-                            (void) _;
-                            return image;
-                        }
-                    } ();
+                    auto [image, _] = raytracer::raytrace(*shared_scene, view, tile);
+                    (void) _;
 
                     tx.send(gl_job{
                         shared_canceled,
@@ -228,12 +221,73 @@ namespace rt::app
             auto [tile_w, tile_h] = ctx.tile_size;
             std::vector<task_type> tasks;
             for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                tasks.emplace_back(make_task(false, 1, view, tile, false));
+                tasks.emplace_back(make_task(false, 1, view, tile));
             }
             if (view.samples > 1) {
                 for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                    tasks.emplace_back(make_task(true, view.samples, view, tile, pathtracing));
+                    tasks.emplace_back(make_task(true, view.samples, view, tile));
                 }
+            }
+
+            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
+        }
+
+        util::task_io pathtrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        {
+            using task_type = util::task_type<gl_job>;
+            auto& ctx = context::instance();
+            auto& tman = ctx.tman;
+            auto shared_scene = std::make_shared<scene_type>(std::move(scene));
+            shared_scene->rebuild_cache();
+
+            auto make_task = [&hdr, &shared_scene] (bool preview, auto view, auto tile) -> task_type {
+                if (preview) {
+                    view.bounces = 2;
+                    view.samples = 2;
+                    return [&hdr, view, tile, shared_scene] (auto tx, auto shared_canceled) {
+                        auto image = pathtracer::pathtrace(*shared_scene, view, tile);
+                        tx.send(gl_job{
+                            shared_canceled,
+                            job::upload{ hdr, std::move(image), tile },
+                        });
+                    };
+                } else {
+                    return [&hdr, view, tile, shared_scene] (auto tx, auto shared_canceled) {
+                        tx.send(gl_job{
+                            shared_canceled,
+                            job::mark_as_working_tile{ hdr, tile },
+                        });
+
+                        auto image = pathtracer::pathtrace(
+                            *shared_scene,
+                            view,
+                            tile,
+                            [&] (auto& result) {
+                                tx.send(gl_job{
+                                    shared_canceled,
+                                    job::upload{ hdr, result, tile },
+                                });
+                                tx.send(gl_job{
+                                    shared_canceled,
+                                    job::mark_as_working_tile{ hdr, tile },
+                                });
+                            });
+
+                        tx.send(gl_job{
+                            shared_canceled,
+                            job::upload{ hdr, std::move(image), tile },
+                        });
+                    };
+                }
+            };
+
+            auto [tile_w, tile_h] = ctx.tile_size;
+            std::vector<task_type> tasks;
+            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+                tasks.emplace_back(make_task(true, view, tile));
+            }
+            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+                tasks.emplace_back(make_task(false, view, tile));
             }
 
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
@@ -418,7 +472,11 @@ namespace rt::app
 
                 if (vi.suppress_raytracing >= 0) vi.suppress_raytracing--;
                 if (vi.suppress_raytracing == 0 && vi.show_raytracing_overlay) {
-                    auto io = render_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr, vi.trace_path);
+                    auto io = (
+                        vi.trace_path
+                        ? pathtrace_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr)
+                        :  raytrace_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr)
+                    );
                     vi.reset_raytracing_task_io(std::move(io));
                 }
 
