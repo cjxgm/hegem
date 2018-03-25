@@ -218,7 +218,7 @@ namespace rt::sk
                                 prev_kind = &kind;
                                 ImGui::AlignFirstTextHeightToWidgets();
                                 ImGui::PushStyleColor(ImGuiCol_Text, to_imcolor(palette.fg_accent));
-                                ImGui::Text(kind.name);
+                                ImGui::Text("%s", kind.name);
                                 if (ImGui::IsItemHovered()) {
                                     tooltip = kind.tooltip;
                                     tooltip_palette = &palette;

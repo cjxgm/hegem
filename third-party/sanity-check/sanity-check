@@ -1,22 +1,9 @@
 // vim: ft=cpp
-
-// .... common ............................................................
-
 #if __cplusplus <= 201402L
     #error "You need a bare minimum of C++17/C++1z support."
 #endif
 
 #ifndef __has_include
     #error "Your compiler is too old. __has_include is required."
-#endif
-
-// .... per compiler ......................................................
-
-#ifdef __GNUC__
-    #if __GNUC__ < 7
-        #error "At least GCC 7 is required."
-    #endif
-#else
-    #error "Your compiler is unsupported."
 #endif
 
