@@ -329,9 +329,47 @@ namespace rt::scene
                     PARSE_KV(float, index-of-refraction),
                 });
 
+                struct microfacet_bsdf
+                {
+                    texture_pack_type texture_pack;
+                    glm::vec3 base;
+                    glm::vec3 emission;
+                    float metalness;
+                    float roughness;
+                    float ior;
+                    float opacity;
+                    float density;
+
+                    operator material_type ()
+                    {
+                        return materials::physically_based{
+                            std::move(texture_pack),
+                            base,
+                            emission,
+                            metalness,
+                            roughness,
+                            ior,
+                            opacity,
+                            density,
+                        };
+                    }
+                };
+
+                FN_PARSE_BLOCK(microfacet_bsdf, {
+                    PARSE(texture_pack_type, texture-pack),
+                    PARSE_KV(glm::vec3, base),
+                    PARSE_KV(glm::vec3, emission),
+                    PARSE_KV(float, metalness),
+                    PARSE_KV(float, roughness),
+                    PARSE_KV(float, ior),
+                    PARSE_KV(float, opacity),
+                    PARSE_KV(float, density),
+                });
+
                 FN_PARSE_VARIANT_LIST(material_container_type, material, {
                     RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(materials::phong, phong-material);
                     RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(pbr_material, pbr-material);
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(microfacet_bsdf, microfacet-bsdf);
                 });
             }
 

@@ -71,14 +71,13 @@ namespace rt::pathtracer::shading_details
 
             shading_point impl(materials::physically_based const& mat) const
             {
-                auto diffuse_rate = 0.2f;
-                auto volumn_density = 0.01f;
-
                 // m is the microfacet normal
                 auto m = importance_sample_GGX(shape.normal, mat.roughness, canonical_sampler);
 
                 auto fresnel = fresnel_schlick(mat.ior, shape.viewing.dir, m);
+                fresnel = glm::mix(fresnel, 1.0f, mat.metalness);
                 auto cosnv = dot(*shape.viewing.dir, *shape.normal);
+                auto albedo = sample_albedo(mat.texture_pack, mat.albedo, shape.hit_point);
 
                 auto G1_GGX = [&] (direction_type dir) {
                     auto cosdm = dot(*dir, *m);
@@ -104,7 +103,7 @@ namespace rt::pathtracer::shading_details
 
                 auto into = (cosnv < 0.0f);
                 if (into) {
-                    if (canonical_sampler() < fresnel) {     // reflection
+                    if (canonical_sampler() <= fresnel) {     // reflection
                         auto o = reflect(*shape.viewing.dir, *m);
                         auto shape_info_for_biasing = shape;
                         shape_info_for_biasing.normal = *m;
@@ -118,10 +117,10 @@ namespace rt::pathtracer::shading_details
                             next_ray,
                             mat.reflection,
                             weight_of(o),
-                            color_type{},   // TODO
+                            mat.emission,
                         };
                     } else {    // transmission (including diffuse)
-                        if (canonical_sampler() > diffuse_rate) {    // refraction
+                        if (canonical_sampler() > mat.opacity) {    // refraction
                             auto eta = 1.0f / mat.ior;
                             auto o = refract(*shape.viewing.dir, *m, eta);
                             auto shape_info_for_biasing = shape;
@@ -134,9 +133,9 @@ namespace rt::pathtracer::shading_details
 
                             return shading_point{
                                 next_ray,
-                                mat.albedo,
+                                albedo,
                                 weight_of(o),
-                                color_type{},   // TODO
+                                mat.emission,
                             };
                         } else {    // diffuse
                             auto o = math::sample_hemisphere(canonical_sampler, shape.normal);
@@ -146,9 +145,9 @@ namespace rt::pathtracer::shading_details
                             }, shape);
                             return shading_point{
                                 next_ray,
-                                mat.albedo,
+                                albedo,
                                 weight_of(o),
-                                color_type{},   // TODO
+                                mat.emission,
                             };
                         }
                     }
@@ -167,13 +166,15 @@ namespace rt::pathtracer::shading_details
                     }, shape_info_for_biasing);
 
                     auto travel = shape.ray_extent;
-                    auto color = mat.albedo * std::exp(-travel*travel*volumn_density);
+                    auto absorption = std::exp(-travel*travel*mat.density);
+                    auto color = albedo * absorption;
+                    auto emission = mat.emission * absorption;
 
                     return shading_point{
                         next_ray,
                         color,
-                        weight_of(o),   // No internal reflection
-                        color_type{},   // No internal emission
+                        weight_of(o),
+                        emission,
                     };
                 }
             }
