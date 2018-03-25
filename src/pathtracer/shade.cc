@@ -50,18 +50,7 @@ namespace rt::pathtracer::shading_details
             shading_point impl(materials::physically_based const& mat) const
             {
                 auto fresnel = fresnel_schlick(mat.ior, shape.viewing.dir, shape.normal);
-                if (sample01() < fresnel) {     // transmission
-                    auto next_ray = biased_ray(ray_type{
-                        shape.hit_point,
-                        math::sample_hemisphere(sample01, shape.normal),
-                    }, shape);
-                    return shading_point{
-                        next_ray,
-                        mat.albedo,
-                        1.0f * fresnel, // TODO
-                        color_type{},   // TODO
-                    };
-                } else {    // reflection
+                if (sample01() < fresnel) {     // reflection
                     auto NV = dot(*shape.viewing.dir, *shape.normal);
                     auto into = (NV < 0.0f);
                     auto refl_normal = (into ? 1.0f : -1.0f) * *shape.normal;
@@ -77,7 +66,18 @@ namespace rt::pathtracer::shading_details
                     return shading_point{
                         next_ray,
                         mat.reflection,
-                        -NV * (1.0f - fresnel),
+                        fresnel,
+                        color_type{},   // TODO
+                    };
+                } else {    // transmission (including diffuse)
+                    auto next_ray = biased_ray(ray_type{
+                        shape.hit_point,
+                        math::sample_hemisphere(sample01, shape.normal),
+                    }, shape);
+                    return shading_point{
+                        next_ray,
+                        mat.albedo,
+                        1.0f / (1.0f - fresnel), // TODO
                         color_type{},   // TODO
                     };
                 }

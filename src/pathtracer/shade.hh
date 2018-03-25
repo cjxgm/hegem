@@ -30,9 +30,9 @@ namespace rt::pathtracer
                 , emission{emission}
             {}
 
-            shading_point(ray_type ray, color_type color, float probability, color_type emission)
+            shading_point(ray_type ray, color_type color, float weight, color_type emission)
                 : next_ray{ray}
-                , ray_color{color / (probability < 1e-4f ? 1e-4f : probability)}
+                , ray_color{color * (weight > 1e4f ? 1e4f : weight)}
                 , emission{emission}
             {}
         };
