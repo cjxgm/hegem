@@ -20,7 +20,7 @@ namespace rt::math
         float operator () () { return sample(); }
 
     private:
-        std::minstd_rand gen;
+        std::mt19937_64 gen;
         std::uniform_real_distribution<float> dist;
     };
 
@@ -35,7 +35,7 @@ namespace rt::math
         float operator () () { return sample(); }
 
     private:
-        std::minstd_rand gen;
+        std::mt19937_64 gen;
         std::normal_distribution<float> dist;
     };
 

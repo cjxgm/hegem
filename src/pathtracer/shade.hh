@@ -1,5 +1,6 @@
 #pragma once
 #include "../lib/std/optional.hh"
+#include "../math/sampler.hh"
 #include "../image/color.hh"
 #include "../scene/scene.hh"
 #include "../raytracer/ray.hh"
@@ -32,12 +33,20 @@ namespace rt::pathtracer
 
             shading_point(ray_type ray, color_type color, float weight, color_type emission)
                 : next_ray{ray}
-                , ray_color{color * (weight > 1.0f ? 1.0f : weight)}
+                , ray_color{color * (
+                    weight > 1.0f ? 1.0f :      // clamp fireflies
+                    weight != weight ? 0.0f :   // NaN (black dots)
+                    weight
+                )}
                 , emission{emission}
             {}
         };
 
-        auto shade(scene_type const& scene, object_hit_type const& hit) -> shading_point;
+        auto shade(
+            scene_type const& scene,
+            object_hit_type const& hit,
+            math::uniform_sampler& canonical_sampler
+        ) -> shading_point;
     }
 
     using shading_details::shading_point;

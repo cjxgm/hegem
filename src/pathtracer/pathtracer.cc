@@ -16,11 +16,10 @@ namespace rt::pathtracer::pathtracer_details
         using color_type = image_type::color_type;
         using raytracer::ray_type;
 
-        thread_local math::uniform_sampler pixel_jitter{-0.5, 0.5};
-
         struct pathtracer_impl
         {
             scene_type const& scene;
+            math::uniform_sampler canonical_sampler{0.0f, 1.0f};
 
             auto trace_path(lib::optional<ray_type> viewing, int remaining_bounces) -> color_type
             {
@@ -31,7 +30,7 @@ namespace rt::pathtracer::pathtracer_details
                     counter.ray++;
 
                     auto hit = raytracer::intersect(scene.cache, *viewing);
-                    auto shading_point = shade(scene, hit);
+                    auto shading_point = shade(scene, hit, canonical_sampler);
 
                     viewing = std::move(shading_point.next_ray);
                     radiance += shading_point.emission * filter;
@@ -45,6 +44,7 @@ namespace rt::pathtracer::pathtracer_details
 
     auto pathtrace(scene_type const& scene, view_type const& view, util::tile const& tile, update_fn update) -> image_type
     {
+        math::normal_sampler pixel_jitter{0, 0.2};
         pathtracer_impl impl{scene};
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();

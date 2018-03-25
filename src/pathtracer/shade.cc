@@ -3,8 +3,8 @@
 #include "../lib/glm/op/common.hh"
 #include "../raytracer/shade.hh"
 #include "../scene/material.hh"
-#include "../math/sampler.hh"
 #include "../math/direction.hh"
+#include "../math/local-space.hh"
 #include "shade.hh"
 
 namespace rt::pathtracer::shading_details
@@ -15,8 +15,6 @@ namespace rt::pathtracer::shading_details
         namespace materials = scene::materials;
         using math::direction_type;
 
-        thread_local math::uniform_sampler sample01{0.0f, 1.0f};
-
         float fresnel_schlick(float ior, direction_type const& viewing, direction_type const& normal)
         {
             auto base = (ior - 1) / (ior + 1);
@@ -26,9 +24,33 @@ namespace rt::pathtracer::shading_details
             return base + (1-base)*exp;
         }
 
+        auto importance_sample_GGX(
+            direction_type normal,
+            float roughness,
+            math::uniform_sampler& canonical_sampler
+        ) -> direction_type
+        {
+            auto s1 = canonical_sampler();
+            auto s2 = canonical_sampler();
+            auto polar = std::atan(roughness * std::sqrt(s1 / (1.0f - s1)));
+            auto azimuth = 2.0f * math::pi * s2;
+            auto cosp = std::cos(polar);
+            auto sinp = std::sin(polar);
+            auto cosa = std::cos(azimuth);
+            auto sina = std::sin(azimuth);
+            auto local = glm::vec3{
+                sinp * cosa,
+                sinp * sina,
+                cosp,
+            };
+            auto local_to_world = math::local_space(normal);
+            return local_to_world * local;
+        }
+
         struct shader
         {
             hits::shape const& shape;
+            math::uniform_sampler& canonical_sampler;
 
             template <class Material>
             auto operator () (Material const& mat) const -> shading_point
@@ -49,35 +71,62 @@ namespace rt::pathtracer::shading_details
 
             shading_point impl(materials::physically_based const& mat) const
             {
-                auto fresnel = fresnel_schlick(mat.ior, shape.viewing.dir, shape.normal);
-                if (sample01() < fresnel) {     // reflection
-                    auto NV = dot(*shape.viewing.dir, *shape.normal);
-                    auto into = (NV < 0.0f);
-                    auto refl_normal = (into ? 1.0f : -1.0f) * *shape.normal;
-                    auto dir = reflect(*shape.viewing.dir, refl_normal);
+                // m is the microfacet normal
+                auto m = importance_sample_GGX(shape.normal, mat.roughness, canonical_sampler);
+
+                auto fresnel = fresnel_schlick(mat.ior, shape.viewing.dir, m);
+                auto cosnv = dot(*shape.viewing.dir, *shape.normal);
+
+                auto G1_GGX = [&] (direction_type dir) {
+                    auto cosdm = dot(*dir, *m);
+                    auto cosdn = dot(*dir, *shape.normal);
+                    if (cosdm * cosdn <= 1e-5f) return 0.0f;
+
+                    auto tan2dn = 1.0f / (cosdn * cosdn) - 1.0f;
+                    auto r = glm::clamp(mat.roughness, 0.0f, 1.0f);
+                    return 2.0f / (1.0f + std::sqrt(1.0f + r * r * tan2dn));
+                };
+
+                auto G_GGX = [&] (direction_type o) {
+                    return G1_GGX(-*shape.viewing.dir) * G1_GGX(o);
+                };
+
+                auto weight_of = [&] (direction_type o) {
+                    // "x" means "don't care about signs"
+                    auto xcosmi = dot(*shape.viewing.dir, *m);
+                    auto xcosni = cosnv;
+                    auto xcosmn = dot(*shape.normal, *m);
+                    return std::abs(xcosmi / (xcosni * xcosmn)) * G_GGX(o);
+                };
+
+                if (canonical_sampler() < fresnel) {     // reflection
+                    auto into = (cosnv < 0.0f);
+                    auto refl_normal = (into ? 1.0f : -1.0f) * m;
+                    auto o = reflect(*shape.viewing.dir, refl_normal);
                     auto shape_info_for_biasing = shape;
                     shape_info_for_biasing.normal = refl_normal;
 
                     auto next_ray = biased_ray(ray_type{
                         shape.hit_point,
-                        dir,
+                        o,
                     }, shape_info_for_biasing);
 
                     return shading_point{
                         next_ray,
                         mat.reflection,
-                        fresnel,
+                        weight_of(o),
                         color_type{},   // TODO
                     };
                 } else {    // transmission (including diffuse)
+                    auto o = math::sample_hemisphere(canonical_sampler, shape.normal);
                     auto next_ray = biased_ray(ray_type{
                         shape.hit_point,
-                        math::sample_hemisphere(sample01, shape.normal),
+                        o,
                     }, shape);
                     return shading_point{
                         next_ray,
                         mat.albedo,
-                        1.0f / (1.0f - fresnel), // TODO
+                        weight_of(o),
                         color_type{},   // TODO
                     };
                 }
@@ -85,14 +134,18 @@ namespace rt::pathtracer::shading_details
         };
     }
 
-    auto shade(scene_type const& scene, object_hit_type const& hit) -> shading_point
+    auto shade(
+        scene_type const& scene,
+        object_hit_type const& hit,
+        math::uniform_sampler& canonical_sampler
+    ) -> shading_point
     {
         return hit.match(
             [&] (hits::missed const& hit) -> shading_point {
                 return raytracer::shade_environment(scene, hit.viewing);
             },
             [&] (hits::object const& hit) {
-                shader s{hit.shape_info};
+                shader s{hit.shape_info, canonical_sampler};
                 return apply_visitor(s, scene.materials[hit.material_id]);
             }
         );
