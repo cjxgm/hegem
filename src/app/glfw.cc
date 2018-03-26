@@ -198,6 +198,10 @@ namespace rt::app::glfw
                     glfwSwapBuffers(win);
                 }
                 j() << "glfw mainloop: exited\n";
+
+                glfwDestroyWindow(win);
+                win = nullptr;
+                j() << "glfw: window destroyed.\n";
             }
         };
     }
