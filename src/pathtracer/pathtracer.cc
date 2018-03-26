@@ -35,6 +35,8 @@ namespace rt::pathtracer::pathtracer_details
                     viewing = std::move(shading_point.next_ray);
                     radiance += shading_point.emission * filter;
                     filter *= shading_point.ray_color;
+
+                    if (filter.x == 0.0f && filter.y == 0.0f && filter.z == 0.0f) break;
                 }
 
                 return radiance;
