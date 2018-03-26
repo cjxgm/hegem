@@ -34,7 +34,7 @@ namespace rt::pathtracer
             shading_point(ray_type ray, color_type color, float weight, color_type emission)
                 : next_ray{ray}
                 , ray_color{color * (
-                    weight > 1.0f ? 1.0f :      // clamp fireflies
+                    weight > 4.0f ? 4.0f :      // clamp fireflies
                     weight != weight ? 0.0f :   // NaN (black dots)
                     weight
                 )}
