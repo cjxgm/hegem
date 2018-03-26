@@ -34,7 +34,7 @@ namespace rt::app
             bool with_gizmo{false};
             bool show{true};
 
-            visualization(std::string name, scene_type& scene, view_type& view, bool raytrace);
+            visualization(std::string name, scene_type& scene, view_type& view, bool trace);
             void reset_raytracing_task_io();
             void reset_raytracing_task_io(util::task_io io);
             void reset_swrast_task_io();

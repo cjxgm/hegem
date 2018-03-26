@@ -587,8 +587,9 @@ namespace rt::app
                                 vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, false);
                             }
                             ImGui::SameLine();
-                            if (ImGui::Button("Raytrace")) {
-                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
+                            if (ImGui::Button("Pathtrace")) {
+                                auto& vi = vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
+                                vi.trace_path = true;
                             }
                             ImGui::NextColumn();
                             ImGui::PopID();
