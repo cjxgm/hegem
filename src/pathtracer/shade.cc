@@ -153,9 +153,7 @@ namespace rt::pathtracer::shading_details
                     }
                 } else {
                     auto eta = mat.ior;
-                    auto o = refract(*shape.viewing.dir, -*m, eta);
-                    auto shape_info_for_biasing = shape;
-                    shape_info_for_biasing.normal = m;
+                    auto o = refract(*shape.viewing.dir, -*shape.normal, eta);
 
                     // Holdout total internal reflection
                     if (o.x == 0.0f && o.y == 0.0f) return {};
@@ -163,7 +161,7 @@ namespace rt::pathtracer::shading_details
                     auto next_ray = biased_ray(ray_type{
                         shape.hit_point,
                         o,
-                    }, shape_info_for_biasing);
+                    }, shape);
 
                     auto travel = shape.ray_extent;
                     auto absorption = std::exp(-travel*travel*mat.density);
@@ -173,7 +171,7 @@ namespace rt::pathtracer::shading_details
                     return shading_point{
                         next_ray,
                         color,
-                        weight_of(o),
+                        1.0f,
                         emission,
                     };
                 }
