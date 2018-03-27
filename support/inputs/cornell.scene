@@ -107,11 +107,15 @@ materials {
 }
 
 group {
-    object {
-        material-id 0
-        sphere {
-            center 0 10 0
-            radius 7.2
+    xform {
+        model
+            1 0 0 0
+            0 0.05 0 0
+            0 0 1 0
+            0 2.95 0 1
+        object {
+            material-id 0
+            mesh support/models/cube.obj
         }
     }
 
