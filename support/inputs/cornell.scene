@@ -16,6 +16,16 @@ views {
 }
 
 lights {
+    directional-light {
+        direction 2 -2 -1
+        color 1 1 1
+        strength 20
+    }
+    directional-light {
+        direction -1 1 -1
+        color 1 1 1
+        strength 16
+    }
 }
 
 background {
