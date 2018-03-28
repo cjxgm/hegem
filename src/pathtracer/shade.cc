@@ -72,13 +72,16 @@ namespace rt::pathtracer::shading_details
 
             shading_point impl(materials::physically_based const& mat) const
             {
+                auto albedo = sample_albedo(mat.texture_pack, mat.albedo, shape.hit_point);
+                auto roughness = sample_roughness(mat.texture_pack, mat.roughness, shape.hit_point);
+                auto density = sample_density(mat.texture_pack, mat.density, shape.hit_point);
+
                 // m is the microfacet normal
-                auto m = importance_sample_GGX(shape.normal, mat.roughness, canonical_sampler);
+                auto m = importance_sample_GGX(shape.normal, roughness, canonical_sampler);
 
                 auto fresnel = fresnel_schlick(mat.ior, shape.viewing.dir, m);
                 fresnel = glm::mix(fresnel, 1.0f, mat.metalness);
                 auto cosnv = dot(*shape.viewing.dir, *shape.normal);
-                auto albedo = sample_albedo(mat.texture_pack, mat.albedo, shape.hit_point);
 
                 auto G1_GGX = [&] (direction_type dir) {
                     auto cosdm = dot(*dir, *m);
@@ -86,7 +89,7 @@ namespace rt::pathtracer::shading_details
                     if (cosdm * cosdn <= 1e-5f) return 0.0f;
 
                     auto tan2dn = 1.0f / (cosdn * cosdn) - 1.0f;
-                    auto r = glm::clamp(mat.roughness, 0.0f, 1.0f);
+                    auto r = glm::clamp(roughness, 0.0f, 1.0f);
                     return 2.0f / (1.0f + std::sqrt(1.0f + r * r * tan2dn));
                 };
 
@@ -169,7 +172,7 @@ namespace rt::pathtracer::shading_details
                     }, shape_info_for_biasing);
 
                     auto travel = shape.ray_extent;
-                    auto color = exp(-travel*travel*mat.density*(color_type{1.0f} - mat.albedo));
+                    auto color = exp(-travel*travel*density*(color_type{1.0f} - mat.albedo));
 
                     return shading_point{
                         next_ray,

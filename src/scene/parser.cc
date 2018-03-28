@@ -165,6 +165,14 @@ namespace rt::scene
                     };
                 }
 
+                FN_PARSE(glm::vec2)
+                {
+                    return {
+                        PARSE(float, vec2.x),
+                        PARSE(float, vec2.y),
+                    };
+                }
+
                 FN_PARSE(glm::vec3)
                 {
                     return {
@@ -296,9 +304,30 @@ namespace rt::scene
                     PARSE_KV(float, size),
                 });
 
+                FN_PARSE_BLOCK(texture_packs::noise_fbm, {
+                    PARSE_KV(glm::vec3, albedo-accent),
+                    PARSE_KV(int, albedo-details),
+                    PARSE_KV(float, albedo-size),
+                    PARSE_KV(glm::vec3, albedo-seed),
+                    PARSE_KV(glm::vec2, albedo-range),
+
+                    PARSE_KV(float, roughness-accent),
+                    PARSE_KV(int, roughness-details),
+                    PARSE_KV(float, roughness-size),
+                    PARSE_KV(glm::vec3, roughness-seed),
+                    PARSE_KV(glm::vec2, roughness-range),
+
+                    PARSE_KV(float, density-accent),
+                    PARSE_KV(int, density-details),
+                    PARSE_KV(float, density-size),
+                    PARSE_KV(glm::vec3, density-seed),
+                    PARSE_KV(glm::vec2, density-range),
+                });
+
                 FN_PARSE_VARIANT(texture_pack_type, texture-pack, {
                     RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::pure, pure);
                     RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::checkerboard, checkerboard);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::noise_fbm, noise-fbm);
                 });
 
                 struct pbr_material
