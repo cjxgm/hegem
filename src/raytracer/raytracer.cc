@@ -10,6 +10,7 @@
 #include "raytracer.hh"
 #include "intersect.hh"
 #include "shade.hh"
+#include <cmath>
 
 namespace rt::raytracer::raytracer_details
 {
@@ -136,7 +137,7 @@ namespace rt::raytracer::raytracer_details
                             auto refr_normal = (into ? 1.0f : -1.0f) * *hit.shape_info.normal;
                             auto dir = refract(*ray.dir, refr_normal, eta);
 
-                            if (dir.x != 0.0f || dir.y != 0.0f) {   // not perfect reflection
+                            if (!std::isnan(dir.x)) {   // not total internal reflection
                                 auto dir_sample = math::sample_cone(nsamp, dir, roughness(mat) * math::pi);
 
                                 auto shape_info_for_biasing = hit.shape_info;

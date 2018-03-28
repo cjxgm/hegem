@@ -6,6 +6,7 @@
 #include "../math/direction.hh"
 #include "../math/local-space.hh"
 #include "shade.hh"
+#include <cmath>
 
 namespace rt::pathtracer::shading_details
 {
@@ -156,7 +157,7 @@ namespace rt::pathtracer::shading_details
                     auto o = refract(*shape.viewing.dir, -*shape.normal, eta);
 
                     // Holdout total internal reflection
-                    if (o.x == 0.0f && o.y == 0.0f) return {};
+                    if (std::isnan(o.x)) return {};
 
                     auto next_ray = biased_ray(ray_type{
                         shape.hit_point,
