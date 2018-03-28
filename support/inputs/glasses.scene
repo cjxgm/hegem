@@ -49,7 +49,7 @@ materials {
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
@@ -59,87 +59,87 @@ materials {
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
         ior 1.4
         opacity 0
-        density 0
+        density 10
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.1
         ior 1.4
         opacity 0
-        density 0
+        density 10
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.2
         ior 1.4
         opacity 0
-        density 0
+        density 10
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.5
         ior 1.4
         opacity 0
-        density 0
+        density 10
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.8
         ior 1.4
         opacity 0
-        density 0
+        density 10
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 1.0
         ior 1.4
         opacity 0
-        density 0
+        density 10
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
         ior 1
         opacity 0
-        density 0.2
+        density 1.0
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
         ior 1
         opacity 0
-        density 0.5
+        density 2.0
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
@@ -149,27 +149,27 @@ materials {
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
         ior 1.1
         opacity 0
-        density 0.2
+        density 1.0
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
         ior 1.1
         opacity 0
-        density 0.5
+        density 2.0
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
@@ -179,23 +179,23 @@ materials {
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
         ior 1.2
         opacity 0
-        density 0.2
+        density 1.0
     }
     microfacet-bsdf {
         pure
-        base 0.8 1 1
+        base 0.8 0.99 0.99
         emission 0 0 0
         metalness 0
         roughness 0.0
         ior 1.2
         opacity 0
-        density 0.5
+        density 2.0
     }
 }
 

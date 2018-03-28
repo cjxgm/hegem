@@ -164,14 +164,13 @@ namespace rt::pathtracer::shading_details
                     }, shape);
 
                     auto travel = shape.ray_extent;
-                    auto absorption = std::exp(-travel*travel*mat.density);
-                    auto color = color_type{absorption};
+                    auto color = exp(-travel*travel*mat.density*(color_type{1.0f} - mat.albedo));
 
                     return shading_point{
                         next_ray,
                         color,
                         1.0f,
-                        {},
+                        color_type{0.0f},
                     };
                 }
             }
