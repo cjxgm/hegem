@@ -20,9 +20,11 @@
 #include "hdr-texture.hh"
 #include "visualization.hh"
 #include "statistics.hh"
+#include <map>
 #include <list>
 #include <deque>
 #include <array>
+#include <mutex>
 #include <utility>      // for std::forward and std::move
 #include <functional>
 #include <algorithm>
@@ -69,6 +71,7 @@ namespace rt::app
             util::receiver<gl_job> rx_gl;
             util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{4}};   // TODO: auto detect threads?
             int tile_size[2] = {64, 64};
+            int batch_samples = 16;
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
             sk::editor sk_editor;
@@ -234,60 +237,107 @@ namespace rt::app
 
         util::task_io pathtrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
+            struct partial_result
+            {
+                std::mutex tile_mutex;
+                image_rgb result;
+                int samples{};
+
+                partial_result(int w, int h): result{{w, h}} {}
+
+                void combine(image_rgb const& img, int img_samples)
+                {
+                    auto old_samples = samples;
+                    samples += img_samples;
+
+                    result.each([&] (auto& color, auto pos) {
+                        color *= old_samples;
+                        color += img[pos];
+                        color /= samples;
+                    });
+                }
+            };
+            using shared_partial_result = std::shared_ptr<partial_result>;
+
+            struct tile_pos_less
+            {
+                auto operator () (util::tile const& a, util::tile const& b) -> bool
+                {
+                    if (a.x < b.x) return true;
+                    if (a.x > b.x) return false;
+                    return (a.y < b.y);
+                }
+            };
+
             using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& tman = ctx.tman;
             auto shared_scene = std::make_shared<scene_type>(std::move(scene));
             shared_scene->rebuild_cache();
 
-            auto make_task = [&hdr, &shared_scene] (bool preview, auto view, auto tile) -> task_type {
-                if (preview) {
-                    view.bounces = 2;
-                    view.samples = 2;
-                    return [&hdr, view, tile, shared_scene] (auto tx, auto shared_canceled) {
-                        auto image = pathtracer::pathtrace(*shared_scene, view, tile);
-                        tx.send(gl_job{
-                            shared_canceled,
-                            job::upload{ hdr, std::move(image), tile },
-                        });
-                    };
-                } else {
-                    return [&hdr, view, tile, shared_scene] (auto tx, auto shared_canceled) {
-                        tx.send(gl_job{
-                            shared_canceled,
-                            job::mark_as_working_tile{ hdr, tile },
-                        });
+            auto make_task = [&hdr, &shared_scene] (auto& pres, int samples, auto view, auto tile) -> task_type {
+                view.samples = samples;
+                return [&hdr, view, tile, shared_scene, pres] (auto tx, auto shared_canceled) {
+                    auto tile_lock = std::lock_guard{pres->tile_mutex};
 
-                        auto image = pathtracer::pathtrace(
-                            *shared_scene,
-                            view,
-                            tile,
-                            [&] (auto& result) {
-                                tx.send(gl_job{
-                                    shared_canceled,
-                                    job::upload{ hdr, result, tile },
-                                });
-                                tx.send(gl_job{
-                                    shared_canceled,
-                                    job::mark_as_working_tile{ hdr, tile },
-                                });
+                    tx.send(gl_job{
+                        shared_canceled,
+                        job::mark_as_working_tile{ hdr, tile },
+                    });
+
+                    pathtracer::pathtrace(
+                        *shared_scene,
+                        view,
+                        tile,
+                        [&] (auto& result) {
+                            pres->combine(result, 1);
+                            tx.send(gl_job{
+                                shared_canceled,
+                                job::upload{ hdr, pres->result, tile },
                             });
-
-                        tx.send(gl_job{
-                            shared_canceled,
-                            job::upload{ hdr, std::move(image), tile },
+                            tx.send(gl_job{
+                                shared_canceled,
+                                job::mark_as_working_tile{ hdr, tile },
+                            });
                         });
-                    };
+
+                    tx.send(gl_job{
+                        shared_canceled,
+                        job::upload{ hdr, pres->result, tile },
+                    });
+                };
+            };
+
+            auto make_tile_iter = [&] {
+                auto [tile_w, tile_h] = ctx.tile_size;
+                return util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y};
+            };
+
+            std::map<util::tile, shared_partial_result, tile_pos_less> pres_per_tile;
+            std::vector<task_type> tasks;
+
+            for (auto& tile: make_tile_iter()) {
+                pres_per_tile.emplace(tile, std::make_shared<partial_result>(tile.w, tile.h));
+            }
+
+            auto populate_layer_tasks = [&] (auto samples) {
+                for (auto& tile: make_tile_iter()) {
+                    tasks.emplace_back(make_task(pres_per_tile[tile], samples, view, tile));
                 }
             };
 
-            auto [tile_w, tile_h] = ctx.tile_size;
-            std::vector<task_type> tasks;
-            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                tasks.emplace_back(make_task(true, view, tile));
-            }
-            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
-                tasks.emplace_back(make_task(false, view, tile));
+            if (view.samples > 0) {
+                auto samples_per_layer = ctx.batch_samples;
+
+                populate_layer_tasks(1);
+                auto remaining_samples = view.samples - 1;
+
+                for (auto i=0; i<remaining_samples/samples_per_layer; i++)
+                    populate_layer_tasks(samples_per_layer);
+                remaining_samples %= samples_per_layer;
+
+                if (remaining_samples > 0)
+                    populate_layer_tasks(remaining_samples);
             }
 
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
@@ -657,7 +707,7 @@ namespace rt::app
                 static ImGuiID selected_scene_view = 0;
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(300, 230), ImGuiSetCond_Appearing);
                 ImGui::Begin("Options");
                 if (ImGui::CollapsingHeader("Windows")) {
                     ImGui::Checkbox("Scenes", &show_scene_list);
@@ -674,6 +724,8 @@ namespace rt::app
                 if (ImGui::CollapsingHeader("Raytracing Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::PushItemWidth(-100);
                     ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
+                    ImGui::DragInt("Batch Samples", &ctx.batch_samples, 0.1, 2, 512);
+                    if (ctx.batch_samples < 2) ctx.batch_samples = 2;
                     ImGui::PopItemWidth();
                 }
                 if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
