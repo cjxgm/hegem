@@ -155,14 +155,18 @@ namespace rt::pathtracer::shading_details
                 } else {
                     auto eta = mat.ior;
                     auto o = refract(*shape.viewing.dir, -*shape.normal, eta);
+                    auto shape_info_for_biasing = shape;
 
-                    // Holdout total internal reflection
-                    if (std::isnan(o.x)) return {};
+                    // total internal reflection
+                    if (std::isnan(o.x)) {
+                        o = reflect(*shape.viewing.dir, -*shape.normal);
+                        shape_info_for_biasing.normal = -*shape.normal;
+                    }
 
                     auto next_ray = biased_ray(ray_type{
                         shape.hit_point,
                         o,
-                    }, shape);
+                    }, shape_info_for_biasing);
 
                     auto travel = shape.ray_extent;
                     auto color = exp(-travel*travel*mat.density*(color_type{1.0f} - mat.albedo));

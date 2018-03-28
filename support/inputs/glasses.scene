@@ -3,8 +3,8 @@ name "Glasses"
 views {
     view {
         name "Main"
-        dimension 800 600
-        bounces 6
+        dimension 1024 576
+        bounces 16
         samples 32
         perspective-camera {
             center 0 0 5
@@ -36,7 +36,7 @@ background {
 materials {
     microfacet-bsdf {
         checkerboard {
-            accent 1 0.5 0.01
+            accent 1 0.2 0.01
             size 1
         }
         base 1 1 1
