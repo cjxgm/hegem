@@ -546,9 +546,10 @@ namespace rt::app
                 ImGui::Text("Action"); ImGui::NextColumn();
                 ImGui::Separator();
 
+                int scene_idx = 0;
                 for (auto& scene: scenes) {
+                    ImGui::PushID(scene_idx++);
                     auto& scene_name = name(scene);
-                    ImGui::PushID(scene_name.data());
 
                     if (loaded(scene)) {
                         auto& loaded_scene = get_or_load(scene);
