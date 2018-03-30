@@ -132,7 +132,7 @@ namespace rt::app::glfw
                 if (!glfwInit()) throw std::runtime_error{"[WSI] glfw: init failed."};
                 glfwSetErrorCallback(on_error);
 
-                j() << "glfw: requesting OpenGL 4.5 Core Profile context, windowed fullscreen mode\n";
+                j() << "glfw: requesting OpenGL 4.5 Core Profile context, windowed mode\n";
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
                 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
@@ -198,6 +198,10 @@ namespace rt::app::glfw
                     glfwSwapBuffers(win);
                 }
                 j() << "glfw mainloop: exited\n";
+
+                glfwDestroyWindow(win);
+                win = nullptr;
+                j() << "glfw: window destroyed.\n";
             }
         };
     }

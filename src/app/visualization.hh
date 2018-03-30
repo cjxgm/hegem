@@ -24,6 +24,7 @@ namespace rt::app
             lib::optional<util::task_io> raytracing_task_io;
             int suppress_raytracing{};
             bool show_raytracing_overlay{false};
+            bool trace_path{false};
 
             lib::optional<util::task_io> swrast_task_io;
             int suppress_swrast{};
@@ -33,7 +34,7 @@ namespace rt::app
             bool with_gizmo{false};
             bool show{true};
 
-            visualization(std::string name, scene_type& scene, view_type& view, bool raytrace);
+            visualization(std::string name, scene_type& scene, view_type& view, bool trace);
             void reset_raytracing_task_io();
             void reset_raytracing_task_io(util::task_io io);
             void reset_swrast_task_io();

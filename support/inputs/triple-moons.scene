@@ -63,7 +63,7 @@ materials {
     pbr-material {
         pure
         color 0.1 0.3 0.05
-        roughness 0.95
+        roughness 0.005
         metalness 0
         index-of-refraction 1.5
     }

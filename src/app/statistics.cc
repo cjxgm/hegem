@@ -33,7 +33,7 @@ namespace rt::app::view
 
             ImGui::Text("%s", name);
             if (tip && ImGui::IsItemHovered())
-                ImGui::SetTooltip(tip);
+                ImGui::SetTooltip("%s", tip);
             ImGui::NextColumn();
 
             ImGui::Text("%ld", count);

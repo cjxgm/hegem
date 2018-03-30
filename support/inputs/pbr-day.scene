@@ -126,8 +126,8 @@ materials {
             accent 1 0.5 0.01
             size 1
         }
-        color 0.1 0.3 0.05
-        roughness 0.95
+        color 0.7 0.9 0.5
+        roughness 0.005
         metalness 0
         index-of-refraction 1.5
     }

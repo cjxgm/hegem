@@ -4,7 +4,7 @@
 
 namespace rt::app::visualization_details
 {
-    visualization::visualization(std::string name, scene_type& scene, view_type& view, bool raytrace)
+    visualization::visualization(std::string name, scene_type& scene, view_type& view, bool trace)
         : name{std::move(name)}
         , hdr{view.size.x, view.size.y}
         , fbo{glu::framebuffer_pool::instance().allocate()}
@@ -13,7 +13,7 @@ namespace rt::app::visualization_details
         gl::named_framebuffer_draw_buffer(fbo, gl::color_attachment0);
         gl::named_framebuffer_texture(fbo, gl::color_attachment0, hdr.tex, 0);
 
-        if (raytrace) {
+        if (trace) {
             show_raytracing_overlay = true;
             suppress_raytracing = 10;
         }

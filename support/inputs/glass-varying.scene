@@ -1,0 +1,144 @@
+name "Glass Varying"
+
+views {
+    view {
+        name "Main"
+        dimension 1024 576
+        bounces 16
+        samples 32
+        perspective-camera {
+            center 0 0 5
+            direction 0 0 -1
+            up 0 1 0
+            angle 60
+        }
+    }
+}
+
+lights {
+    directional-light {
+        direction 1 -1 -2
+        color 1 1 1
+        strength 20
+    }
+    directional-light {
+        direction -1 1 -2
+        color 1 1 1
+        strength 16
+    }
+}
+
+background {
+    color 0.9 0.9 1
+    strength 10
+}
+
+materials {
+    microfacet-bsdf {
+        checkerboard {
+            accent 1 0.2 0.01
+            size 1
+        }
+        base 1 1 1
+        emission 0 0 0
+        metalness 0
+        roughness 0.01
+        ior 1.4
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        noise-fbm {
+            albedo-accent 0.8 0.99 0.99
+            albedo-details 0
+            albedo-size 1
+            albedo-seed 0 0 0
+            albedo-range 0 0
+            roughness-accent 0.1
+            roughness-details 4
+            roughness-size 3
+            roughness-seed 0 1 0
+            roughness-range 0.1 0.1
+            density-accent 10
+            density-details 0
+            density-size 1
+            density-seed 0 0 0
+            density-range 0 0
+        }
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.01
+        ior 1.4
+        opacity 0
+        density 10
+    }
+    microfacet-bsdf {
+        noise-fbm {
+            albedo-accent 0.8 0.99 0.99
+            albedo-details 0
+            albedo-size 1
+            albedo-seed 0 0 0
+            albedo-range 0 0
+            roughness-accent 0
+            roughness-details 0
+            roughness-size 1
+            roughness-seed 0 0 0
+            roughness-range 0 0
+            density-accent 20
+            density-details 2
+            density-size 2
+            density-seed 3 3 3
+            density-range 0 1
+        }
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.02
+        ior 1.2
+        opacity 0
+        density 2
+    }
+}
+
+group {
+    object {
+        material-id 0
+        plane {
+            normal -1 0 1
+            offset -6
+        }
+    }
+    object {
+        material-id 0
+        plane {
+            normal 1 0 1
+            offset -6
+        }
+    }
+
+    xform {
+        model
+            2 0 0 0
+            0 2 0 0
+            0 0 0.2 0
+            0 0 0 1
+        object {
+            material-id 1
+            mesh support/models/cube.obj
+        }
+    }
+
+    xform {
+        model
+            0.5 0 0 0
+            0 2 0 0
+            0 0 2 0
+            -3 0 0 1
+        object {
+            material-id 2
+            mesh support/models/cube.obj
+        }
+    }
+}
+

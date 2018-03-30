@@ -233,7 +233,7 @@ namespace rt::hegem
                     for (auto [_, hege_to_edge_point]: util::range{++it, last}) {
                         (void)_;
 
-                        auto first = [&] {
+                        auto first = [&, hege_to_edge_point = hege_to_edge_point] {
                             for (auto& h: iterate(hege_to_edge_point))
                                 if (h.start == barycenter_vert)
                                     return &h;

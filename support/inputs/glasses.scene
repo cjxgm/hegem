@@ -1,0 +1,349 @@
+name "Glasses"
+
+views {
+    view {
+        name "Main"
+        dimension 1024 576
+        bounces 16
+        samples 32
+        perspective-camera {
+            center 0 0 5
+            direction 0 0 -1
+            up 0 1 0
+            angle 60
+        }
+    }
+}
+
+lights {
+    directional-light {
+        direction 2 -2 -1
+        color 1 1 1
+        strength 20
+    }
+    directional-light {
+        direction -1 1 -1
+        color 1 1 1
+        strength 16
+    }
+}
+
+background {
+    color 0.9 0.9 1
+    strength 10
+}
+
+materials {
+    microfacet-bsdf {
+        checkerboard {
+            accent 1 0.2 0.01
+            size 1
+        }
+        base 1 1 1
+        emission 0 0 0
+        metalness 0
+        roughness 0.01
+        ior 1.4
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1
+        opacity 0
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1.4
+        opacity 0
+        density 10
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.1
+        ior 1.4
+        opacity 0
+        density 10
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.2
+        ior 1.4
+        opacity 0
+        density 10
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.5
+        ior 1.4
+        opacity 0
+        density 10
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.8
+        ior 1.4
+        opacity 0
+        density 10
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 1.0
+        ior 1.4
+        opacity 0
+        density 10
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1
+        opacity 0
+        density 1.0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1
+        opacity 0
+        density 2.0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1.1
+        opacity 0
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1.1
+        opacity 0
+        density 1.0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1.1
+        opacity 0
+        density 2.0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1.2
+        opacity 0
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1.2
+        opacity 0
+        density 1.0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.8 0.99 0.99
+        emission 0 0 0
+        metalness 0
+        roughness 0.0
+        ior 1.2
+        opacity 0
+        density 2.0
+    }
+}
+
+group {
+    object {
+        material-id 0
+        plane {
+            normal 0 0 1
+            offset -5.2
+        }
+    }
+
+    object {
+        material-id 1
+        sphere {
+            center 0 0 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 1
+        sphere {
+            center 0 3 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 8
+        sphere {
+            center 0 0 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 9
+        sphere {
+            center 0 -3 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 10
+        sphere {
+            center 3 3 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 11
+        sphere {
+            center 3 0 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 12
+        sphere {
+            center 3 -3 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 13
+        sphere {
+            center 6 3 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 14
+        sphere {
+            center 6 0 -3.8
+            radius 1.1
+        }
+    }
+    object {
+        material-id 15
+        sphere {
+            center 6 -3 -3.8
+            radius 1.1
+        }
+    }
+
+    xform {
+        model
+            1.1 0 0 0
+            0 1.1 0 0
+            0 0 0.15 0
+            -6 3 -4.8 1
+        object {
+            material-id 2
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            1.1 0 0 0
+            0 1.1 0 0
+            0 0 0.15 0
+            -3 3 -4.8 1
+        object {
+            material-id 3
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            1.1 0 0 0
+            0 1.1 0 0
+            0 0 0.15 0
+            -6 0 -4.8 1
+        object {
+            material-id 4
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            1.1 0 0 0
+            0 1.1 0 0
+            0 0 0.15 0
+            -3 0 -4.8 1
+        object {
+            material-id 5
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            1.1 0 0 0
+            0 1.1 0 0
+            0 0 0.15 0
+            -6 -3 -4.8 1
+        object {
+            material-id 6
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            1.1 0 0 0
+            0 1.1 0 0
+            0 0 0.15 0
+            -3 -3 -4.8 1
+        object {
+            material-id 7
+            mesh support/models/cube.obj
+        }
+    }
+}
+
