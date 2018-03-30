@@ -10,6 +10,7 @@
 #include "../glu/states.hh"
 #include "../raytracer/raytracer.hh"
 #include "../raytracer/shade.hh"
+#include "../pathtracer/pathtracer.hh"
 #include "../rasterizer/rasterizer.hh"
 #include "../rasterizer/state.hh"
 #include "../swrast/rasterizer.hh"
@@ -19,9 +20,11 @@
 #include "hdr-texture.hh"
 #include "visualization.hh"
 #include "statistics.hh"
+#include <map>
 #include <list>
 #include <deque>
 #include <array>
+#include <mutex>
 #include <utility>      // for std::forward and std::move
 #include <functional>
 #include <algorithm>
@@ -68,6 +71,7 @@ namespace rt::app
             util::receiver<gl_job> rx_gl;
             util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{4}};   // TODO: auto detect threads?
             int tile_size[2] = {64, 64};
+            int batch_samples = 16;
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
             sk::editor sk_editor;
@@ -189,7 +193,7 @@ namespace rt::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io render_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        util::task_io raytrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
             using task_type = util::task_type<gl_job>;
             auto& ctx = context::instance();
@@ -207,8 +211,8 @@ namespace rt::app
                         });
                     }
 
-                    auto result = raytracer::raytrace(*shared_scene, view, tile);
-                    auto& image = std::get<0>(result);
+                    auto [image, _] = raytracer::raytrace(*shared_scene, view, tile);
+                    (void) _;
 
                     tx.send(gl_job{
                         shared_canceled,
@@ -226,6 +230,114 @@ namespace rt::app
                 for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
                     tasks.emplace_back(make_task(true, view.samples, view, tile));
                 }
+            }
+
+            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
+        }
+
+        util::task_io pathtrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        {
+            struct partial_result
+            {
+                std::mutex tile_mutex;
+                image_rgb result;
+                int samples{};
+
+                partial_result(int w, int h): result{{w, h}} {}
+
+                void combine(image_rgb const& img, int img_samples)
+                {
+                    auto old_samples = samples;
+                    samples += img_samples;
+
+                    result.each([&] (auto& color, auto pos) {
+                        color *= old_samples;
+                        color += img[pos];
+                        color /= samples;
+                    });
+                }
+            };
+            using shared_partial_result = std::shared_ptr<partial_result>;
+
+            struct tile_pos_less
+            {
+                auto operator () (util::tile const& a, util::tile const& b) -> bool
+                {
+                    if (a.x < b.x) return true;
+                    if (a.x > b.x) return false;
+                    return (a.y < b.y);
+                }
+            };
+
+            using task_type = util::task_type<gl_job>;
+            auto& ctx = context::instance();
+            auto& tman = ctx.tman;
+            auto shared_scene = std::make_shared<scene_type>(std::move(scene));
+            shared_scene->rebuild_cache();
+
+            auto make_task = [&hdr, &shared_scene] (auto& pres, int samples, auto view, auto tile) -> task_type {
+                view.samples = samples;
+                return [&hdr, view, tile, shared_scene, pres] (auto tx, auto shared_canceled) {
+                    auto tile_lock = std::lock_guard{pres->tile_mutex};
+
+                    tx.send(gl_job{
+                        shared_canceled,
+                        job::mark_as_working_tile{ hdr, tile },
+                    });
+
+                    pathtracer::pathtrace(
+                        *shared_scene,
+                        view,
+                        tile,
+                        [&] (auto& result) {
+                            pres->combine(result, 1);
+                            tx.send(gl_job{
+                                shared_canceled,
+                                job::upload{ hdr, pres->result, tile },
+                            });
+                            tx.send(gl_job{
+                                shared_canceled,
+                                job::mark_as_working_tile{ hdr, tile },
+                            });
+                        });
+
+                    tx.send(gl_job{
+                        shared_canceled,
+                        job::upload{ hdr, pres->result, tile },
+                    });
+                };
+            };
+
+            auto make_tile_iter = [&] {
+                auto [tile_w, tile_h] = ctx.tile_size;
+                return util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y};
+            };
+
+            std::map<util::tile, shared_partial_result, tile_pos_less> pres_per_tile;
+            std::vector<task_type> tasks;
+
+            for (auto& tile: make_tile_iter()) {
+                pres_per_tile.emplace(tile, std::make_shared<partial_result>(tile.w, tile.h));
+            }
+
+            auto populate_layer_tasks = [&] (auto samples) {
+                for (auto& tile: make_tile_iter()) {
+                    tasks.emplace_back(make_task(pres_per_tile[tile], samples, view, tile));
+                }
+            };
+
+            if (view.samples > 0) {
+                auto samples_per_layer = ctx.batch_samples;
+
+                populate_layer_tasks(1);
+                auto remaining_samples = view.samples - 1;
+
+                for (auto i=0; i<remaining_samples/samples_per_layer; i++)
+                    populate_layer_tasks(samples_per_layer);
+                remaining_samples %= samples_per_layer;
+
+                if (remaining_samples > 0)
+                    populate_layer_tasks(remaining_samples);
             }
 
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
@@ -326,9 +438,15 @@ namespace rt::app
                 auto& ctx = context::instance();
 
                 if (!vi.show_swrast_overlay) {
-                    if (ImGui::Checkbox("Raytrace", &vi.show_raytracing_overlay)) {
+                    if (ImGui::Checkbox(vi.trace_path ? "Pathtrace" : "Raytrace", &vi.show_raytracing_overlay)) {
                         vi.reset_raytracing_task_io();
                         vi.suppress_raytracing = 1;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button(vi.trace_path ? "Switch to Raytracing" : "Switch to Pathtracing")) {
+                        vi.reset_raytracing_task_io();
+                        vi.suppress_raytracing = 1;
+                        vi.trace_path ^= true;
                     }
                 }
                 if (!vi.show_raytracing_overlay) {
@@ -404,7 +522,11 @@ namespace rt::app
 
                 if (vi.suppress_raytracing >= 0) vi.suppress_raytracing--;
                 if (vi.suppress_raytracing == 0 && vi.show_raytracing_overlay) {
-                    auto io = render_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr);
+                    auto io = (
+                        vi.trace_path
+                        ? pathtrace_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr)
+                        :  raytrace_combined_view_progressively(vi.s.scene, vi.s.view, vi.hdr)
+                    );
                     vi.reset_raytracing_task_io(std::move(io));
                 }
 
@@ -474,9 +596,10 @@ namespace rt::app
                 ImGui::Text("Action"); ImGui::NextColumn();
                 ImGui::Separator();
 
+                int scene_idx = 0;
                 for (auto& scene: scenes) {
+                    ImGui::PushID(scene_idx++);
                     auto& scene_name = name(scene);
-                    ImGui::PushID(scene_name.data());
 
                     if (loaded(scene)) {
                         auto& loaded_scene = get_or_load(scene);
@@ -515,8 +638,9 @@ namespace rt::app
                                 vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, false);
                             }
                             ImGui::SameLine();
-                            if (ImGui::Button("Raytrace")) {
-                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
+                            if (ImGui::Button("Pathtrace")) {
+                                auto& vi = vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
+                                vi.trace_path = true;
                             }
                             ImGui::NextColumn();
                             ImGui::PopID();
@@ -583,7 +707,7 @@ namespace rt::app
                 static ImGuiID selected_scene_view = 0;
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(300, 230), ImGuiSetCond_Appearing);
                 ImGui::Begin("Options");
                 if (ImGui::CollapsingHeader("Windows")) {
                     ImGui::Checkbox("Scenes", &show_scene_list);
@@ -600,6 +724,8 @@ namespace rt::app
                 if (ImGui::CollapsingHeader("Raytracing Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::PushItemWidth(-100);
                     ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
+                    ImGui::DragInt("Batch Samples", &ctx.batch_samples, 0.1, 2, 512);
+                    if (ctx.batch_samples < 2) ctx.batch_samples = 2;
                     ImGui::PopItemWidth();
                 }
                 if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {

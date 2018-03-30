@@ -26,21 +26,21 @@ namespace rt::rasterizer::sort_details
                 return m.match(
                     [] (materials::solid_color m) {
                         return materials::physically_based{
-                            .texture_pack = texture_packs::pure{},
-                            .albedo = m.color,
-                            .reflection = glm::vec3{0},
-                            .roughness = 1,
-                            .ior = 1.5,
+                            texture_packs::pure{},
+                            m.color,
+                            {},
+                            1.0f,
+                            1.5f,
                         };
                     },
                     [] (materials::phong m) {
                         // FIXME: find a better coercion for Phong -> PBR
                         return materials::physically_based{
-                            .texture_pack = texture_packs::pure{},
-                            .albedo = m.diffuse,
-                            .reflection = m.reflection,
-                            .roughness = m.roughness,
-                            .ior = m.ior,
+                            texture_packs::pure{},
+                            m.diffuse,
+                            m.reflection,
+                            m.roughness,
+                            m.ior,
                         };
                     },
                     [] (materials::physically_based m) { return m; });

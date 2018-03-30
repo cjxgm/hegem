@@ -77,8 +77,8 @@ namespace rt::raytracer::shading_details
                 auto vh = dot_clamp(*v, *half);
                 auto nh2 = nh * nh;
                 auto nh4 = nh2 * nh2;
-                auto roughness = glm::max(glm::min(mat.roughness, 0.99999f), 0.00001f);
-                auto slope = std::tan(roughness * math::pi_2);
+                auto slope = sample_roughness(mat.texture_pack, mat.roughness, hit_point);
+                if (slope < 1e-5f) slope = 1e-5f;
                 auto slope2 = slope * slope;
 
                 // Lambertian

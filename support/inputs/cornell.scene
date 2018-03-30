@@ -1,0 +1,173 @@
+name "Cornell Box"
+
+views {
+    view {
+        name "Main"
+        dimension 800 600
+        bounces 6
+        samples 32
+        perspective-camera {
+            center 0 0 5
+            direction 0 0 -1
+            up 0 1 0
+            angle 60
+        }
+    }
+}
+
+lights {
+    directional-light {
+        direction 2 -2 -1
+        color 1 1 1
+        strength 20
+    }
+    directional-light {
+        direction -1 1 -1
+        color 1 1 1
+        strength 16
+    }
+}
+
+background {
+    color 0 0 0
+    strength 0
+}
+
+materials {
+    microfacet-bsdf {
+        pure
+        base 0 0 0
+        emission 100 100 100
+        metalness 0
+        roughness 1
+        ior 1.5
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 1 1 1
+        emission 0 0 0
+        metalness 0
+        roughness 1
+        ior 1.5
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 1.0 0.1 0.1
+        emission 0 0 0
+        metalness 0
+        roughness 0.5
+        ior 1.5
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.1 1.0 0.1
+        emission 0 0 0
+        metalness 0
+        roughness 0.5
+        ior 1.5
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 1 1 1
+        emission 0 0 0
+        metalness 0
+        roughness 0.02
+        ior 1.5
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 1 1 1
+        emission 0 0 0
+        metalness 1
+        roughness 0
+        ior 1.5
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 1 1 1
+        emission 0 0 0
+        metalness 0
+        roughness 0
+        ior 1.5
+        opacity 0
+        density 0
+    }
+}
+
+group {
+    xform {
+        model
+            1 0 0 0
+            0 0.05 0 0
+            0 0 1 0
+            0 2.95 0 1
+        object {
+            material-id 0
+            mesh support/models/cube.obj
+        }
+    }
+
+    object {
+        material-id 1
+        plane {
+            normal 0 0 1
+            offset -3
+        }
+    }
+    object {
+        material-id 2
+        plane {
+            normal 1 0 0
+            offset -3
+        }
+    }
+    object {
+        material-id 3
+        plane {
+            normal -1 0 0
+            offset -3
+        }
+    }
+    object {
+        material-id 1
+        plane {
+            normal 0 1 0
+            offset -3
+        }
+    }
+    object {
+        material-id 4
+        plane {
+            normal 0 -1 0
+            offset -3
+        }
+    }
+
+    object {
+        material-id 5
+        sphere {
+            center -1 -2 -1
+            radius 1
+        }
+    }
+    object {
+        material-id 6
+        sphere {
+            center 1.5 -2 0
+            radius 1
+        }
+    }
+}
+

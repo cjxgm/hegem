@@ -1,0 +1,189 @@
+name "Reflection Test"
+
+views {
+    view {
+        name "Main"
+        dimension 1024 576
+        bounces 4
+        samples 32
+        perspective-camera {
+            center 0 0 2
+            direction 0 0 -1
+            up 0 1 0
+            angle 35
+        }
+    }
+}
+
+lights {
+    directional-light {
+        direction 2 -2 -1
+        color 1 1 1
+        strength 20
+    }
+    directional-light {
+        direction -2 -2 -1
+        color 1 1 1
+        strength 16
+    }
+}
+
+background {
+    color 1 1 1
+    strength 9
+}
+
+materials {
+    microfacet-bsdf {
+        pure
+        base 1 1 1
+        emission 0 0 0
+        metalness 0
+        roughness 1
+        ior 1.45
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 1 1 1
+        emission 20 20 20
+        metalness 0
+        roughness 0
+        ior 1
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.5 0.535 0.589
+        emission 0 0 0
+        metalness 1
+        roughness 0
+        ior 1.45
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.5 0.535 0.589
+        emission 0 0 0
+        metalness 1
+        roughness 0.01
+        ior 1.45
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.5 0.535 0.589
+        emission 0 0 0
+        metalness 1
+        roughness 0.03
+        ior 1.45
+        opacity 1
+        density 0
+    }
+    microfacet-bsdf {
+        pure
+        base 0.5 0.535 0.589
+        emission 0 0 0
+        metalness 1
+        roughness 0.1
+        ior 1.45
+        opacity 1
+        density 0
+    }
+}
+
+group {
+    object {
+        material-id 0
+        plane {
+            normal 0 0 1
+            offset -5
+        }
+    }
+    object {
+        material-id 0
+        plane {
+            normal 0 1 0
+            offset -2
+        }
+    }
+
+    object {
+        material-id 1
+        sphere {
+            center -3 2 -4
+            radius 0.0625
+        }
+    }
+    object {
+        material-id 1
+        sphere {
+            center -1 2 -4
+            radius 0.125
+        }
+    }
+    object {
+        material-id 1
+        sphere {
+            center 1 2 -4
+            radius 0.25
+        }
+    }
+    object {
+        material-id 1
+        sphere {
+            center 3 2 -4
+            radius 0.5
+        }
+    }
+
+    xform {
+        model
+            3 0 0 0
+            0 0.3286 -0.3768 0
+            0 0.0188 0.0164 0
+            0 0.2 -3.8 1
+        object {
+            material-id 2
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            3 0 0 0
+            0 0.2479 -0.4342 0
+            0 0.0217 0.0123 0
+            0 -0.5 -2.8 1
+        object {
+            material-id 3
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            3 0 0 0
+            0 0.1665 -0.4714 0
+            0 0.0235 0.0083 0
+            0 -1 -1.6 1
+        object {
+            material-id 4
+            mesh support/models/cube.obj
+        }
+    }
+    xform {
+        model
+            3 0 0 0
+            0 0.1262 -0.4837 0
+            0 0.0241 0.0063 0
+            0 -1.4 -0.5 1
+        object {
+            material-id 5
+            mesh support/models/cube.obj
+        }
+    }
+}
+

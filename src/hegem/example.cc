@@ -75,7 +75,7 @@ namespace rt::hegem
             auto view = scene::view_type {
                 "Example",
                 { 800, 450 },
-                1,
+                2,
                 16,
                 scene::cameras::pin_hole {
                     glm::vec3{ 0.0f, 0.0f, 5.0f },

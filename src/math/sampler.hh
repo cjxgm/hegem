@@ -1,9 +1,13 @@
 #pragma once
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/mat3.hh"
 #include "../lib/glm/op/trig.hh"
 #include "../lib/glm/op/geom.hh"
 #include "direction.hh"
+#include "constants.hh"
+#include "local-space.hh"
 #include <random>
+#include <cmath>
 
 namespace rt::math
 {
@@ -18,7 +22,7 @@ namespace rt::math
         float operator () () { return sample(); }
 
     private:
-        std::minstd_rand gen;
+        std::mt19937_64 gen;
         std::uniform_real_distribution<float> dist;
     };
 
@@ -33,7 +37,7 @@ namespace rt::math
         float operator () () { return sample(); }
 
     private:
-        std::minstd_rand gen;
+        std::mt19937_64 gen;
         std::normal_distribution<float> dist;
     };
 
@@ -49,6 +53,21 @@ namespace rt::math
         auto s1 = samp() * r;
         direction_type sample = *dir + *x * s0 + *y * s1;
         return sample;
+    }
+
+    template <class Sampler>
+    inline direction_type sample_hemisphere(Sampler& sample01, direction_type const& normal)
+    {
+        auto rnd1 = 2.0f * math::pi * sample01();
+        auto rnd2 = sample01();
+        auto s2 = std::sqrt(rnd2);
+        auto local = glm::vec3{
+            std::cos(rnd1) * s2,
+            std::sin(rnd1) * s2,
+            std::sqrt(1.0f - rnd2),
+        };
+        auto local_to_world = local_space(normal);
+        return local_to_world * local;
     }
 
     template <class Sampler>

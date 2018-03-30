@@ -165,6 +165,14 @@ namespace rt::scene
                     };
                 }
 
+                FN_PARSE(glm::vec2)
+                {
+                    return {
+                        PARSE(float, vec2.x),
+                        PARSE(float, vec2.y),
+                    };
+                }
+
                 FN_PARSE(glm::vec3)
                 {
                     return {
@@ -296,9 +304,42 @@ namespace rt::scene
                     PARSE_KV(float, size),
                 });
 
+                FN_PARSE_BLOCK(texture_packs::pbr_checkerboard, {
+                    PARSE_KV(glm::vec3, albedo-accent),
+                    PARSE_KV(float, albedo-size),
+
+                    PARSE_KV(float, roughness-accent),
+                    PARSE_KV(float, roughness-size),
+
+                    PARSE_KV(float, density-accent),
+                    PARSE_KV(float, density-size),
+                });
+
+                FN_PARSE_BLOCK(texture_packs::noise_fbm, {
+                    PARSE_KV(glm::vec3, albedo-accent),
+                    PARSE_KV(int, albedo-details),
+                    PARSE_KV(float, albedo-size),
+                    PARSE_KV(glm::vec3, albedo-seed),
+                    PARSE_KV(glm::vec2, albedo-range),
+
+                    PARSE_KV(float, roughness-accent),
+                    PARSE_KV(int, roughness-details),
+                    PARSE_KV(float, roughness-size),
+                    PARSE_KV(glm::vec3, roughness-seed),
+                    PARSE_KV(glm::vec2, roughness-range),
+
+                    PARSE_KV(float, density-accent),
+                    PARSE_KV(int, density-details),
+                    PARSE_KV(float, density-size),
+                    PARSE_KV(glm::vec3, density-seed),
+                    PARSE_KV(glm::vec2, density-range),
+                });
+
                 FN_PARSE_VARIANT(texture_pack_type, texture-pack, {
                     RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::pure, pure);
                     RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::checkerboard, checkerboard);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::pbr_checkerboard, pbr-checkerboard);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::noise_fbm, noise-fbm);
                 });
 
                 struct pbr_material
@@ -308,6 +349,17 @@ namespace rt::scene
                     float roughness;
                     float metalness;
                     float ior;
+
+                    operator material_type ()
+                    {
+                        return materials::physically_based{
+                            std::move(texture_pack),
+                            color,
+                            metalness,
+                            roughness,
+                            ior,
+                        };
+                    }
                 };
 
                 FN_PARSE_BLOCK(pbr_material, {
@@ -318,21 +370,47 @@ namespace rt::scene
                     PARSE_KV(float, index-of-refraction),
                 });
 
-                FN_PARSE(materials::physically_based)
+                struct microfacet_bsdf
                 {
-                    auto pbr = PARSE(pbr_material, pbr);
-                    return {
-                        std::move(pbr.texture_pack),
-                        mix(pbr.color, glm::vec3{0, 0, 0}, pbr.metalness),
-                        mix(glm::vec3{1, 1, 1}, pbr.color, pbr.metalness),
-                        pbr.roughness,
-                        pbr.ior,
-                    };
-                }
+                    texture_pack_type texture_pack;
+                    glm::vec3 base;
+                    glm::vec3 emission;
+                    float metalness;
+                    float roughness;
+                    float ior;
+                    float opacity;
+                    float density;
+
+                    operator material_type ()
+                    {
+                        return materials::physically_based{
+                            std::move(texture_pack),
+                            base,
+                            emission,
+                            metalness,
+                            roughness,
+                            ior,
+                            opacity,
+                            density,
+                        };
+                    }
+                };
+
+                FN_PARSE_BLOCK(microfacet_bsdf, {
+                    PARSE(texture_pack_type, texture-pack),
+                    PARSE_KV(glm::vec3, base),
+                    PARSE_KV(glm::vec3, emission),
+                    PARSE_KV(float, metalness),
+                    PARSE_KV(float, roughness),
+                    PARSE_KV(float, ior),
+                    PARSE_KV(float, opacity),
+                    PARSE_KV(float, density),
+                });
 
                 FN_PARSE_VARIANT_LIST(material_container_type, material, {
                     RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(materials::phong, phong-material);
-                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(materials::physically_based, pbr-material);
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(pbr_material, pbr-material);
+                    RETURN_PARSE_VARIANT_LIST_ALTERNATIVE(microfacet_bsdf, microfacet-bsdf);
                 });
             }
 
