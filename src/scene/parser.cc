@@ -304,6 +304,17 @@ namespace rt::scene
                     PARSE_KV(float, size),
                 });
 
+                FN_PARSE_BLOCK(texture_packs::pbr_checkerboard, {
+                    PARSE_KV(glm::vec3, albedo-accent),
+                    PARSE_KV(float, albedo-size),
+
+                    PARSE_KV(float, roughness-accent),
+                    PARSE_KV(float, roughness-size),
+
+                    PARSE_KV(float, density-accent),
+                    PARSE_KV(float, density-size),
+                });
+
                 FN_PARSE_BLOCK(texture_packs::noise_fbm, {
                     PARSE_KV(glm::vec3, albedo-accent),
                     PARSE_KV(int, albedo-details),
@@ -327,6 +338,7 @@ namespace rt::scene
                 FN_PARSE_VARIANT(texture_pack_type, texture-pack, {
                     RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::pure, pure);
                     RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::checkerboard, checkerboard);
+                    RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::pbr_checkerboard, pbr-checkerboard);
                     RETURN_PARSE_VARIANT_ALTERNATIVE(texture_packs::noise_fbm, noise-fbm);
                 });
 

@@ -6,13 +6,26 @@
 
 namespace rt::scene::texture_packs
 {
+    namespace
+    {
+        auto checkerboard_pattern(glm::vec3 pos, float size) -> float
+        {
+            auto q = glm::floor(pos / size + glm::vec3{0.01});
+            float a = (int(q.x + q.y + q.z) % 2 + 2) % 2;
+            return a;
+        }
+    }
+
     color_type sample_albedo(texture_pack_type const& tpack, color_type const& albedo, glm::vec3 const& pos)
     {
         return tpack.match(
             [&] (texture_packs::checkerboard const& tpack) {
-                auto q = glm::floor(pos / tpack.size + glm::vec3{0.01});
-                float a = (int(q.x + q.y + q.z) % 2 + 2) % 2;
+                float a = checkerboard_pattern(pos, tpack.size);
                 return glm::mix(albedo, tpack.accent, a);
+            },
+            [&] (texture_packs::pbr_checkerboard const& tpack) {
+                float a = checkerboard_pattern(pos, tpack.albedo_size);
+                return glm::mix(albedo, tpack.albedo_accent, a);
             },
             [&] (texture_packs::noise_fbm const& tpack) {
                 auto t = math::fbm_noise(
@@ -35,6 +48,10 @@ namespace rt::scene::texture_packs
             [&] (texture_packs::checkerboard const& tpack) {
                 return roughness;
             },
+            [&] (texture_packs::pbr_checkerboard const& tpack) {
+                float a = checkerboard_pattern(pos, tpack.roughness_size);
+                return glm::mix(roughness, tpack.roughness_accent, a);
+            },
             [&] (texture_packs::noise_fbm const& tpack) {
                 auto t = math::fbm_noise(
                     pos,
@@ -55,6 +72,10 @@ namespace rt::scene::texture_packs
         return tpack.match(
             [&] (texture_packs::checkerboard const& tpack) {
                 return density;
+            },
+            [&] (texture_packs::pbr_checkerboard const& tpack) {
+                float a = checkerboard_pattern(pos, tpack.density_size);
+                return glm::mix(density, tpack.density_accent, a);
             },
             [&] (texture_packs::noise_fbm const& tpack) {
                 auto t = math::fbm_noise(

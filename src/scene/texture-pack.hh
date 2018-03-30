@@ -18,6 +18,18 @@ namespace rt::scene
             float size;
         };
 
+        struct pbr_checkerboard
+        {
+            color_type albedo_accent;
+            float albedo_size;
+
+            float roughness_accent;
+            float roughness_size;
+
+            float density_accent;
+            float density_size;
+        };
+
         struct noise_fbm
         {
             color_type albedo_accent;
@@ -41,6 +53,7 @@ namespace rt::scene
 
         using texture_pack_type = mapbox::util::variant<
             checkerboard,
+            pbr_checkerboard,
             noise_fbm,
             pure
         >;
