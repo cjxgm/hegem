@@ -1,13 +1,244 @@
 #include "../lib/imgui.hh"
+#include "../lib/glm/vec2.hh"
+#include "../lib/glm/op/common.hh"
 #include "editor.hh"
 #include "progress-chooser.hh"
+#include "polar-path.hh"
+#include <vector>
 
 namespace rt::morpha
 {
+    inline namespace editor_details
+    {
+        struct feature
+        {
+            polar_path path;
+            polar_path_cache cache;
+
+            void update_cache() { update_polar_path_cache(path, cache); }
+        };
+
+        auto scaling_factor(float& scaling_level) -> float
+        {
+            static constexpr float scalers[] = {
+                1.0000f, 1.0000f,
+                1.0000f, 1.3333f, 1.5000f, 1.6667f,
+                2.0000f, 2.5000f,
+                3.0000f,
+                4.0000f,
+                6.0000f,
+                8.0000f,
+            };
+            static constexpr auto scaler_count = float(sizeof(scalers) / sizeof(scalers[0]));
+            static constexpr auto scaler_upperbound = scaler_count - 1.0f;
+
+            scaling_level = glm::clamp(scaling_level, -scaler_upperbound, scaler_upperbound);
+            auto selector = int(glm::abs(scaling_level));
+            auto scaler = scalers[selector];
+            if (scaling_level < 0.0f) scaler = 1.0f / scaler;
+            return scaler;
+        }
+    }
+
     struct editor::temporary_state
     {
         int morphing_progress{};
+        bool interpolated_features_needs_update{};
+        std::vector<feature> features0;
+        std::vector<feature> features1;
+        std::vector<feature> features_tmp;
+
+        float scaling_level{};
+        float scaling{1.0f};
+        glm::vec2 origin{0.0f, 0.0f};
+
+        temporary_state()
+        {
+            features0.emplace_back();
+            features1.emplace_back();
+        }
+
+        void update_interpolated_features()
+        {
+            features_tmp.resize(features0.size());
+            auto it = features_tmp.begin();
+            auto it0 = features0.begin();
+            auto it1 = features1.begin();
+            auto last0 = features0.end();
+            auto last1 = features1.end();
+            auto amount = float(morphing_progress) / 100.0f;
+
+            for (; it0 != last0 && it1 != last1; ++it0, ++it1, ++it) {
+                update_polar_path_interpolation(it0->path, it1->path, amount, it->path);
+                it->update_cache();
+            }
+        }
+
+        void add_feature_point(glm::vec2 pos)
+        {
+            auto&  active = (morphing_progress == 0 ? features0 : features1).back();
+            auto& passive = (morphing_progress == 0 ? features1 : features0).back();
+
+            auto base_pos = (
+                active.cache.empty()
+                ? glm::vec2{0.0f, 0.0f}
+                : active.cache.back().pos
+            );
+            auto base_angle = (
+                active.cache.empty()
+                ? 0.0f
+                : active.cache.back().angle_sum_so_far
+            );
+            auto& vert = active.path.emplace_back(pos - base_pos, -base_angle);
+            passive.path.emplace_back(vert);
+
+            active.update_cache();
+            passive.update_cache();
+        }
+
+        void move_last_polar_vertex_to(glm::vec2 pos)
+        {
+            auto&  active = (morphing_progress == 0 ? features0 : features1).back();
+            auto& passive = (morphing_progress == 0 ? features1 : features0).back();
+
+            if (active.path.empty()) return;
+
+            move_polar_vertex_to(active.path, active.cache, active.path.size() - 1, pos);
+            passive.path.back() = active.path.back();
+
+            active.update_cache();
+            passive.update_cache();
+        }
+
+        void commit_feature_path()
+        {
+            if (features0.back().path.size() > 1) {
+                features0.emplace_back();
+                features1.emplace_back();
+            } else {
+                features0.back().path.clear();
+                features1.back().path.clear();
+                features0.back().cache.clear();
+                features1.back().cache.clear();
+            }
+        }
     };
+
+    namespace
+    {
+        auto edit_feature_paths(
+            editor::temporary_state& tmp,
+            glm::vec2 window_origin
+        ) -> bool
+        {
+            if (tmp.morphing_progress != 0 && tmp.morphing_progress != 100) {
+                if (tmp.interpolated_features_needs_update) {
+                    tmp.interpolated_features_needs_update = false;
+                    tmp.update_interpolated_features();
+                }
+
+                for (auto& feature: tmp.features_tmp) {
+                    edit_polar_path(feature.path, feature.cache, true, tmp.origin + window_origin, tmp.scaling);
+                }
+
+                return false;
+            }
+
+            auto& features = (tmp.morphing_progress == 0 ? tmp.features0 : tmp.features1);
+            auto changed = false;
+            for (auto& feature: features) {
+                if (edit_polar_path(feature.path, feature.cache, false, tmp.origin + window_origin, tmp.scaling)) {
+                    changed = true;
+                    feature.update_cache();
+                }
+            }
+            return changed;
+        };
+
+        auto canvas(editor::temporary_state& tmp) -> bool
+        {
+            auto changed = false;
+            auto& io = ImGui::GetIO();
+
+            // color palette
+            const auto origin_color = glm::vec3{1.0f, 0.5f, 0.5f};
+
+            ImGui::BeginChild("morpha canvas", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            {
+                auto window_origin = glm::vec2{ImGui::GetCursorScreenPos()};
+                //auto origin_offset = glm::vec2{ImGui::GetCursorPos()};
+                auto mouse_screen_pos = glm::vec2{ImGui::GetMousePos()};
+                auto mouse_local_pos = mouse_screen_pos - window_origin;
+                auto& draw_list = *ImGui::GetWindowDrawList();
+
+                auto local_to_screen = [&] (glm::vec2 local) {
+                    return local + window_origin;
+                };
+
+                {   // zooming and panning control
+                    if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f) {
+                        auto new_scaling = scaling_factor(tmp.scaling_level += io.MouseWheel);
+                        if (tmp.scaling != new_scaling) {
+                            tmp.origin = (tmp.origin - mouse_local_pos) * (new_scaling / tmp.scaling) + mouse_local_pos;
+                            tmp.scaling = new_scaling;
+                        }
+                    }
+
+                    static auto panning = false;
+                    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) && ImGui::IsMouseClicked(2)) panning = true;
+                    if (!ImGui::IsMouseDown(2)) panning = false;
+                    if (panning && ImGui::IsMouseDragging(2)) {
+                        tmp.origin += glm::vec2{io.MouseDelta};
+                    }
+
+                    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) && ImGui::IsMouseDoubleClicked(2)) {
+                        tmp.origin = {};
+                        tmp.scaling = 1.0f;
+                        tmp.scaling_level = 0.0f;
+                    }
+                }
+
+                {   // draw origin
+                    auto radius = tmp.scaling * 10;
+                    auto width = glm::min(radius * 0.3f, 3.0f);
+                    auto origin = local_to_screen(tmp.origin);
+                    auto a0 = origin + glm::vec2{-radius, 0.0f};
+                    auto a1 = origin + glm::vec2{+radius, 0.0f};
+                    auto b0 = origin + glm::vec2{0.0f, -radius};
+                    auto b1 = origin + glm::vec2{0.0f, +radius};
+                    auto color = ImGui::ColorConvertFloat4ToU32(origin_color);
+                    draw_list.AddLine(a0, a1, color, width);
+                    draw_list.AddLine(b0, b1, color, width);
+                }
+
+                changed |= edit_feature_paths(tmp, window_origin);
+
+                {
+                    ImGui::SetCursorPos({0, 0});
+                    ImGui::InvisibleButton("add vertex", ImGui::GetWindowSize());
+                    if (tmp.morphing_progress == 0 || tmp.morphing_progress == 100) {
+                        if (ImGui::IsItemClicked(0)) {
+                            auto pos = (mouse_local_pos - tmp.origin) / tmp.scaling;
+                            tmp.add_feature_point(pos);
+                            changed = true;
+                        }
+                        if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0)) {
+                            auto pos = (mouse_local_pos - tmp.origin) / tmp.scaling;
+                            tmp.move_last_polar_vertex_to(pos);
+                            changed = true;
+                        }
+                        if (ImGui::IsItemClicked(1)) {
+                            tmp.commit_feature_path();
+                            changed = true;
+                        }
+                    }
+                }
+            }
+            ImGui::EndChild();
+
+            return changed;
+        }
+    }
 
     editor::editor(): tmp{std::make_unique<temporary_state>()} {}
     editor::~editor() = default;
@@ -15,8 +246,10 @@ namespace rt::morpha
     void editor::draw()
     {
         if (progress_chooser(&tmp->morphing_progress)) {
-            ImGui::Text("%s", "Changed");
+            tmp->interpolated_features_needs_update = true;
         }
+
+        canvas(*tmp);
     }
 }
 
