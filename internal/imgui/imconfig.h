@@ -4,12 +4,14 @@
 // You can use ImGui::SetAllocatorFunctions() before calling ImGui::CreateContext() to rewire memory allocation functions.
 //-----------------------------------------------------------------------------
 // A) You may edit imconfig.h (and not overwrite it when updating imgui, or maintain a patch/branch with your modifications to imconfig.h)
-// B) or add configuration directives in your own file and compile with #define IMGUI_USER_CONFIG "myfilename.h" 
-// C) Many compile-time options have an effect on data structures. They need defined consistently _everywhere_ imgui.h is included, 
+// B) or add configuration directives in your own file and compile with #define IMGUI_USER_CONFIG "myfilename.h"
+// C) Many compile-time options have an effect on data structures. They need defined consistently _everywhere_ imgui.h is included,
 // not only for the imgui*.cpp compilation units. Defining those options in imconfig.h will ensure they correctly get used everywhere.
 //-----------------------------------------------------------------------------
 
 #pragma once
+#include "../../src/lib/glm/vec3.hh"
+#include "../../src/lib/glm/vec4.hh"
 
 //---- Define assertion handler. Defaults to calling assert().
 //#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
@@ -19,7 +21,7 @@
 //#define IMGUI_API __declspec( dllimport )
 
 //---- Don't define obsolete functions/enums names. Consider enabling from time to time after updating to avoid using soon-to-be obsolete function/names
-//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 //---- Don't implement default handlers for Windows (so as not to link with certain functions)
 //#define IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS   // Don't use and link with OpenClipboard/GetClipboardData/CloseClipboard etc.
@@ -57,6 +59,12 @@
         operator MyVec4() const { return MyVec4(x,y,z,w); }
 */
 
+#define IM_VEC4_CLASS_EXTRA \
+    ImVec4(glm::vec3 const& v): ImVec4{v.x, v.y, v.z, 1.0f} {} \
+    ImVec4(glm::vec4 const& v): ImVec4{v.x, v.y, v.z, v.w} {} \
+    operator glm::vec4() const { return glm::vec4{x, y, z, w}; } \
+;
+
 //---- Use 32-bit vertex indices (default is 16-bit) to allow meshes with more than 64K vertices. Render function needs to support it.
 //#define ImDrawIdx unsigned int
 
@@ -67,3 +75,4 @@ namespace ImGui
     void MyFunction(const char* name, const MyMatrix44& v);
 }
 */
+

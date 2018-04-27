@@ -11,6 +11,8 @@
 #include "imgui.hh"
 #include <cstddef>
 #include <stdexcept>
+#include <memory>
+#include <vector>
 
 namespace rt::app::imgui
 {
@@ -19,8 +21,18 @@ namespace rt::app::imgui
         using rt::util::journal;
         journal j() { return {"IMGUI"}; }
 
+        struct glfw_cursor_deleter
+        {
+            void operator () (GLFWcursor* cursor)
+            {
+                if (cursor) glfwDestroyCursor(cursor);
+            }
+        };
+
         struct context: util::non_transferable
         {
+            using unique_cursor = std::unique_ptr<GLFWcursor, glfw_cursor_deleter>;
+
             double time{};
             bool mouse_once_down[3]{};
             float mouse_scroll_y{};
@@ -29,15 +41,18 @@ namespace rt::app::imgui
             glu::shared_vertex_array vao;
             glu::shared_buffer vertices_buffer;
             glu::shared_buffer elements_buffer;
+            std::vector<unique_cursor> cursors;
 
             context()
             {
                 j() << "(ctor)\n";
+                ImGui::CreateContext();
                 compile_shader();
                 upload_font();
                 prepare_input();
                 setup_style();
                 setup_keymap();
+                setup_cursors();
             }
 
             ~context()
@@ -45,7 +60,7 @@ namespace rt::app::imgui
                 j() << "(dtor)\n";
                 auto& io = ImGui::GetIO();
                 io.Fonts->TexID = nullptr;
-                ImGui::Shutdown();
+                ImGui::DestroyContext();
             }
 
             static context& instance()
@@ -129,10 +144,11 @@ namespace rt::app::imgui
 
             void setup_style()
             {
+                ImGui::StyleColorsDark();
                 auto& style = ImGui::GetStyle();
                 style.WindowPadding       = ImVec2(10, 10);
                 style.WindowRounding      = 2;
-                style.ChildWindowRounding = 2;
+                style.ChildRounding       = 2;
                 style.FramePadding        = ImVec2(4, 4);
                 style.FrameRounding       = 1;
                 style.ItemSpacing         = ImVec2(8, 4);
@@ -168,6 +184,18 @@ namespace rt::app::imgui
                 io.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
                 io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
                 io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
+            }
+
+            void setup_cursors()
+            {
+                cursors.resize(int(ImGuiMouseCursor_COUNT));
+                cursors[int(ImGuiMouseCursor_Arrow)].reset(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
+                cursors[int(ImGuiMouseCursor_TextInput)].reset(glfwCreateStandardCursor(GLFW_IBEAM_CURSOR));
+                cursors[int(ImGuiMouseCursor_ResizeAll)].reset(glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR));
+                cursors[int(ImGuiMouseCursor_ResizeNS)].reset(glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR));
+                cursors[int(ImGuiMouseCursor_ResizeEW)].reset(glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
+                cursors[int(ImGuiMouseCursor_ResizeNESW)].reset(glfwCreateStandardCursor(GLFW_HAND_CURSOR));
+                cursors[int(ImGuiMouseCursor_ResizeNWSE)].reset(glfwCreateStandardCursor(GLFW_HAND_CURSOR));
             }
         };
     }
@@ -259,7 +287,7 @@ namespace rt::app::imgui
             glfwGetCursorPos(win, &x, &y);
             io.MousePos = ImVec2(x, y);
         } else {
-            io.MousePos = ImVec2(-1, -1);
+            io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
         }
 
         // mouse button
@@ -271,6 +299,10 @@ namespace rt::app::imgui
         // mouse scroll (only support 1 axis)
         io.MouseWheel = ctx.mouse_scroll_y;
         ctx.mouse_scroll_y = 0;
+
+        auto cursor = ImGui::GetMouseCursor();
+        if (cursor == ImGuiMouseCursor_None) cursor = ImGuiMouseCursor_Arrow;
+        glfwSetCursor(win, ctx.cursors[int(cursor)].get());
 
         ImGui::NewFrame();
     }
