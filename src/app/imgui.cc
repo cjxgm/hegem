@@ -53,6 +53,7 @@ namespace rt::app::imgui
                 setup_style();
                 setup_keymap();
                 setup_cursors();
+                disable_file_writing();
             }
 
             ~context()
@@ -196,6 +197,13 @@ namespace rt::app::imgui
                 cursors[int(ImGuiMouseCursor_ResizeEW)].reset(glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
                 cursors[int(ImGuiMouseCursor_ResizeNESW)].reset(glfwCreateStandardCursor(GLFW_HAND_CURSOR));
                 cursors[int(ImGuiMouseCursor_ResizeNWSE)].reset(glfwCreateStandardCursor(GLFW_HAND_CURSOR));
+            }
+
+            void disable_file_writing()
+            {
+                auto& io = ImGui::GetIO();
+                io.IniFilename = nullptr;
+                io.LogFilename = nullptr;
             }
         };
     }
