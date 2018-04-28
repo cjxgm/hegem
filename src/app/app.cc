@@ -586,7 +586,9 @@ namespace rt::app
                 ImGui::Columns(6, "scene list");
                 if (first_time) {
                     first_time = false;
-                    ImGui::SetColumnOffset(1, 300);
+                    ImGui::SetColumnWidth(0, 300);
+                    ImGui::SetColumnWidth(3, 100);
+                    ImGui::SetColumnWidth(4, 100);
                 }
                 ImGui::Text("Scene"); ImGui::NextColumn();
                 ImGui::Text("View"); ImGui::NextColumn();
@@ -605,6 +607,7 @@ namespace rt::app
                         auto& loaded_scene = get_or_load(scene);
                         for (auto& view: loaded_scene.views) {
                             ImGui::PushID(view.name.data());
+                            ImGui::AlignTextToFramePadding();
                             if (auto id = ImGui::GetID("selection");
                                     ImGui::Selectable(
                                         scene_name.data(),
@@ -612,6 +615,7 @@ namespace rt::app
                                 *selected = id;
                             }
                             ImGui::NextColumn();
+                            ImGui::AlignTextToFramePadding();
                             ImGui::Text("%s", view.name.data()); ImGui::NextColumn();
 
                             ImGui::PushItemWidth(-1);
@@ -698,7 +702,7 @@ namespace rt::app
                 auto& ctx = context::instance();
                 auto& images = ctx.images;
                 auto& vis = ctx.visualizations;
-                static bool show_test_window = false;
+                static bool show_demo_window = false;
                 static bool show_scene_list = false;
                 static bool show_hdr_viewer = false;
                 static bool show_statistics = false;
@@ -706,8 +710,8 @@ namespace rt::app
                 static int selected_hdr_image = 0;
                 static ImGuiID selected_scene_view = 0;
 
-                ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiSetCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(300, 230), ImGuiSetCond_Appearing);
+                ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(300, 230), ImGuiCond_Appearing);
                 ImGui::Begin("Options");
                 if (ImGui::CollapsingHeader("Windows")) {
                     ImGui::Checkbox("Scenes", &show_scene_list);
@@ -719,7 +723,7 @@ namespace rt::app
                     ImGui::Checkbox("Framerates", &show_framerates);
 
                     ImGui::Separator();
-                    ImGui::Checkbox("ImGui Demo", &show_test_window);
+                    ImGui::Checkbox("ImGui Demo", &show_demo_window);
                 }
                 if (ImGui::CollapsingHeader("Raytracing Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::PushItemWidth(-100);
@@ -730,7 +734,7 @@ namespace rt::app
                 }
                 if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
                     if (ctx.sk_file_open_dialog) {
-                        ImGui::AlignFirstTextHeightToWidgets();
+                        ImGui::AlignTextToFramePadding();
                         ImGui::TextDisabled("Open");
                     } else {
                         if (ImGui::Button("Open")) {
@@ -754,14 +758,14 @@ namespace rt::app
 
                 ImGui::End();
 
-                if (show_test_window) {
-                    ImGui::SetNextWindowPos(ImVec2(50, 440), ImGuiSetCond_Appearing);
-                    ImGui::ShowTestWindow(&show_test_window);
+                if (show_demo_window) {
+                    ImGui::SetNextWindowPos(ImVec2(50, 440), ImGuiCond_Appearing);
+                    ImGui::ShowDemoWindow(&show_demo_window);
                 }
 
                 if (show_scene_list) {
-                    ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiSetCond_Appearing);
-                    ImGui::SetNextWindowSize(ImVec2(800, 200), ImGuiSetCond_FirstUseEver);
+                    ImGui::SetNextWindowPos(ImVec2(50, 200), ImGuiCond_Appearing);
+                    ImGui::SetNextWindowSize(ImVec2(1200, 200), ImGuiCond_FirstUseEver);
                     ImGui::Begin("Scenes", &show_scene_list);
                     if (scene_list(scenes, &selected_scene_view)) {
                         selected_hdr_image = images.size() - 1;
@@ -771,8 +775,8 @@ namespace rt::app
                 }
 
                 if (show_hdr_viewer) {
-                    ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiSetCond_Appearing);
-                    ImGui::SetNextWindowSize(ImVec2(1300, 800), ImGuiSetCond_FirstUseEver);
+                    ImGui::SetNextWindowPos(ImVec2(300, 50), ImGuiCond_Appearing);
+                    ImGui::SetNextWindowSize(ImVec2(1300, 800), ImGuiCond_FirstUseEver);
                     ImGui::Begin("HDR Viewer", &show_hdr_viewer);
                     hdr_viewer(&selected_hdr_image);
                     ImGui::End();
@@ -789,8 +793,8 @@ namespace rt::app
                 vis.remove_if([] (auto& vi) { return !vi.show; });
                 int vi_idx = 0;
                 for (auto& vi: vis) {
-                    ImGui::SetNextWindowPos(ImVec2(50, 300), ImGuiSetCond_Appearing);
-                    ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiSetCond_FirstUseEver);
+                    ImGui::SetNextWindowPos(ImVec2(50, 300), ImGuiCond_Appearing);
+                    ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiCond_FirstUseEver);
                     auto name = vi.name + "##" + std::to_string(vi_idx++);
                     ImGui::Begin(name.data(), &vi.show);
                     visualizer(vi);
@@ -802,15 +806,15 @@ namespace rt::app
                 }
 
                 if (show_framerates) {
-                    ImGui::SetNextWindowPos(ImVec2(50, 500), ImGuiSetCond_Appearing);
+                    ImGui::SetNextWindowPos(ImVec2(50, 500), ImGuiCond_Appearing);
                     ImGui::Begin("Framerates", &show_framerates, ImGuiWindowFlags_AlwaysAutoResize);
                     framerates();
                     ImGui::End();
                 }
 
                 if (show_statistics) {
-                    ImGui::SetNextWindowPos(ImVec2(50, 600), ImGuiSetCond_FirstUseEver);
-                    ImGui::SetNextWindowSize(ImVec2(425, 295), ImGuiSetCond_FirstUseEver);
+                    ImGui::SetNextWindowPos(ImVec2(50, 600), ImGuiCond_FirstUseEver);
+                    ImGui::SetNextWindowSize(ImVec2(425, 295), ImGuiCond_FirstUseEver);
                     ImGui::Begin("Statistics", &show_statistics);
                     view::statistics("statistics");
                     ImGui::End();
