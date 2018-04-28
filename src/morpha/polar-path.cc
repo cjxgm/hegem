@@ -62,6 +62,26 @@ namespace rt::morpha
         path[vertex_idx] = polar_vertex{offset, -base_angle};
     }
 
+    void move_polar_vertex_locally_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos)
+    {
+        move_polar_vertex_to(path, cache, vertex_idx, pos);
+        if (vertex_idx+1 < int(path.size())) {
+            auto next_pos = glm::vec2{cache[vertex_idx+1].pos};
+            auto base_pos = pos;
+            auto base_angle = (vertex_idx == 0 ? 0.0f : cache[vertex_idx-1].angle_sum_so_far + path[vertex_idx].angle);
+            auto offset = next_pos - base_pos;
+            path[vertex_idx+1] = polar_vertex{offset, -base_angle};
+
+            if (vertex_idx+2 < int(path.size())) {
+                auto next_pos2 = glm::vec2{cache[vertex_idx+2].pos};
+                auto base_pos2 = next_pos;
+                auto base_angle2 = base_angle + path[vertex_idx+1].angle;
+                auto offset2 = next_pos2 - base_pos2;
+                path[vertex_idx+2] = polar_vertex{offset2, -base_angle2};
+            }
+        }
+    }
+
     auto edit_polar_path(
         polar_path& path,
         polar_path_cache const& cache,
@@ -80,6 +100,8 @@ namespace rt::morpha
         const auto palette_edge_color = glm::vec4{base_color * 0.8f, alpha};
         const auto palette_nudge_color = glm::vec4{base_color, alpha};
         const auto palette_front_nudge_color = glm::vec4{base_accent_color, alpha};
+
+        auto& io = ImGui::GetIO();
         auto& draw_list = *ImGui::GetWindowDrawList();
         auto changed = false;
 
@@ -116,7 +138,11 @@ namespace rt::morpha
                 if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0)) {
                     auto mouse_screen_pos = glm::vec2{ImGui::GetMousePos()};
                     auto pos = (mouse_screen_pos - origin) / scaling;
-                    move_polar_vertex_to(path, cache, vertex_index, pos);
+                    if (io.KeyShift) {
+                        move_polar_vertex_locally_to(path, cache, vertex_index, pos);
+                    } else {
+                        move_polar_vertex_to(path, cache, vertex_index, pos);
+                    }
                     changed = true;
                 }
                 if (hovered_vertex_index && ImGui::IsItemHovered())
