@@ -54,6 +54,6 @@ namespace rt::morpha
     void update_polar_path_cache(polar_path const& path, polar_path_cache& cache);
     void update_polar_path_interpolation(polar_path const& src0, polar_path const& src1, float x, polar_path& dst);
     void move_polar_vertex_to(polar_path& path, polar_path_cache const& cartesian_cache, int vertex_idx, polar_vertex::cartesian_type pos);
-    auto edit_polar_path(polar_path& path, polar_path_cache const& cartesian_cache, bool readonly, glm::vec2 origin, float scaling) -> bool;
+    auto edit_polar_path(polar_path& path, polar_path_cache const& cartesian_cache, bool active, bool readonly, glm::vec2 origin, float scaling) -> bool;
 }
 

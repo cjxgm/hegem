@@ -65,6 +65,7 @@ namespace rt::morpha
     auto edit_polar_path(
         polar_path& path,
         polar_path_cache const& cache,
+        bool active,
         bool readonly,
         glm::vec2 origin,
         float scaling
@@ -73,9 +74,11 @@ namespace rt::morpha
         if (path.empty()) return false;
 
         const auto alpha = 0.8f * (readonly ? 0.3f : 1.0f);
-        const auto palette_edge_color = glm::vec4{0.4f, 0.4f, 1.0f, alpha};
-        const auto palette_nudge_color = glm::vec4{0.5f, 0.5f, 1.0f, alpha};
-        const auto palette_front_nudge_color = glm::vec4{1.0f, 0.8f, 0.5f, alpha};
+        const auto base_color = (active ? glm::vec3{0.3f, 0.7f, 0.3f} : glm::vec3{0.5f, 0.5f, 1.0f});
+        const auto base_accent_color = (active ? glm::vec3{0.3f, 0.6f, 0.7f} : glm::vec3{0.9f, 0.6f, 0.4f});
+        const auto palette_edge_color = glm::vec4{base_color * 0.8f, alpha};
+        const auto palette_nudge_color = glm::vec4{base_color, alpha};
+        const auto palette_front_nudge_color = glm::vec4{base_accent_color, alpha};
         auto& draw_list = *ImGui::GetWindowDrawList();
         auto changed = false;
 

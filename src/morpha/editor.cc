@@ -137,8 +137,10 @@ namespace rt::morpha
                     tmp.update_interpolated_features();
                 }
 
-                for (auto& feature: tmp.features_tmp) {
-                    edit_polar_path(feature.path, feature.cache, true, tmp.origin + window_origin, tmp.scaling);
+                auto& features = tmp.features_tmp;
+                for (auto& feature: features) {
+                    auto active = (&feature == &features.back());
+                    edit_polar_path(feature.path, feature.cache, active, true, tmp.origin + window_origin, tmp.scaling);
                 }
 
                 return false;
@@ -147,7 +149,8 @@ namespace rt::morpha
             auto& features = (tmp.morphing_progress == 0 ? tmp.features0 : tmp.features1);
             auto changed = false;
             for (auto& feature: features) {
-                if (edit_polar_path(feature.path, feature.cache, false, tmp.origin + window_origin, tmp.scaling)) {
+                auto active = (&feature == &features.back());
+                if (edit_polar_path(feature.path, feature.cache, active, false, tmp.origin + window_origin, tmp.scaling)) {
                     changed = true;
                     feature.update_cache();
                 }
