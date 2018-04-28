@@ -68,7 +68,8 @@ namespace rt::morpha
         bool active,
         bool readonly,
         glm::vec2 origin,
-        float scaling
+        float scaling,
+        int* hovered_vertex_index
     ) -> bool
     {
         if (path.empty()) return false;
@@ -118,6 +119,8 @@ namespace rt::morpha
                     move_polar_vertex_to(path, cache, vertex_index, pos);
                     changed = true;
                 }
+                if (hovered_vertex_index && ImGui::IsItemHovered())
+                    *hovered_vertex_index = vertex_index;
             }
 
             auto nudge_color = ImGui::ColorConvertFloat4ToU32(nudge_color_linear);

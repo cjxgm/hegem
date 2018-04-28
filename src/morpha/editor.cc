@@ -122,13 +122,34 @@ namespace rt::morpha
                 features1.back().cache.clear();
             }
         }
+
+        void re_edit_polar_path_after_vertex(int polar_path_index, int vertex_index)
+        {
+            commit_feature_path();
+            if (polar_path_index == int(features0.size())) return;
+            if (features0.size() == 1) return;
+
+            features0.pop_back();
+            features1.pop_back();
+            std::swap(features0[polar_path_index], features0.back());
+            std::swap(features1[polar_path_index], features1.back());
+
+            auto& feature0 = features0.back();
+            auto& feature1 = features1.back();
+            feature0.path.resize(vertex_index);
+            feature1.path.resize(vertex_index);
+            feature0.cache.resize(vertex_index);
+            feature1.cache.resize(vertex_index);
+        }
     };
 
     namespace
     {
         auto edit_feature_paths(
             editor::temporary_state& tmp,
-            glm::vec2 window_origin
+            glm::vec2 window_origin,
+            int* hovered_path_index=nullptr,
+            int* hovered_vertex_index=nullptr
         ) -> bool
         {
             if (tmp.morphing_progress != 0 && tmp.morphing_progress != 100) {
@@ -148,12 +169,22 @@ namespace rt::morpha
 
             auto& features = (tmp.morphing_progress == 0 ? tmp.features0 : tmp.features1);
             auto changed = false;
+            auto path_index = 0;
             for (auto& feature: features) {
                 auto active = (&feature == &features.back());
-                if (edit_polar_path(feature.path, feature.cache, active, false, tmp.origin + window_origin, tmp.scaling)) {
+                int hovered_index = -1;
+
+                if (edit_polar_path(feature.path, feature.cache, active, false, tmp.origin + window_origin, tmp.scaling, &hovered_index)) {
                     changed = true;
                     feature.update_cache();
                 }
+
+                if (hovered_index != -1) {
+                    if (hovered_vertex_index) *hovered_vertex_index = hovered_index;
+                    if (hovered_path_index) *hovered_path_index = path_index;
+                }
+
+                path_index++;
             }
             return changed;
         };
@@ -214,7 +245,9 @@ namespace rt::morpha
                     draw_list.AddLine(b0, b1, color, width);
                 }
 
-                changed |= edit_feature_paths(tmp, window_origin);
+                int hovered_path_index = -1;
+                int hovered_vertex_index = -1;
+                changed |= edit_feature_paths(tmp, window_origin, &hovered_path_index, &hovered_vertex_index);
 
                 {
                     ImGui::SetCursorPos({0, 0});
@@ -231,7 +264,11 @@ namespace rt::morpha
                             changed = true;
                         }
                         if (ImGui::IsItemClicked(1)) {
-                            tmp.commit_feature_path();
+                            if (hovered_path_index == -1) {
+                                tmp.commit_feature_path();
+                            } else {
+                                tmp.re_edit_polar_path_after_vertex(hovered_path_index, hovered_vertex_index);
+                            }
                             changed = true;
                         }
                     }
