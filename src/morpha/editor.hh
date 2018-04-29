@@ -4,7 +4,7 @@
 
 namespace rt::morpha
 {
-    struct editor: util::constraints::only_movable
+    struct editor final: util::constraints::only_movable
     {
         struct temporary_state;
 

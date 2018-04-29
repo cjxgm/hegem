@@ -4,6 +4,7 @@
 #include "editor.hh"
 #include "progress-chooser.hh"
 #include "polar-path.hh"
+#include "image-viewer.hh"
 #include <vector>
 
 namespace rt::morpha
@@ -52,10 +53,16 @@ namespace rt::morpha
         float scaling{1.0f};
         glm::vec2 origin{0.0f, 0.0f};
 
+        image_viewer preview;
+
         temporary_state()
         {
             features0.emplace_back();
             features1.emplace_back();
+
+            // DEBUG
+            preview.resize(16*30, 9*30);
+            preview.clear({0.5f, 0.0f, 0.0f});
         }
 
         void update_interpolated_features()
@@ -243,6 +250,11 @@ namespace rt::morpha
                     auto color = ImGui::ColorConvertFloat4ToU32(origin_color);
                     draw_list.AddLine(a0, a1, color, width);
                     draw_list.AddLine(b0, b1, color, width);
+                }
+
+                {   // draw image preview
+                    ImGui::SetCursorPos(tmp.origin);
+                    tmp.preview(tmp.scaling);
                 }
 
                 int hovered_path_index = -1;
