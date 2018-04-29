@@ -31,12 +31,8 @@ namespace rt::morpha
         }
 
         // returns (pos_in_src, pos_in_dst)
-        auto warp(morphing_cache const& cache, glm::vec2 pos) -> std::pair<glm::vec2, glm::vec2>
+        auto warp(morphing_cache const& cache, glm::vec2 pos, float smoothness, float decay, float length_influence) -> std::pair<glm::vec2, glm::vec2>
         {
-            constexpr auto smoothness = 1.0f;           // 0.0 <  x
-            constexpr auto decay = 1.0f;                // 0.5 <= x <= 2.0
-            constexpr auto length_influence = 0.1f;     // 0.0 <= x <= 1.0
-
             if (cache.empty()) return { pos, pos };
 
             auto src_pos_sum = glm::vec2{};
@@ -84,13 +80,13 @@ namespace rt::morpha
         }
     }
 
-    auto morph(image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, util::tile tile) -> image::image_rgb
+    auto morph(image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, util::tile tile, float smoothness, float decay, float length_influence) -> image::image_rgb
     {
         image::image_rgb result{{tile.w, tile.h}};
         result.each([&] (auto& color, auto pos) {
             pos.x += tile.x;
             pos.y += tile.y;
-            auto [src_pos, dst_pos] = warp(cache, pos);
+            auto [src_pos, dst_pos] = warp(cache, pos, smoothness, decay, length_influence);
             auto c0 = sample_bilinear(src, src_pos);
             auto c1 = sample_bilinear(dst, dst_pos);
             color = glm::mix(c0, c1, amount);

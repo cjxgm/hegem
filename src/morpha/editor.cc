@@ -68,6 +68,9 @@ namespace rt::morpha
         std::shared_ptr<image::image_rgb> image1;
 
         int (&tile_size)[2];
+        float smoothness = 100.0f;
+        float decay = 1.0f;
+        float length_influence = 0.1f;
 
         temporary_state(int (&tile_size)[2])
             : tile_size{tile_size}
@@ -340,10 +343,13 @@ namespace rt::morpha
                     cache,
                     image0,
                     image1,
+                    smoothness = tmp.smoothness,
+                    decay = tmp.decay,
+                    length_influence = tmp.length_influence,
                     tile,
                     amount
                 ] (auto tx, auto shared_canceled) {
-                    auto result = morph(*image0, *image1, *cache, amount, tile);
+                    auto result = morph(*image0, *image1, *cache, amount, tile, smoothness, decay, length_influence);
                     tx.send(util::possibly_canceled_job{
                         shared_canceled,
                         [image=std::move(result), tex=std::move(preview_tex), tile] () {
@@ -392,6 +398,13 @@ namespace rt::morpha
             tmp->interpolated_features_needs_update = true;
             tmp->morphing_needs_update = true;
         }
+        ImGui::Spacing();
+
+        ImGui::PushItemWidth(-120);
+        tmp->morphing_needs_update |= ImGui::DragFloat("Smoothness", &tmp->smoothness, 0.1f, 0.0f, 1000.0f, "%.2f", 1.3f);
+        tmp->morphing_needs_update |= ImGui::DragFloat("Decay", &tmp->decay, 0.001f, 0.0f, 2.0f);
+        tmp->morphing_needs_update |= ImGui::DragFloat("Length Influence", &tmp->length_influence, 0.001f, 0.0f, 1.0f);
+        ImGui::PopItemWidth();
         ImGui::Spacing();
 
         if (progress_chooser(&tmp->morphing_progress)) {
