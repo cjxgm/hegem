@@ -4,6 +4,7 @@
 #include <atomic>
 #include <vector>
 #include <utility>      // for std::move
+#include <functional>
 
 namespace rt::util
 {
@@ -61,6 +62,23 @@ namespace rt::util
 
     private:
         scheduler_type scheduler;
+    };
+
+    struct possibly_canceled_job
+    {
+        template <class Fn>
+        possibly_canceled_job(shared_canceled_type shared_canceled, Fn&& fn)
+            : shared_canceled{std::move(shared_canceled)}
+            , fn{std::forward<Fn>(fn)}
+        {}
+
+        bool canceled() const { return shared_canceled->load(); }
+        void run_blindly() const { fn(); }
+        void run() const { if (!canceled()) run_blindly(); }
+
+    private:
+        shared_canceled_type shared_canceled;
+        std::function<void ()> fn;
     };
 }
 

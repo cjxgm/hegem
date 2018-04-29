@@ -48,22 +48,7 @@ namespace rt::app
         static constexpr auto framerate_history_size = 60*2;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
 
-        struct gl_job
-        {
-            template <class Fn>
-            gl_job(util::shared_canceled_type shared_canceled, Fn&& fn)
-                : shared_canceled{std::move(shared_canceled)}
-                , fn{std::forward<Fn>(fn)}
-            {}
-
-            bool canceled() const { return shared_canceled->load(); }
-            void run_blindly() const { fn(); }
-            void run() const { if (!canceled()) run_blindly(); }
-
-        private:
-            util::shared_canceled_type shared_canceled;
-            std::function<void ()> fn;
-        };
+        using gl_job = util::possibly_canceled_job;
 
         struct context
         {
