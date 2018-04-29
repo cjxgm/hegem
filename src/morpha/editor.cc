@@ -1,10 +1,13 @@
 #include "../lib/imgui.hh"
 #include "../lib/glm/vec2.hh"
 #include "../lib/glm/op/common.hh"
+#include "../lib/std/optional.hh"
+#include "../image/image.hh"
 #include "editor.hh"
 #include "progress-chooser.hh"
 #include "polar-path.hh"
 #include "image-viewer.hh"
+#include "file-slot.hh"
 #include <vector>
 
 namespace rt::morpha
@@ -54,6 +57,10 @@ namespace rt::morpha
         glm::vec2 origin{0.0f, 0.0f};
 
         image_viewer preview;
+        file_slot file0;
+        file_slot file1;
+        lib::optional<image::image_rgb> image0;
+        lib::optional<image::image_rgb> image1;
 
         temporary_state()
         {
@@ -297,6 +304,14 @@ namespace rt::morpha
 
     void editor::draw()
     {
+        if (auto& filename = tmp->file0("morphing source", "/usr/share/hegem/support/morphing"); !filename.empty()) {
+            tmp->image0 = image::load(filename);
+        }
+        if (auto& filename = tmp->file1("morphing target", "/usr/share/hegem/support/morphing"); !filename.empty()) {
+            tmp->image1 = image::load(filename);
+        }
+        ImGui::Spacing();
+
         if (progress_chooser(&tmp->morphing_progress)) {
             tmp->interpolated_features_needs_update = true;
         }

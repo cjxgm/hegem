@@ -110,13 +110,18 @@ namespace rt::image
             {
                 return (pos % size_ + size_) % size_;
             }
+
+            friend auto load(util::as_czstring filename) -> image<linear_rgb>;
         };
+
+        auto load(util::as_czstring filename) -> image<linear_rgb>;
 
         extern template struct image<linear_rgb>;
         extern template struct image<srgb>;
     }
 
     using image_impl::image;
+    using image_impl::load;
     using image_rgb = image<color::linear_rgb>;
 }
 
