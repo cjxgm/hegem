@@ -43,7 +43,6 @@ namespace rt::app
         journal j() { return {"APP"}; }
 
         // Process at most `frame_task_capacity` number of tasks per frame
-        static constexpr auto frame_task_capacity = 32;
         static constexpr auto framerate_history_size = 60*2;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
 
@@ -57,6 +56,7 @@ namespace rt::app
             util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{4}};   // TODO: auto detect threads?
             int tile_size[2] = {64, 64};
             int batch_samples = 16;
+            int frame_task_capacity = 32;
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
             sk::editor sk_editor;
@@ -369,7 +369,7 @@ namespace rt::app
             auto& ctx = context::instance();
             auto& rx = ctx.rx_gl;
 
-            for (int i=0; i < frame_task_capacity; i++) {
+            for (int i=0; i < ctx.frame_task_capacity; i++) {
                 if (auto gl_job = rx.try_recv()) {
                     gl_job->run();
                 } else {
@@ -711,10 +711,11 @@ namespace rt::app
                     ImGui::Separator();
                     ImGui::Checkbox("ImGui Demo", &show_demo_window);
                 }
-                if (ImGui::CollapsingHeader("Raytracing Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader("Scheduling Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::PushItemWidth(-100);
                     ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
                     ImGui::DragInt("Batch Samples", &ctx.batch_samples, 0.1, 2, 512);
+                    ImGui::DragInt("Tasks per Frame", &ctx.frame_task_capacity, 0.1, 16, 512);
                     if (ctx.batch_samples < 2) ctx.batch_samples = 2;
                     ImGui::PopItemWidth();
                 }
