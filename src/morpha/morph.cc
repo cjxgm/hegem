@@ -91,8 +91,8 @@ namespace rt::morpha
             pos.x += tile.x;
             pos.y += tile.y;
             auto [src_pos, dst_pos] = warp(cache, pos);
-            auto c0 = src[src_pos];
-            auto c1 = dst[dst_pos];
+            auto c0 = sample_bilinear(src, src_pos);
+            auto c1 = sample_bilinear(dst, dst_pos);
             color = glm::mix(c0, c1, amount);
         });
         return result;

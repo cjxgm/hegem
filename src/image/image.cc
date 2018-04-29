@@ -1,4 +1,5 @@
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/op/common.hh"
 #include "image.hh"
 #include <algorithm>
 #include <fstream>
@@ -111,6 +112,25 @@ namespace rt::image::image_impl
             color::gamma_to_display
         );
         return img;
+    }
+
+    auto sample_bilinear(image<linear_rgb> const& img, glm::vec2 p) -> linear_rgb
+    {
+        auto p00 = glm::ivec2{p};
+        auto p01 = p00 + glm::ivec2{0, 1};
+        auto p10 = p00 + glm::ivec2{1, 0};
+        auto p11 = p00 + glm::ivec2{1, 1};
+
+        auto s00 = img[p00];
+        auto s01 = img[p01];
+        auto s10 = img[p10];
+        auto s11 = img[p11];
+
+        auto f = glm::fract(p);
+        auto s0 = glm::mix(s00, s01, f.y);
+        auto s1 = glm::mix(s10, s11, f.y);
+        auto s = glm::mix(s0, s1, f.x);
+        return s;
     }
 }
 

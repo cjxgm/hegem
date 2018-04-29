@@ -115,6 +115,7 @@ namespace rt::image
         };
 
         auto load(util::as_czstring filename) -> image<linear_rgb>;
+        auto sample_bilinear(image<linear_rgb> const& img, glm::vec2 p) -> linear_rgb;
 
         extern template struct image<linear_rgb>;
         extern template struct image<srgb>;
