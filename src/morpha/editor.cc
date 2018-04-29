@@ -12,6 +12,7 @@
 #include "morph.hh"
 #include <vector>
 #include <memory>
+#include <stdexcept>
 
 namespace rt::morpha
 {
@@ -157,6 +158,24 @@ namespace rt::morpha
             feature1.path.resize(vertex_index);
             feature0.cache.resize(vertex_index);
             feature1.cache.resize(vertex_index);
+        }
+
+        auto build_morphing_cache() -> morphing_cache
+        {
+            update_interpolated_features();
+            if (features0.size() != features1.size() || features0.size() != features_tmp.size())
+                throw std::logic_error{"features sizes differ"};
+
+            morphing_cache cache;
+
+            auto it0 = features0.begin();
+            auto it1 = features1.begin();
+            auto it_tmp = features_tmp.begin();
+            auto last0 = features0.end();
+            for (; it0 != last0; ++it0, ++it1, ++it_tmp)
+                extend_morphing_cache(it0->cache, it_tmp->cache, it1->cache, cache);
+
+            return cache;
         }
     };
 
@@ -312,15 +331,18 @@ namespace rt::morpha
             auto amount = float(tmp.morphing_progress) / 100.0f;
             if (&image0 == &image1) amount = 0.0f;
 
+            auto cache = std::make_shared<morphing_cache>(tmp.build_morphing_cache());
+
             auto make_task = [&] (auto tile) -> app::task_type {
                 return [
                     preview_tex=tmp.preview.texture(),
+                    cache,
                     image0,
                     image1,
                     tile,
                     amount
                 ] (auto tx, auto shared_canceled) {
-                    auto result = morph(*image0, *image1, amount, tile);
+                    auto result = morph(*image0, *image1, *cache, amount, tile);
                     tx.send(util::possibly_canceled_job{
                         shared_canceled,
                         [image=std::move(result), tex=std::move(preview_tex), tile] () {
@@ -376,7 +398,11 @@ namespace rt::morpha
             tmp->morphing_needs_update = true;
         }
 
-        canvas(*tmp);
+        if (canvas(*tmp)) {
+            if (bool(tmp->image0) ^ bool(tmp->image1))
+                tmp->morphing_needs_update = true;
+        }
+
         update_morphing(*tmp);
     }
 }
