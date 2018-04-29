@@ -1,14 +1,17 @@
 #include "../lib/imgui.hh"
 #include "../lib/glm/vec2.hh"
 #include "../lib/glm/op/common.hh"
-#include "../lib/std/optional.hh"
+#include "../lib/gl/gl.hh"
 #include "../image/image.hh"
+#include "../app/app.hh"
 #include "editor.hh"
 #include "progress-chooser.hh"
 #include "polar-path.hh"
 #include "image-viewer.hh"
 #include "file-slot.hh"
+#include "morph.hh"
 #include <vector>
+#include <memory>
 
 namespace rt::morpha
 {
@@ -48,6 +51,7 @@ namespace rt::morpha
     {
         int morphing_progress{};
         bool interpolated_features_needs_update{};
+        bool morphing_needs_update{};
         std::vector<feature> features0;
         std::vector<feature> features1;
         std::vector<feature> features_tmp;
@@ -59,17 +63,16 @@ namespace rt::morpha
         image_viewer preview;
         file_slot file0;
         file_slot file1;
-        lib::optional<image::image_rgb> image0;
-        lib::optional<image::image_rgb> image1;
+        std::shared_ptr<image::image_rgb> image0;
+        std::shared_ptr<image::image_rgb> image1;
 
-        temporary_state()
+        int (&tile_size)[2];
+
+        temporary_state(int (&tile_size)[2])
+            : tile_size{tile_size}
         {
             features0.emplace_back();
             features1.emplace_back();
-
-            // DEBUG
-            preview.resize(16*30, 9*30);
-            preview.clear({0.5f, 0.0f, 0.0f});
         }
 
         void update_interpolated_features()
@@ -297,26 +300,84 @@ namespace rt::morpha
 
             return changed;
         }
+
+        void update_morphing(editor::temporary_state& tmp)
+        {
+            if (!tmp.image0 && !tmp.image1) return;
+            if (!tmp.morphing_needs_update) return;
+            tmp.morphing_needs_update = false;
+
+            auto& image0 = (tmp.image0 ? tmp.image0 : tmp.image1);
+            auto& image1 = (tmp.image1 ? tmp.image1 : tmp.image0);
+            auto amount = float(tmp.morphing_progress) / 100.0f;
+            if (&image0 == &image1) amount = 0.0f;
+
+            auto make_task = [&] (auto tile) -> app::task_type {
+                return [
+                    preview_tex=tmp.preview.texture(),
+                    image0,
+                    image1,
+                    tile,
+                    amount
+                ] (auto tx, auto shared_canceled) {
+                    auto result = morph(*image0, *image1, amount, tile);
+                    tx.send(util::possibly_canceled_job{
+                        shared_canceled,
+                        [image=std::move(result), tex=std::move(preview_tex), tile] () {
+                            gl::texture_sub_image2d(
+                                tex,
+                                0,
+                                tile.x, tile.y, tile.w, tile.h,
+                                gl::rgb, gl::float_,
+                                image.data()
+                            );
+                        },
+                    });
+                };
+            };
+
+            auto preview_size = glm::max(image0->size(), image1->size());
+            if (tmp.preview.width() != preview_size.x || tmp.preview.height() != preview_size.y) {
+                tmp.preview.resize(preview_size.x, preview_size.y);
+                tmp.preview.clear({});
+            }
+
+            auto [tile_w, tile_h] = tmp.tile_size;
+            app::task_group_type tasks;
+            for (auto& tile: util::tile_iterator{tile_w, tile_h, preview_size.x, preview_size.y}) {
+                tasks.emplace_back(make_task(tile));
+            }
+
+            app::schedule_tasks(std::move(tasks));
+        }
     }
 
-    editor::editor(): tmp{std::make_unique<temporary_state>()} {}
+    editor::editor(int (&tile_size)[2]): tmp{std::make_unique<temporary_state>(tile_size)} {}
     editor::~editor() = default;
 
     void editor::draw()
     {
         if (auto& filename = tmp->file0("morphing source", "/usr/share/hegem/support/morphing"); !filename.empty()) {
-            tmp->image0 = image::load(filename);
+            tmp->image0 = std::make_shared<image::image_rgb>(image::load(filename));
+            tmp->morphing_progress = 0;
+            tmp->interpolated_features_needs_update = true;
+            tmp->morphing_needs_update = true;
         }
         if (auto& filename = tmp->file1("morphing target", "/usr/share/hegem/support/morphing"); !filename.empty()) {
-            tmp->image1 = image::load(filename);
+            tmp->image1 = std::make_shared<image::image_rgb>(image::load(filename));
+            tmp->morphing_progress = 100;
+            tmp->interpolated_features_needs_update = true;
+            tmp->morphing_needs_update = true;
         }
         ImGui::Spacing();
 
         if (progress_chooser(&tmp->morphing_progress)) {
             tmp->interpolated_features_needs_update = true;
+            tmp->morphing_needs_update = true;
         }
 
         canvas(*tmp);
+        update_morphing(*tmp);
     }
 }
 

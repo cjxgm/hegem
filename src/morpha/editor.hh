@@ -1,5 +1,7 @@
 #pragma once
 #include "../util/constraints.hh"
+#include "../util/channel.hh"
+#include "../util/task-manager.hh"
 #include <memory>
 
 namespace rt::morpha
@@ -8,7 +10,7 @@ namespace rt::morpha
     {
         struct temporary_state;
 
-        editor();
+        editor(int (&tile_size)[2]);
         ~editor(); // = default in implementation
 
         void draw();

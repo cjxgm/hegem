@@ -55,12 +55,13 @@ namespace rt::app
             util::receiver<gl_job> rx_gl;
             util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{4}};   // TODO: auto detect threads?
             int tile_size[2] = {64, 64};
+            int morphing_tile_size[2] = {128, 128};
             int batch_samples = 16;
-            int frame_task_capacity = 32;
+            int frame_task_capacity = 64;
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
             sk::editor sk_editor;
-            morpha::editor morpha_editor;
+            morpha::editor morpha_editor{morphing_tile_size};
             visualization* sk_visualization{};
             util::file_dialog sk_file_open_dialog;
             util::file_dialog sk_file_save_dialog;
@@ -697,7 +698,7 @@ namespace rt::app
                 static ImGuiID selected_scene_view = 0;
 
                 ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(300, 230), ImGuiCond_Appearing);
+                ImGui::SetNextWindowSize(ImVec2(330, 280), ImGuiCond_Appearing);
                 ImGui::Begin("Options");
                 if (ImGui::CollapsingHeader("Windows")) {
                     ImGui::Checkbox("Scenes", &show_scene_list);
@@ -712,8 +713,9 @@ namespace rt::app
                     ImGui::Checkbox("ImGui Demo", &show_demo_window);
                 }
                 if (ImGui::CollapsingHeader("Scheduling Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-                    ImGui::PushItemWidth(-100);
+                    ImGui::PushItemWidth(-130);
                     ImGui::DragInt2("Tile Size", ctx.tile_size, 0.1, 4, 512);
+                    ImGui::DragInt2("Tile Size (Morphing)", ctx.morphing_tile_size, 0.1, 256, 2048);
                     ImGui::DragInt("Batch Samples", &ctx.batch_samples, 0.1, 2, 512);
                     ImGui::DragInt("Tasks per Frame", &ctx.frame_task_capacity, 0.1, 16, 512);
                     if (ctx.batch_samples < 2) ctx.batch_samples = 2;
