@@ -143,7 +143,8 @@ namespace rt::morpha
                     } else {
                         move_polar_vertex_to(path, cache, vertex_index, pos);
                     }
-                    changed = true;
+                    if (io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f)
+                        changed = true;
                 }
                 if (hovered_vertex_index && ImGui::IsItemHovered())
                     *hovered_vertex_index = vertex_index;

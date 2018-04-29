@@ -302,7 +302,8 @@ namespace rt::morpha
                         if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0)) {
                             auto pos = (mouse_local_pos - tmp.origin) / tmp.scaling;
                             tmp.move_last_polar_vertex_to(pos);
-                            changed = true;
+                            if (io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f)
+                                changed = true;
                         }
                         if (ImGui::IsItemClicked(1)) {
                             if (hovered_path_index == -1) {
