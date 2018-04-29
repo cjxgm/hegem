@@ -4,7 +4,6 @@
 #include "../image/image.hh"
 #include "../util/journal.hh"
 #include "../util/tile.hh"
-#include "../util/task-manager.hh"
 #include "../util/scheduler.hh"
 #include "../util/file-dialog.hh"
 #include "../glu/states.hh"
@@ -846,6 +845,13 @@ namespace rt::app
             gui::main(opts.scenes);
             glu::resource_recycler::instance().try_recycle();
         });
+    }
+
+    auto schedule_tasks(task_group_type tasks) -> util::task_io
+    {
+        auto& ctx = context::instance();
+        auto& tman = ctx.tman;
+        return tman.group(ctx.rx_gl.tx(), std::move(tasks));
     }
 }
 
