@@ -1,11 +1,14 @@
 #include "../lib/glm/vec3.hh"
+#include "../lib/glm/op/common.hh"
 #include "image.hh"
 #include <algorithm>
 #include <fstream>
 #include <cassert>
 #include <random>
+#include <memory>
 
 #include "../lib/stb/image-write.inl"
+#include "../lib/stb/image-read.inl"
 
 namespace rt::image::image_impl
 {
@@ -74,6 +77,61 @@ namespace rt::image::image_impl
         });
 
         return dst;
+    }
+
+    namespace
+    {
+        struct stb_image_deleter
+        {
+            void operator () (void* p)
+            {
+                if (p) stbi_image_free(p);
+            }
+        };
+
+        using stb_image_buffer = std::unique_ptr<float, stb_image_deleter>;
+    }
+
+    auto load(util::as_czstring filename) -> image<linear_rgb>
+    {
+        int w;
+        int h;
+        auto buf = stb_image_buffer{stbi_loadf(filename, &w, &h, nullptr, 3)};
+        if (!buf) {
+            throw std::runtime_error{
+                std::string{"Failed to load image: "} +
+                stbi_failure_reason()
+            };
+        }
+
+        image<linear_rgb> img{{w, h}};
+        auto p = reinterpret_cast<linear_rgb*>(buf.get());
+        std::transform(
+            p, p + img.pixels.size(),
+            img.pixels.begin(),
+            color::gamma_to_display
+        );
+        return img;
+    }
+
+    auto sample_bilinear(image<linear_rgb> const& img, glm::vec2 p) -> linear_rgb
+    {
+        p = glm::clamp(p, glm::vec2{0.0f}, glm::vec2{img.size() - 1});
+        auto p00 = glm::ivec2{p};
+        auto p01 = p00 + glm::ivec2{0, 1};
+        auto p10 = p00 + glm::ivec2{1, 0};
+        auto p11 = p00 + glm::ivec2{1, 1};
+
+        auto s00 = img[p00];
+        auto s01 = img[p01];
+        auto s10 = img[p10];
+        auto s11 = img[p11];
+
+        auto f = glm::fract(p);
+        auto s0 = glm::mix(s00, s01, f.y);
+        auto s1 = glm::mix(s10, s11, f.y);
+        auto s = glm::mix(s0, s1, f.x);
+        return s;
     }
 }
 

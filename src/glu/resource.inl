@@ -107,12 +107,6 @@ namespace rt::glu
             {
                 std::lock_guard<std::mutex> _{m};
                 names_refcounts[name-1]++;
-
-                auto log = j() << "ref " << name-1 << "\n";
-                for (auto refs: names_refcounts)
-                    log << " " << refs;
-                log << "\n";
-
                 return name;
             }
 
@@ -124,11 +118,6 @@ namespace rt::glu
                 assert(names_refcounts[name] > 0);
                 if (--names_refcounts[name] == 0)
                     recycling_pending_names.emplace_back(name);
-
-                auto log = j() << "unref " << name << "\n";
-                for (auto refs: names_refcounts)
-                    log << " " << refs;
-                log << "\n";
             }
 
             void recycle()
