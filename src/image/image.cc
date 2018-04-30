@@ -116,6 +116,7 @@ namespace rt::image::image_impl
 
     auto sample_bilinear(image<linear_rgb> const& img, glm::vec2 p) -> linear_rgb
     {
+        p = glm::clamp(p, glm::vec2{0.0f}, glm::vec2{img.size() - 1});
         auto p00 = glm::ivec2{p};
         auto p01 = p00 + glm::ivec2{0, 1};
         auto p10 = p00 + glm::ivec2{1, 0};

@@ -89,7 +89,7 @@ namespace rt::morpha
             sample = [] (auto& img, auto pos) { return sample_bilinear(img, pos); };
             scaling = 1;
         } else {
-            sample = [] (auto& img, auto pos) { return img[glm::round(pos)]; };
+            sample = [] (auto& img, auto pos) { return img[glm::clamp(glm::round(pos), glm::vec2{0.0f}, glm::vec2{img.size() - 1})]; };
             scaling = 1 << (lower_quality - 1);
         }
 
