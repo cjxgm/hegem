@@ -71,7 +71,7 @@ namespace rt::morpha
         std::shared_ptr<image::image_rgb> image1;
 
         int (&tile_size)[2];
-        float smoothness = 100.0f;
+        float smoothness = 1.0f;
         float decay = 1.0f;
         float length_influence = 0.1f;
 
@@ -242,7 +242,6 @@ namespace rt::morpha
             ImGui::BeginChild("morpha canvas", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 auto window_origin = glm::vec2{ImGui::GetCursorScreenPos()};
-                //auto origin_offset = glm::vec2{ImGui::GetCursorPos()};
                 auto mouse_screen_pos = glm::vec2{ImGui::GetMousePos()};
                 auto mouse_local_pos = mouse_screen_pos - window_origin;
                 auto& draw_list = *ImGui::GetWindowDrawList();
@@ -329,7 +328,7 @@ namespace rt::morpha
 
         void update_morphing(editor::temporary_state& tmp, bool low_quality)
         {
-            constexpr auto quality_threshold_level = 50;
+            constexpr auto quality_threshold_level = 35;
             constexpr auto quality_threshold = (quality_threshold_level*16) * (quality_threshold_level*9);
 
             if (!tmp.image0 && !tmp.image1) return;
@@ -346,8 +345,8 @@ namespace rt::morpha
             if (low_quality) {
                 tmp.preview_high_quality_countdown = 10;
                 auto pixel_count = preview_size.x * preview_size.y;
-                lower_quality = pixel_count / quality_threshold + 1;
-                auto minimum_tile_size = 1 << (lower_quality - 1);
+                lower_quality = int(glm::sqrt(pixel_count / quality_threshold)) + 1;
+                auto minimum_tile_size = 16 * (1 << (lower_quality - 1));
                 tmp.tile_size[0] = glm::max(tmp.tile_size[0], minimum_tile_size);
                 tmp.tile_size[1] = glm::max(tmp.tile_size[1], minimum_tile_size);
             } else {
@@ -423,7 +422,7 @@ namespace rt::morpha
         ImGui::Spacing();
 
         ImGui::PushItemWidth(-120);
-        tmp->morphing_needs_update |= ImGui::DragFloat("Smoothness", &tmp->smoothness, 0.1f, 0.0f, 1000.0f, "%.2f", 1.3f);
+        tmp->morphing_needs_update |= ImGui::DragFloat("Smoothness", &tmp->smoothness, 0.1f, 0.0f, 100.0f, "%.3f", 1.01f);
         tmp->morphing_needs_update |= ImGui::DragFloat("Decay", &tmp->decay, 0.001f, 0.0f, 2.0f);
         tmp->morphing_needs_update |= ImGui::DragFloat("Length Influence", &tmp->length_influence, 0.001f, 0.0f, 1.0f);
         ImGui::PopItemWidth();

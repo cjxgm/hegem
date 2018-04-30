@@ -94,12 +94,16 @@ namespace rt::morpha
     {
         if (path.empty()) return false;
 
-        const auto alpha = 0.8f * (readonly ? 0.3f : 1.0f);
-        const auto base_color = (active ? glm::vec3{0.3f, 0.7f, 0.3f} : glm::vec3{0.5f, 0.5f, 1.0f});
-        const auto base_accent_color = (active ? glm::vec3{0.3f, 0.6f, 0.7f} : glm::vec3{0.9f, 0.6f, 0.4f});
+        const auto alpha = 0.9f * (readonly ? 0.5f : 1.0f);
+        const auto base_color = (active ? glm::vec3{0.5f, 1.0f, 0.5f} : glm::vec3{0.5f, 0.5f, 1.0f});
+        const auto base_accent_color = (active ? glm::vec3{0.7f, 1.0f, 0.9f} : glm::vec3{1.0f, 0.8f, 0.5f});
+        const auto base_size = (readonly ? 3.5f : 5.0f);
+
         const auto palette_edge_color = glm::vec4{base_color * 0.8f, alpha};
         const auto palette_nudge_color = glm::vec4{base_color, alpha};
         const auto palette_front_nudge_color = glm::vec4{base_accent_color, alpha};
+        const auto palette_line_width = base_size * 0.6f;
+        const auto palette_nudge_radius = base_size;
 
         auto& io = ImGui::GetIO();
         auto& draw_list = *ImGui::GetWindowDrawList();
@@ -112,7 +116,7 @@ namespace rt::morpha
             for (; it != last; ++it, ++old) {
                 auto p0 = old->pos * scaling + origin;
                 auto p1 =  it->pos * scaling + origin;
-                auto width = glm::min(scaling * 3.0f, 3.0f);
+                auto width = glm::min(scaling * palette_line_width, palette_line_width);
                 auto edge_color = ImGui::ColorConvertFloat4ToU32(palette_edge_color);
                 draw_list.AddLine(p0, p1, edge_color, width);
             }
@@ -121,7 +125,7 @@ namespace rt::morpha
         auto vertex_index = 0;
         for (auto& entry: cache) {
             auto center = entry.pos * scaling + origin;
-            auto radius = glm::min(scaling * 5.0f, 5.0f);
+            auto radius = glm::min(scaling * palette_nudge_radius, palette_nudge_radius);
             auto nudge_color_linear = (vertex_index == 0 ? palette_front_nudge_color : palette_nudge_color);
 
             if (!readonly) {
