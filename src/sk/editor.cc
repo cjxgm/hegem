@@ -421,12 +421,15 @@ namespace rt::sk
                     ImGui::PopStyleColor(2);
                 }
 
-                ImGui::EndChild();
-
-                if (ImGui::IsMouseDragging(2)) {
+                static auto panning = false;
+                if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) && ImGui::IsMouseClicked(2)) panning = true;
+                if (!ImGui::IsMouseDown(2)) panning = false;
+                if (panning && ImGui::IsMouseDragging(2)) {
                     auto delta = to_glm(io.MouseDelta);
                     origin += delta;
                 }
+
+                ImGui::EndChild();
 
                 return changed;
             }

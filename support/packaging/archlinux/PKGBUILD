@@ -35,7 +35,7 @@ package() {
     install -Dm 755 "build/hegem" "$pkgdir/usr/lib/hegem"
 
     install -dm 755 "$pkgdir/usr/share/hegem/support/"
-    cp -r support/{inputs,models,shaders,graph} "$pkgdir/usr/share/hegem/support/"
+    cp -r support/{inputs,models,shaders,graph,morphing} "$pkgdir/usr/share/hegem/support/"
 
     install -dm 755 "$pkgdir/usr/share/hegem/support/fonts/"
     ln -s "/usr/share/fonts/TTF/Roboto-Regular.ttf" "$pkgdir/usr/share/hegem/support/fonts/ui.ttf"
