@@ -80,17 +80,35 @@ namespace rt::morpha
         }
     }
 
-    auto morph(image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, util::tile tile, float smoothness, float decay, float length_influence) -> image::image_rgb
+    auto morph(int lower_quality, image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, util::tile tile, float smoothness, float decay, float length_influence) -> image::image_rgb
     {
+        using sample_fn = auto (image::image_rgb const& img, glm::vec2 pos) -> image::color::linear_rgb;
+        sample_fn* sample;
+        int scaling;
+        if (lower_quality < 1) {
+            sample = [] (auto& img, auto pos) { return sample_bilinear(img, pos); };
+            scaling = 1;
+        } else {
+            sample = [] (auto& img, auto pos) { return img[glm::round(pos)]; };
+            scaling = 1 << (lower_quality - 1);
+        }
+
         image::image_rgb result{{tile.w, tile.h}};
         result.each([&] (auto& color, auto pos) {
-            pos.x += tile.x;
-            pos.y += tile.y;
-            auto [src_pos, dst_pos] = warp(cache, pos, smoothness, decay, length_influence);
-            auto c0 = sample_bilinear(src, src_pos);
-            auto c1 = sample_bilinear(dst, dst_pos);
-            color = glm::mix(c0, c1, amount);
+            if (pos.x % scaling == 0 && pos.y % scaling == 0) {
+                pos.x += tile.x;
+                pos.y += tile.y;
+                auto [src_pos, dst_pos] = warp(cache, pos, smoothness, decay, length_influence);
+                auto c0 = sample(src, src_pos);
+                auto c1 = sample(dst, dst_pos);
+                color = glm::mix(c0, c1, amount);
+            } else {
+                pos.x = pos.x / scaling * scaling;
+                pos.y = pos.y / scaling * scaling;
+                color = result[pos];
+            }
         });
+
         return result;
     }
 }

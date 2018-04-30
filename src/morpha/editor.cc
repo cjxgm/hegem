@@ -2,6 +2,7 @@
 #include "../lib/glm/vec2.hh"
 #include "../lib/glm/op/common.hh"
 #include "../lib/gl/gl.hh"
+#include "../lib/std/optional.hh"
 #include "../image/image.hh"
 #include "../app/app.hh"
 #include "editor.hh"
@@ -62,6 +63,8 @@ namespace rt::morpha
         glm::vec2 origin{0.0f, 0.0f};
 
         image_viewer preview;
+        lib::optional<util::task_io> preview_high_quality_io;
+        int preview_high_quality_countdown = -1;
         file_slot file0;
         file_slot file1;
         std::shared_ptr<image::image_rgb> image0;
@@ -324,8 +327,11 @@ namespace rt::morpha
             return changed;
         }
 
-        void update_morphing(editor::temporary_state& tmp)
+        void update_morphing(editor::temporary_state& tmp, bool low_quality)
         {
+            constexpr auto quality_threshold_level = 50;
+            constexpr auto quality_threshold = (quality_threshold_level*16) * (quality_threshold_level*9);
+
             if (!tmp.image0 && !tmp.image1) return;
             if (!tmp.morphing_needs_update) return;
             tmp.morphing_needs_update = false;
@@ -334,12 +340,28 @@ namespace rt::morpha
             auto& image1 = (tmp.image1 ? tmp.image1 : tmp.image0);
             auto amount = float(tmp.morphing_progress) / 100.0f;
             if (&image0 == &image1) amount = 0.0f;
+            auto preview_size = glm::max(image0->size(), image1->size());
+
+            int lower_quality;
+            if (low_quality) {
+                tmp.preview_high_quality_countdown = 10;
+                auto pixel_count = preview_size.x * preview_size.y;
+                lower_quality = pixel_count / quality_threshold + 1;
+                auto minimum_tile_size = 1 << (lower_quality - 1);
+                tmp.tile_size[0] = glm::max(tmp.tile_size[0], minimum_tile_size);
+                tmp.tile_size[1] = glm::max(tmp.tile_size[1], minimum_tile_size);
+            } else {
+                if (tmp.preview_high_quality_io)
+                    tmp.preview_high_quality_io->cancel();
+                lower_quality = 0;
+            }
 
             auto cache = std::make_shared<morphing_cache>(tmp.build_morphing_cache());
 
             auto make_task = [&] (auto tile) -> app::task_type {
                 return [
                     preview_tex=tmp.preview.texture(),
+                    lower_quality,
                     cache,
                     image0,
                     image1,
@@ -349,7 +371,7 @@ namespace rt::morpha
                     tile,
                     amount
                 ] (auto tx, auto shared_canceled) {
-                    auto result = morph(*image0, *image1, *cache, amount, tile, smoothness, decay, length_influence);
+                    auto result = morph(lower_quality, *image0, *image1, *cache, amount, tile, smoothness, decay, length_influence);
                     tx.send(util::possibly_canceled_job{
                         shared_canceled,
                         [image=std::move(result), tex=std::move(preview_tex), tile] () {
@@ -365,7 +387,6 @@ namespace rt::morpha
                 };
             };
 
-            auto preview_size = glm::max(image0->size(), image1->size());
             if (tmp.preview.width() != preview_size.x || tmp.preview.height() != preview_size.y) {
                 tmp.preview.resize(preview_size.x, preview_size.y);
                 tmp.preview.clear({});
@@ -377,7 +398,8 @@ namespace rt::morpha
                 tasks.emplace_back(make_task(tile));
             }
 
-            app::schedule_tasks(std::move(tasks));
+            auto io = app::schedule_tasks(std::move(tasks));
+            if (!low_quality) tmp.preview_high_quality_io = std::move(io);
         }
     }
 
@@ -417,7 +439,14 @@ namespace rt::morpha
                 tmp->morphing_needs_update = true;
         }
 
-        update_morphing(*tmp);
+        update_morphing(*tmp, true);
+
+        if (tmp->preview_high_quality_countdown >= 0)
+            tmp->preview_high_quality_countdown--;
+        if (tmp->preview_high_quality_countdown == 0) {
+            tmp->morphing_needs_update = true;
+            update_morphing(*tmp, false);
+        }
     }
 }
 

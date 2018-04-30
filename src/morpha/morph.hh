@@ -25,6 +25,6 @@ namespace rt::morpha
     using morphing_cache = std::vector<morphing_cache_entry>;
 
     void extend_morphing_cache(polar_path_cache const& src, polar_path_cache const& interpolated, polar_path_cache const& dst, morphing_cache& cache);
-    auto morph(image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, util::tile tile, float smoothness, float decay, float length_influence) -> image::image_rgb;
+    auto morph(int lower_quality, image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, util::tile tile, float smoothness, float decay, float length_influence) -> image::image_rgb;
 }
 
