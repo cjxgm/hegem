@@ -22,7 +22,7 @@ namespace rt::swrast
 
         struct active_edge_order
         {
-            auto operator () (edge_descriptor const& a, edge_descriptor const& b) -> bool
+            auto operator () (edge_descriptor const& a, edge_descriptor const& b) const -> bool
             {
                 if (a.x < b.x) return true;
                 if (b.x < a.x) return false;

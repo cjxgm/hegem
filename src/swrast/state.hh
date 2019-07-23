@@ -43,7 +43,7 @@ namespace rt::swrast
 
         struct inactive_edge_order
         {
-            auto operator () (edge_descriptor const& a, edge_descriptor const& b) -> bool
+            auto operator () (edge_descriptor const& a, edge_descriptor const& b) const -> bool
             {
                 return (a.y_front < b.y_front);
             }

@@ -248,7 +248,7 @@ namespace rt::app
 
             struct tile_pos_less
             {
-                auto operator () (util::tile const& a, util::tile const& b) -> bool
+                auto operator () (util::tile const& a, util::tile const& b) const -> bool
                 {
                     if (a.x < b.x) return true;
                     if (a.x > b.x) return false;
