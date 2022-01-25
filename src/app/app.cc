@@ -14,7 +14,6 @@
 #include "../rasterizer/state.hh"
 #include "../swrast/rasterizer.hh"
 #include "../sk/editor.hh"
-#include "../morpha/editor.hh"
 #include "app.hh"
 #include "glfw.hh"
 #include "hdr-texture.hh"
@@ -61,7 +60,6 @@ namespace rt::app
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
             sk::editor sk_editor;
-            morpha::editor morpha_editor{morphing_tile_size};
             visualization* sk_visualization{};
             util::file_dialog sk_file_open_dialog;
             util::file_dialog sk_file_save_dialog;
@@ -823,12 +821,6 @@ namespace rt::app
                 style.WindowPadding = padding;
                 if (ctx.sk_editor.draw(ctx.sk_visualization->with_gizmo))
                     update_sk_visualization();
-                ImGui::End();
-
-                ImGui::SetNextWindowPos(ImVec2(400, 50), ImGuiCond_Appearing);
-                ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiCond_FirstUseEver);
-                ImGui::Begin("Morpha - The Morphing Editor");
-                ctx.morpha_editor();
                 ImGui::End();
 
                 process_pending_jobs();
