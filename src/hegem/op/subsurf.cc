@@ -13,6 +13,7 @@
 #include <tuple>
 #include <map>
 #include <unordered_map>
+#include <stdexcept>
 
 namespace rt::hegem
 {
