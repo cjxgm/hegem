@@ -1,5 +1,6 @@
 #include "../lib/cpptoml.hh"
 #include "../util/journal.hh"
+#include "../util/unreachable.macro.hh"
 #include "parse.hh"
 #include <stdexcept>
 #include <array>
@@ -192,6 +193,8 @@ namespace rt::sk
                                 (void)fields; \
                                 FIELDS \
                             } break;
+                        #define SECTION(ID, ...) \
+                            case op_id::section_##ID##_##ID: RT_UNREACHABLE();
                         #define FIELD(TYPE, VAR, INITIAL, WIDGET, ...) \
                             fields.VAR = parse_toml::read::WIDGET<TYPE>(*cfg_instance, #VAR);
                         #include "op.inl"

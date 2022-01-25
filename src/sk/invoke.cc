@@ -1,5 +1,6 @@
 #include "invoke.hh"
 #include "invoke.impl/all.pull"
+#include "../util/unreachable.macro.hh"
 
 namespace rt::sk
 {
@@ -18,6 +19,8 @@ namespace rt::sk
                 #define OP(KIND, ID, ...) \
                     case op_id::KIND##_##ID: \
                         return invoke_impl::invoke(instance.fields.KIND##_##ID, arguments);
+                #define SECTION(ID, ...) \
+                    case op_id::section_##ID##_##ID: RT_UNREACHABLE();
                 #include "op.inl"
             }
             return {};

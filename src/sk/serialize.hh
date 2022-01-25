@@ -1,5 +1,6 @@
 #pragma once
 #include "graph.hh"
+#include "../util/unreachable.macro.hh"
 
 namespace rt::sk
 {
@@ -21,6 +22,8 @@ namespace rt::sk
                             (void)fields; \
                             FIELDS \
                         } break;
+                    #define SECTION(ID, ...) \
+                        case op_id::section_##ID##_##ID: RT_UNREACHABLE();
                     #define FIELD(TYPE, VAR, INITIAL, WIDGET, ...) \
                         fs.WIDGET(#VAR, fields.VAR);
                     #include "op.inl"
@@ -29,4 +32,6 @@ namespace rt::sk
         }
     }
 }
+
+#include "../util/unreachable.undef.hh"
 

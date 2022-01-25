@@ -9,6 +9,7 @@
 #include "serialize.hh"
 #include "serializer.hh"
 #include "parse.hh"
+#include "../util/unreachable.macro.hh"
 #include <algorithm>
 #include <string>
 
@@ -100,6 +101,8 @@ namespace rt::sk
                             (void) fields; \
                             FIELDS \
                         } break;
+                    #define SECTION(ID, ...) \
+                        case op_id::section_##ID##_##ID: RT_UNREACHABLE();
                     #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP) \
                         ImGui::PushItemWidth(-100); \
                         ImGui::PushID(#VAR); \
@@ -215,7 +218,7 @@ namespace rt::sk
                             if (prev_kind != &kind) {
                                 prev_kind = &kind;
                                 ImGui::AlignTextToFramePadding();
-                                ImGui::PushStyleColor(ImGuiCol_Text, palette.fg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_Text, (kind.name[0] == '-' ? palette.fg : palette.fg_accent));
                                 ImGui::Text("%s", kind.name);
                                 if (ImGui::IsItemHovered()) {
                                     tooltip = kind.tooltip;
@@ -223,26 +226,31 @@ namespace rt::sk
                                 }
                                 ImGui::PopStyleColor(1);
                             }
-                            ImGui::SameLine();
 
-                            ImGui::PushStyleColor(ImGuiCol_Text, palette.fg);
-                            ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg);
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
-                            if (ImGui::Button(op.name)) {
-                                g.emplace(
-                                    tmp.node_pos.x,
-                                    tmp.node_pos.y,
-                                    tmp.node_width,
-                                    id);
-                                ImGui::CloseCurrentPopup();
-                                changed |= true;
+                            if (op.name[0] == '\0') {
+                                // Skip intentionally.
+                            } else {
+                                ImGui::SameLine();
+
+                                ImGui::PushStyleColor(ImGuiCol_Text, palette.fg);
+                                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                                if (ImGui::Button(op.name)) {
+                                    g.emplace(
+                                        tmp.node_pos.x,
+                                        tmp.node_pos.y,
+                                        tmp.node_width,
+                                        id);
+                                    ImGui::CloseCurrentPopup();
+                                    changed |= true;
+                                }
+                                if (ImGui::IsItemHovered()) {
+                                    tooltip = op.tooltip;
+                                    tooltip_palette = &palette;
+                                }
+                                ImGui::PopStyleColor(4);
                             }
-                            if (ImGui::IsItemHovered()) {
-                                tooltip = op.tooltip;
-                                tooltip_palette = &palette;
-                            }
-                            ImGui::PopStyleColor(4);
 
                             ImGui::PopID();
                         }

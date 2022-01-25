@@ -4,6 +4,10 @@
     #define KIND(ID, NAME, TOOLTIP)
 #endif
 
+#ifndef SECTION
+    #define SECTION(ID, NAME, TOOLTIP)
+#endif
+
 #ifndef OP
     // ARITY: 0 for no input; N for if and only if N inputs. -1 for infinite amount of inputs.
     #define OP(KIND, ID, ARITY, NAME, TOOLTIP, FIELDS...)
@@ -25,6 +29,8 @@ KIND(repetition, "Repetition", "Repeatedly clone bodies.")
 KIND(advanced, "Advanced", "Advanced modeling operations.")
 KIND(subdivision, "Subdivision", "Subdivision surface operations.")
 
+SECTION(generic, "Generic", "Can be used anywhere.")
+
 OP(indirection, nop, 1, "Nop", "No operation but passthrough the input to output.")
 
 OP(indirection, pack, -1, "Pack",
@@ -39,6 +45,8 @@ OP(indirection, unpack, 1, "Unpack", "Extract a value out of a pack.",
     )
     FIELD(int, index, 0, value, "Index", "Which value to extract")
 )
+
+SECTION(modeling, "Modeling", "Create models.")
 
 OP(primitive, poly_disk, 0, "Poly Disk", "Polygonal disk centered at origin and facing y+ axis.",
     FIELD(float, radius, 1.0f, value, "Radius", "")
@@ -160,6 +168,7 @@ OP(subdivision, catmull_clark, 1, "Catmull Clark", "Catmull Clark subdivision su
 )
 
 #undef KIND
+#undef SECTION
 #undef OP
 #undef FIELD
 
