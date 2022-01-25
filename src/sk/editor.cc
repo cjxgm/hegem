@@ -140,9 +140,8 @@ namespace rt::sk
                     }
                 }
 
-                auto font_scaling = scaling < 1.0f
-                    ? scaling * 0.5f + 0.5f
-                    : std::min(2.0f, scaling * 0.4f + 0.6f);
+                auto max_font_scaling = 2.0f;
+                auto font_scaling = max_font_scaling * (1.0f - exp((-1.0f / max_font_scaling) * scaling));
                 auto grid_size = initial_grid_size * scaling;
                 ImGui::SetWindowFontScale(font_scaling);
 
