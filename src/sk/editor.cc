@@ -373,9 +373,18 @@ namespace rt::sk
                             auto size = glm::vec2{0.3f, 1.0f} * grid_size;
                             pos.x -= 0.3f * grid_size.x;
 
-                            ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg);
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                            static auto resizing_button = ImGuiID{};
+                            auto this_resizing_button = ImGui::GetID("##resize");
+
+                            if (resizing_button == this_resizing_button) {
+                                ImGui::PushStyleColor(ImGuiCol_Button, palette.bg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                            }
 
                             ImGui::SetCursorPos(to_imgui(pos));
                             ImGui::Button("##resize", to_imgui(size));
@@ -392,7 +401,13 @@ namespace rt::sk
                                     auto width = std::max(1, tmp.node_width + grid_delta.x);
                                     width = g.find_empty_width(tmp.node_pos.x, tmp.node_pos.y, width, node.id);
                                     node_new_w = width;
+
+                                    resizing_button = this_resizing_button;
                                 }
+                            }
+
+                            else if (resizing_button == this_resizing_button) {
+                                resizing_button = ImGuiID{};
                             }
 
                             ImGui::PopStyleColor(3);
