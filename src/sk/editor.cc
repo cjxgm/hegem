@@ -278,23 +278,39 @@ namespace rt::sk
                                 error_message += node.runtime_error;
                             }
 
+                            ImGui::PushID("operator");
+
+                            static auto dragging_button = ImGuiID{};
+                            auto this_dragging_button = ImGui::GetID(op.name);
+
                             if (node.id == previewing_node) {
                                 ImGui::PushStyleColor(ImGuiCol_Text, palette.bg);
-                                ImGui::PushStyleColor(ImGuiCol_Button, palette.fg);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                if (dragging_button == this_dragging_button) {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                } else {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.fg);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                }
                             } else {
                                 ImGui::PushStyleColor(ImGuiCol_Text, palette.fg);
-                                ImGui::PushStyleColor(ImGuiCol_Button, palette.bg);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                if (dragging_button == this_dragging_button) {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                } else {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.bg);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                }
                             }
 
-                            ImGui::PushID("operator");
                             ImGui::SetCursorPos(to_imgui(pos));
                             ImGui::Button(op.name, to_imgui(size));
                             if (!error_message.empty()) {
-                                if (ImGui::IsItemHovered()) {
+                                if (ImGui::IsItemHovered() || dragging_button == this_dragging_button) {
                                     tmp.error_message = std::move(error_message);
                                     tooltip = tmp.error_message.data();
                                     tooltip_palette = &tmp.error_palette;
@@ -332,7 +348,12 @@ namespace rt::sk
                                     node_new_x = grid.x;
                                     node_new_y = grid.y;
                                     node_new_w = width;
+
+                                    dragging_button = this_dragging_button;
                                 }
+                            }
+                            else if (dragging_button == this_dragging_button) {
+                                dragging_button = ImGuiID{};
                             }
 
                             ImGui::PopID();
