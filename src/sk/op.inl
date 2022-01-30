@@ -28,6 +28,8 @@ KIND(transform, "Transform", "Affine transformations.")
 KIND(repetition, "Repetition", "Repeatedly clone bodies.")
 KIND(advanced, "Advanced", "Advanced modeling operations.")
 KIND(subdivision, "Subdivision", "Subdivision surface operations.")
+KIND(timeline_primitive, "Primitive", "Basic timelines.")
+KIND(timeline_system, "System", "Use the curves/waves to drive something.")
 
 SECTION(generic, "Generic", "Can be used anywhere.")
 
@@ -166,6 +168,16 @@ OP(subdivision, catmull_clark, 1, "Catmull Clark", "Catmull Clark subdivision su
     FIELD(bool, triangulate, false, value, "Triangulate", "Triangulate before subdividing.\nRemove holes and concaves to work around subdivision limitations.")
     FIELD(int, level, 3, value, "Level", "Subdivision level.")
 )
+
+SECTION(timeline, "Timeline", "Create curves and waves to drive particle systems and sound systems.")
+
+OP(timeline_primitive, constant, 0, "Constant", "A line parallel to the x-axis.",
+    FIELD(float, value, 0.0f, value, "Value", "Value of the constant.")
+)
+OP(timeline_primitive, ramp, 0, "Ramp", "An increasing line.")
+OP(timeline_primitive, id, 0, "Identity", "A number that is unique to each instance of the timeline.")
+
+OP(timeline_system, inspect, -1, "Inspect", "Show the input expressions in error notifications.")
 
 #undef KIND
 #undef SECTION

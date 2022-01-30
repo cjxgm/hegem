@@ -6,4 +6,6 @@
 #include "repetition.pull"
 #include "advanced.pull"
 #include "subdivision.pull"
+#include "timeline-primitive.pull"
+#include "timeline-system.pull"
 
