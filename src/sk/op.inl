@@ -212,6 +212,9 @@ OP(timeline_coordinate, polar_to_cartesian_x, 2, "Polar -> X", "Convert polar co
 OP(timeline_coordinate, polar_to_cartesian_y, 2, "Polar -> Y", "Convert polar coordinate (angle, distance) to cartesian coordinate (x, y), and take the Y value.")
 
 OP(timeline_system, inspect, -1, "Inspect", "Show the input expressions in error notifications.")
+OP(timeline_system, spark, 8, "Spark", "A particle system of light-emitting spheres.\nInput: x, y, z, radius, r, g, b, opacity.",
+    FIELD(int, num_particles, 100, value, "Particle Amount", "How many particles should there be.")
+)
 
 #undef KIND
 #undef SECTION

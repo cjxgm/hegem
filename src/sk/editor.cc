@@ -1,6 +1,7 @@
 #include "../lib/glm/op/common.hh"
 #include "../lib/imgui.hh"
 #include "../hegem/mesh.hh"
+#include "../kul/system.hh"
 #include "invoke.impl/model.hh"
 #include "editor.hh"
 #include "palette.hh"
@@ -504,6 +505,17 @@ namespace rt::sk
                         1,
                         std::move(m.hmesh),
                     });
+            }
+
+            if (result.type() == typeid(kul::spark_system)) {
+                auto s = std::any_cast<kul::spark_system>(std::move(result));
+
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        0,
+                        std::move(s),
+                    }
+                );
             }
 
             s.rebuild_cache();

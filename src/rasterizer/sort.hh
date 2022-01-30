@@ -4,6 +4,7 @@
 #include "../scene/material.hh"
 #include "../scene/shape.hh"
 #include "../scene/lamp.hh"
+#include "../kul/system.hh"
 #include "../glu/resource.hh"
 #include "../math/direction.hh"
 #include <vector>
@@ -41,6 +42,12 @@ namespace rt::rasterizer
             glm::mat4 world_to_model;
         };
 
+        struct compiled_spark
+        {
+            glu::shared_program prog_spark;
+            int num_particles;
+        };
+
         struct uploaded_mesh
         {
             glu::shared_buffer vertices_buffer;
@@ -57,6 +64,7 @@ namespace rt::rasterizer
             std::vector<with_material_xform<shapes::sphere>> spheres;
             std::vector<with_material_xform<shapes::plane>> planes;
             std::vector<with_material_xform<shapes::voxel>> voxels;
+            std::vector<with_material_xform<compiled_spark>> sparks;
             std::vector<with_material_xform<uploaded_mesh>> meshes;
 
             struct

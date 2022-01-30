@@ -5,6 +5,7 @@
 #include "../util/grid.hh"
 #include "../raytracer/face-trait.hh"
 #include "../hegem/hemesh.hh"
+#include "../kul/system.hh"
 #include "shape/mesh.hh"
 #include <array>
 
@@ -33,12 +34,14 @@ namespace rt::scene
         };
 
         using rt::hegem::hemesh;
+        using rt::kul::spark_system;
 
         using shape_type = mapbox::util::variant<
             sphere,
             plane,
             voxel,
             hemesh,
+            spark_system,
             mesh
         >;
     }

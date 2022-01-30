@@ -2,6 +2,8 @@
 #include "../lib/gl/gl.hh"
 #include "../scene/node.hh"
 #include "../util/journal.hh"
+#include "../glu/shader.hh"
+#include <string>
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
@@ -118,6 +120,35 @@ namespace rt::rasterizer::sort_details
                 void operator () (shapes::hemesh const& /*shape*/)
                 {
                     throw std::logic_error{"hemeshes should have been converted into meshes."};
+                }
+
+                void operator () (shapes::spark_system const& shape)
+                {
+                    auto params = std::string{};
+                    params += "#define KUL_SPARK\n";
+
+                    auto add_param = [&] (char const* name, auto& timeline) {
+                        params += "#define ";
+                        params += name;
+                        params += " ";
+                        params += timeline.expression.apply("kul_time");
+                        params += "\n";
+                    };
+                    add_param("KUL_POS_X", shape.pos_x);
+                    add_param("KUL_POS_Y", shape.pos_y);
+                    add_param("KUL_POS_Z", shape.pos_z);
+                    add_param("KUL_RADIUS", shape.radius);
+                    add_param("KUL_EMITTING_COLOR_R", shape.emitting_color_r);
+                    add_param("KUL_EMITTING_COLOR_G", shape.emitting_color_g);
+                    add_param("KUL_EMITTING_COLOR_B", shape.emitting_color_b);
+                    add_param("KUL_OPACITY", shape.opacity);
+
+                    auto prog = glu::shader_factory::program_from_name("spark", params);
+
+                    sg.sparks.emplace_back(compiled_spark{
+                        prog,
+                        shape.num_particles,
+                    }, material_id, model_to_world, world_to_model);
                 }
 
                 void operator () (shapes::mesh shape)

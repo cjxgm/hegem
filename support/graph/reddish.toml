@@ -1,0 +1,55 @@
+[[node]]
+pos = [23, 7]
+width = 18
+preview = true
+[node.instance.timeline_system_spark]
+num_particles = 100
+
+[[node]]
+pos = [24, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [28, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [32, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 1.0
+
+[[node]]
+pos = [36, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [26, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [30, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 1.0
+
+[[node]]
+pos = [34, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [38, 6]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.1
+
