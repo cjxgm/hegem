@@ -29,6 +29,7 @@ KIND(repetition, "Repetition", "Repeatedly clone bodies.")
 KIND(advanced, "Advanced", "Advanced modeling operations.")
 KIND(subdivision, "Subdivision", "Subdivision surface operations.")
 KIND(timeline_primitive, "Primitive", "Basic timelines.")
+KIND(timeline_timewarping, "Timewarping", "Changes how time flows.")
 KIND(timeline_system, "System", "Use the curves/waves to drive something.")
 
 SECTION(generic, "Generic", "Can be used anywhere.")
@@ -176,6 +177,16 @@ OP(timeline_primitive, constant, 0, "Constant", "A line parallel to the x-axis."
 )
 OP(timeline_primitive, ramp, 0, "Ramp", "An increasing line.")
 OP(timeline_primitive, id, 0, "Identity", "A number that is unique to each instance of the timeline.")
+
+OP(timeline_timewarping, timeshift, 1, "Timeshift", "Skip forward to a future time or backward to a history time.",
+    FIELD(float, amount, 1.0f, value, "Amount", "How much time to skip.\nPositive number to skip forward.\nNegative number to skip backward.")
+)
+OP(timeline_timewarping, speedup, 1, "Speedup", "Make the time flows faster or slower.",
+    FIELD(float, scale, 2.0f, value, "Scale", "How to flow the time.\n`scale > 1` to flow faster.\n`0 < scale < 1` to flow slower.\n`scale < 0` to invert the time flowing direction.")
+)
+OP(timeline_timewarping, window, 1, "Window", "Make the time stuck in a loop.",
+    FIELD(float, size, 1.0f, value, "Size", "The size of the time window.")
+)
 
 OP(timeline_system, inspect, -1, "Inspect", "Show the input expressions in error notifications.")
 
