@@ -177,6 +177,12 @@ OP(timeline_primitive, constant, 0, "Constant", "A line parallel to the x-axis."
 )
 OP(timeline_primitive, ramp, 0, "Ramp", "An increasing line.")
 OP(timeline_primitive, id, 0, "Identity", "A number that is unique to each instance of the timeline.")
+OP(timeline_primitive, apply, 2, "Apply", "Apply a timeline as if it was a function.",
+    FIELD(float, value_min, 0.0f, value, "Value Min", "Minimum value of the resulting timeline.")
+    FIELD(float, value_max, 1.0f, value, "Value Max", "Maximum value of the resulting timeline.")
+    FIELD(float, window_min, 0.0f, value, "Window Min", "Minimum window of the resulting timeline.")
+    FIELD(float, window_max, 1.0f, value, "Window Max", "Maximum window of the resulting timeline.")
+)
 
 OP(timeline_timewarping, timeshift, 1, "Timeshift", "Skip forward to a future time or backward to a history time.",
     FIELD(float, amount, 1.0f, value, "Amount", "How much time to skip.\nPositive number to skip forward.\nNegative number to skip backward.")

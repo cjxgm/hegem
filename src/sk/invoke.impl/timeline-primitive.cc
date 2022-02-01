@@ -2,6 +2,7 @@
 #include "../../util/span.hh"
 #include "../../kul/timeline.hh"
 #include "../op.hh"
+#include "util.hh"
 #include <utility>      // for std::move
 #include <string>
 
@@ -30,6 +31,20 @@ namespace rt::sk::op::invoke_impl
         auto tl = kul::timeline{};
         tl.evaluator = [] (float) -> float { return 0.0f; };
         tl.expression.partial_expression = "kul_ID";
+        return std::move(tl);
+    }
+
+    auto invoke(op_fields_timeline_primitive_apply const& fields, util::span<lib::any> args) -> lib::any
+    {
+        auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
+        auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
+        auto tl = kul::timeline{};
+        tl.evaluator = [f0=tl0.evaluator, f1=tl1.evaluator] (float t) -> float { return f0(f1(t)); };
+        tl.expression = tl0.expression.apply(tl1.expression);
+        tl.value_min = fields.value_min;
+        tl.value_max = fields.value_max;
+        tl.window_min = fields.window_min;
+        tl.window_max = fields.window_max;
         return std::move(tl);
     }
 }
