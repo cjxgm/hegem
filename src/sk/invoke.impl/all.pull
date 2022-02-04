@@ -8,5 +8,6 @@
 #include "subdivision.pull"
 #include "timeline-primitive.pull"
 #include "timeline-timewarping.pull"
+#include "timeline-tweening.pull"
 #include "timeline-system.pull"
 

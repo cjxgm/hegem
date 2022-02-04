@@ -30,6 +30,7 @@ KIND(advanced, "Advanced", "Advanced modeling operations.")
 KIND(subdivision, "Subdivision", "Subdivision surface operations.")
 KIND(timeline_primitive, "Primitive", "Basic timelines.")
 KIND(timeline_timewarping, "Timewarping", "Changes how time flows.")
+KIND(timeline_tweening, "Tweening", "Non-linear interpolation.")
 KIND(timeline_system, "System", "Use the curves/waves to drive something.")
 
 SECTION(generic, "Generic", "Can be used anywhere.")
@@ -192,6 +193,11 @@ OP(timeline_timewarping, speedup, 1, "Speedup", "Make the time flows faster or s
 )
 OP(timeline_timewarping, window, 1, "Window", "Make the time stuck in a loop.",
     FIELD(float, size, 1.0f, value, "Size", "The size of the time window.")
+)
+
+OP(timeline_tweening, easeout, 1, "Ease-out", "Slower and slower.",
+    FIELD(float, target, 1.0f, value, "Target Value", "Ease from 0 to the target value.")
+    FIELD(float, steepness, 10.0f, value, "Steepness", "How fast to go from 0 to the target value.")
 )
 
 OP(timeline_system, inspect, -1, "Inspect", "Show the input expressions in error notifications.")
