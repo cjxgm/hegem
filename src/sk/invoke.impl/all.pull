@@ -9,5 +9,6 @@
 #include "timeline-primitive.pull"
 #include "timeline-timewarping.pull"
 #include "timeline-tweening.pull"
+#include "timeline-arithmetic.pull"
 #include "timeline-system.pull"
 
