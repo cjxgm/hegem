@@ -1,0 +1,260 @@
+[[node]]
+pos = [19, 14]
+width = 4
+[node.instance.timeline_primitive_ramp]
+
+[[node]]
+pos = [19, 15]
+width = 4
+[node.instance.timeline_tweening_easeout]
+target = 1.0
+steepness = 10.0
+
+[[node]]
+pos = [19, 16]
+width = 4
+[node.instance.timeline_timewarping_speedup]
+scale = 2.0
+
+[[node]]
+pos = [25, 14]
+width = 4
+[node.instance.timeline_arithmetic_mul]
+
+[[node]]
+pos = [25, 13]
+width = 2
+[node.instance.timeline_primitive_id]
+
+[[node]]
+pos = [27, 13]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.05
+
+[[node]]
+pos = [23, 13]
+width = 2
+[node.instance.timeline_primitive_ramp]
+
+[[node]]
+pos = [23, 15]
+width = 6
+[node.instance.timeline_arithmetic_sub]
+
+[[node]]
+pos = [19, 17]
+width = 5
+[node.instance.timeline_primitive_apply]
+value_min = 0.0
+value_max = 1.0
+window_min = 0.0
+window_max = 1.0
+
+[[node]]
+pos = [19, 18]
+width = 4
+[node.instance.timeline_timewarping_window]
+size = 1.0
+
+[[node]]
+pos = [25, 17]
+width = 2
+[node.instance.timeline_primitive_id]
+
+[[node]]
+pos = [27, 17]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 36.0
+
+[[node]]
+pos = [25, 18]
+width = 4
+[node.instance.timeline_arithmetic_mul]
+
+[[node]]
+pos = [18, 19]
+width = 12
+[node.instance.indirection_pack]
+
+[[node]]
+pos = [19, 20]
+width = 2
+[node.instance.indirection_unpack]
+exclusive = false
+index = 1
+
+[[node]]
+pos = [21, 20]
+width = 2
+[node.instance.indirection_unpack]
+exclusive = false
+index = 0
+
+[[node]]
+pos = [19, 21]
+width = 4
+[node.instance.timeline_coordinate_polar_to_cartesian_x]
+
+[[node]]
+pos = [25, 20]
+width = 2
+[node.instance.indirection_unpack]
+exclusive = false
+index = 1
+
+[[node]]
+pos = [27, 20]
+width = 2
+[node.instance.indirection_unpack]
+exclusive = false
+index = 0
+
+[[node]]
+pos = [25, 21]
+width = 4
+[node.instance.timeline_coordinate_polar_to_cartesian_y]
+
+[[node]]
+pos = [23, 21]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [30, 21]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.15
+
+[[node]]
+pos = [33, 21]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 1.0
+
+[[node]]
+pos = [35, 21]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [37, 21]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 0.0
+
+[[node]]
+pos = [18, 22]
+width = 24
+preview = true
+[node.instance.timeline_system_spark]
+num_particles = 10
+
+[[node]]
+pos = [36, 11]
+width = 2
+[node.instance.timeline_primitive_ramp]
+
+[[node]]
+pos = [38, 11]
+width = 2
+[node.instance.timeline_primitive_id]
+
+[[node]]
+pos = [40, 11]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 36.0
+
+[[node]]
+pos = [38, 12]
+width = 4
+[node.instance.timeline_arithmetic_mul]
+
+[[node]]
+pos = [36, 14]
+width = 8
+[node.instance.timeline_coordinate_polar_to_cartesian_x]
+
+[[node]]
+pos = [42, 13]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 1.0
+
+[[node]]
+pos = [36, 15]
+width = 2
+[node.instance.indirection_nop]
+
+[[node]]
+pos = [36, 17]
+width = 4
+[node.instance.timeline_arithmetic_mul]
+
+[[node]]
+pos = [38, 16]
+width = 2
+[node.instance.timeline_primitive_constant]
+value = 2.0
+
+[[node]]
+pos = [36, 16]
+width = 2
+[node.instance.indirection_nop]
+
+[[node]]
+pos = [36, 18]
+width = 8
+[node.instance.timeline_arithmetic_add]
+
+[[node]]
+pos = [40, 16]
+width = 4
+[node.instance.timeline_primitive_constant]
+value = 3.0
+
+[[node]]
+pos = [39, 19]
+width = 2
+[node.instance.indirection_nop]
+
+[[node]]
+pos = [39, 21]
+width = 2
+[node.instance.indirection_nop]
+
+[[node]]
+pos = [36, 12]
+width = 2
+[node.instance.timeline_timewarping_speedup]
+scale = 200.0
+
+[[node]]
+pos = [36, 13]
+width = 6
+[node.instance.timeline_arithmetic_add]
+
+[[node]]
+pos = [23, 16]
+width = 1
+[node.instance.indirection_nop]
+
+[[node]]
+pos = [23, 14]
+width = 2
+[node.instance.indirection_nop]
+
+[[node]]
+pos = [40, 17]
+width = 4
+[node.instance.indirection_nop]
+
+[[node]]
+pos = [39, 20]
+width = 2
+[node.instance.indirection_nop]
+
