@@ -10,5 +10,6 @@
 #include "timeline-timewarping.pull"
 #include "timeline-tweening.pull"
 #include "timeline-arithmetic.pull"
+#include "timeline-coordinate.pull"
 #include "timeline-system.pull"
 

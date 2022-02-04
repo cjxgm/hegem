@@ -32,6 +32,7 @@ KIND(timeline_primitive, "Primitive", "Basic timelines.")
 KIND(timeline_timewarping, "Timewarping", "Changes how time flows.")
 KIND(timeline_tweening, "Tweening", "Non-linear interpolation.")
 KIND(timeline_arithmetic, "Arithmetic", "Basic math operators.")
+KIND(timeline_coordinate, "Coordinate", "Convert between coordinate systems.")
 KIND(timeline_system, "System", "Use the curves/waves to drive something.")
 
 SECTION(generic, "Generic", "Can be used anywhere.")
@@ -206,6 +207,9 @@ OP(timeline_arithmetic, sub, 2, "Sub", "Subtraction.")
 OP(timeline_arithmetic, mul, 2, "Mul", "Multiplication.")
 OP(timeline_arithmetic, div, 2, "Div", "Division.")
 OP(timeline_arithmetic, mod, 2, "Mod", "Modulus. The result is guaranteed to be positive.")
+
+OP(timeline_coordinate, polar_to_cartesian_x, 2, "Polar -> X", "Convert polar coordinate (angle, distance) to cartesian coordinate (x, y), and take the X value.")
+OP(timeline_coordinate, polar_to_cartesian_y, 2, "Polar -> Y", "Convert polar coordinate (angle, distance) to cartesian coordinate (x, y), and take the Y value.")
 
 OP(timeline_system, inspect, -1, "Inspect", "Show the input expressions in error notifications.")
 
