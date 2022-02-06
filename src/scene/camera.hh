@@ -32,6 +32,8 @@ namespace rt::scene
         using camera_type = mapbox::util::variant<orthographic, pin_hole>;
 
         glm::mat4 camera_space_to_world_space(camera_type const& cam);
+        glm::mat4 world_space_to_camera_space(camera_type const& cam);
+        glm::mat4 projection_of(camera_type const& cam, float aspect_ratio);
         glm::mat4 world_space_to_clip_space(camera_type const& cam, float aspect_ratio);
         glm::vec3 apex_in_world_space(camera_type const& cam, float aspect_ratio);
     }
