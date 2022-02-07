@@ -353,6 +353,16 @@ namespace rt::sk
                                 else if (ImGui::IsMouseClicked(0)) {
                                     tmp.primary_selection.pos = { node.x, node.y };
                                     tmp.primary_selection.width = node.width;
+
+                                    tmp.extra_selections.clear();
+                                    tmp.extra_selections.emplace_back(tmp.primary_selection);
+
+                                    if (io.KeyShift) {
+                                        auto strict = io.KeyAlt;
+                                        auto stack = g.stack_of(&node, strict);
+                                        for (auto n: stack)
+                                            tmp.extra_selections.emplace_back(*n);
+                                    }
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
@@ -360,8 +370,6 @@ namespace rt::sk
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
                                     auto drag_move = [&] (auto& selection) {
-                                        selection.n->is_ghost = true;
-
                                         auto grid = selection.pos + grid_delta;
                                         auto avail_x = g.find_empty_x(grid.x, grid.y);
                                         auto width = std::min(grid.x + selection.width - avail_x, selection.width);
@@ -369,20 +377,21 @@ namespace rt::sk
                                         grid.x = avail_x;
                                         width = g.find_empty_width(grid.x, grid.y, width);
 
-                                        selection.n->is_ghost = false;
-
                                         selection.new_pos.x = grid.x;
                                         selection.new_pos.y = grid.y;
                                         selection.new_width = width;
                                     };
 
-                                    drag_move(tmp.primary_selection);
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = true;
+                                    for (auto& selection: tmp.extra_selections) drag_move(selection);
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = false;
 
                                     dragging_button = this_dragging_button;
                                 }
                             }
                             else if (dragging_button == this_dragging_button) {
                                 dragging_button = ImGuiID{};
+                                tmp.extra_selections.clear();
                             }
 
                             ImGui::PopID();
@@ -442,17 +451,32 @@ namespace rt::sk
                                 if (ImGui::IsMouseClicked(0)) {
                                     tmp.primary_selection.pos = { node.x, node.y };
                                     tmp.primary_selection.width = node.width;
+
+                                    tmp.extra_selections.clear();
+                                    tmp.extra_selections.emplace_back(tmp.primary_selection);
+
+                                    if (io.KeyShift) {
+                                        auto strict = io.KeyAlt;
+                                        auto stack = g.stack_of(&node, strict);
+                                        for (auto n: stack)
+                                            tmp.extra_selections.emplace_back(*n);
+                                    }
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
-                                    node.is_ghost = true;
-                                    auto width = std::max(1, tmp.primary_selection.width + grid_delta.x);
-                                    width = g.find_empty_width(tmp.primary_selection.pos.x, tmp.primary_selection.pos.y, width);
-                                    node.is_ghost = false;
-                                    tmp.primary_selection.new_width = width;
+                                    auto drag_resize = [&] (auto& selection) {
+                                        auto width = std::max(1, selection.width + grid_delta.x);
+                                        width = g.find_empty_width(selection.pos.x, selection.pos.y, width);
+
+                                        selection.new_width = width;
+                                    };
+
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = true;
+                                    for (auto& selection: tmp.extra_selections) drag_resize(selection);
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = false;
 
                                     resizing_button = this_resizing_button;
                                 }
@@ -460,26 +484,42 @@ namespace rt::sk
 
                             else if (resizing_button == this_resizing_button) {
                                 resizing_button = ImGuiID{};
+                                tmp.extra_selections.clear();
                             }
 
                             ImGui::PopStyleColor(3);
                         }
 
-                        auto apply_move = [&] (auto& selection) {
-                            changed |= (selection.n->x != selection.new_pos.x);
-                            changed |= (selection.n->y != selection.new_pos.y);
-                            changed |= (selection.n->width != selection.new_width);
-
-                            selection.n->x = selection.new_pos.x;
-                            selection.n->y = selection.new_pos.y;
-                            selection.n->width = selection.new_width;
-                        };
-                        apply_move(tmp.primary_selection);
-
                         ImGui::PopID();
                     }
                     ImGui::PopID();
                 }
+
+                auto apply_move = [&] (auto& selection) {
+                    changed |= (selection.n->x != selection.new_pos.x);
+                    changed |= (selection.n->y != selection.new_pos.y);
+                    changed |= (selection.n->width != selection.new_width);
+
+                    selection.n->x = selection.new_pos.x;
+                    selection.n->y = selection.new_pos.y;
+                    selection.n->width = selection.new_width;
+                };
+                for (auto& selection: tmp.extra_selections)
+                    apply_move(selection);
+
+                auto insert_again = [&] (auto& node) {
+                    node.is_ghost = true;
+                    auto avail_x = g.find_empty_x(node.x, node.y);
+                    auto width = std::min(node.x + node.width - avail_x, node.width);
+                    if (width < 1) width = node.width;
+                    width = g.find_empty_width(avail_x, node.y, width);
+                    node.is_ghost = false;
+
+                    node.x = avail_x;
+                    node.width = width;
+                };
+                for (auto& selection: tmp.extra_selections)
+                    insert_again(*selection.n);
 
                 if (tooltip && tooltip[0] != '\0') {
                     ImGui::PushStyleColor(ImGuiCol_Text, tooltip_palette->fg);
