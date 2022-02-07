@@ -24,18 +24,18 @@ namespace rt::sk
         return nullptr;
     }
 
-    auto graph::find_node(int x, int y, node_id_type ignored) -> node*
+    auto graph::find_node(int x, int y) -> node*
     {
         for (auto& node: node_range())
-            if (node.id != ignored && contains(node, x, y))
+            if (!node.is_ghost && contains(node, x, y))
                 return &node;
         return nullptr;
     }
 
-    auto graph::find_empty_width(int x, int y, int width, node_id_type ignored) -> int
+    auto graph::find_empty_width(int x, int y, int width) -> int
     {
         for (auto& node: node_range()) {
-            if (node.id == ignored) continue;
+            if (node.is_ghost) continue;
             if (node.y != y) continue;
             if (node.x + node.width <= x) continue;
             width = std::min(std::max(node.x - x, 0), width);
@@ -43,9 +43,9 @@ namespace rt::sk
         return width;
     }
 
-    auto graph::find_empty_x(int x, int y, node_id_type ignored) -> int
+    auto graph::find_empty_x(int x, int y) -> int
     {
-        while (auto node = find_node(x, y, ignored))
+        while (auto node = find_node(x, y))
             x = node->x + node->width;
         return x;
     }

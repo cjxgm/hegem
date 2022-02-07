@@ -346,12 +346,14 @@ namespace rt::sk
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
+                                    node.is_ghost = true;
                                     auto grid = tmp.node_pos + grid_delta;
-                                    auto avail_x = g.find_empty_x(grid.x, grid.y, node.id);
+                                    auto avail_x = g.find_empty_x(grid.x, grid.y);
                                     auto width = std::min(grid.x + tmp.node_width - avail_x, tmp.node_width);
                                     if (width < 1) width = tmp.node_width;
                                     grid.x = avail_x;
-                                    width = g.find_empty_width(grid.x, grid.y, width, node.id);
+                                    width = g.find_empty_width(grid.x, grid.y, width);
+                                    node.is_ghost = false;
 
                                     node_new_x = grid.x;
                                     node_new_y = grid.y;
@@ -427,8 +429,10 @@ namespace rt::sk
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
+                                    node.is_ghost = true;
                                     auto width = std::max(1, tmp.node_width + grid_delta.x);
-                                    width = g.find_empty_width(tmp.node_pos.x, tmp.node_pos.y, width, node.id);
+                                    width = g.find_empty_width(tmp.node_pos.x, tmp.node_pos.y, width);
+                                    node.is_ghost = false;
                                     node_new_w = width;
 
                                     resizing_button = this_resizing_button;

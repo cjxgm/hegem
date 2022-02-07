@@ -17,6 +17,7 @@ namespace rt::sk
         op_instance instance;
         op_metadata const* metadata;
         bool is_garbage{};
+        bool is_ghost{};    // invisible to various searching algorithms.
         std::string sanity_error;
         std::string runtime_error;
     };
