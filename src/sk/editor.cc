@@ -20,8 +20,20 @@ namespace rt::sk
     {
         struct temporary_state
         {
-            glm::ivec2 node_pos;
-            int node_width;
+            struct selected_node
+            {
+                glm::ivec2 pos{};
+                glm::ivec2 new_pos{};
+                int width{};
+                int new_width{};
+                node* n{};
+
+                selected_node() = default;
+                selected_node(node& n): pos{n.x, n.y}, new_pos{pos}, width{n.width}, new_width{width}, n{&n} {}
+            };
+
+            selected_node primary_selection;
+            std::vector<selected_node> extra_selections;
             std::string error_message;
             palette_type error_palette;
             bool showing_new_node_popup{};
@@ -182,8 +194,8 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(45, 45, 45, 255));
                             ImGui::SetCursorPos(to_imgui(pos));
                             if (ImGui::Button("+", to_imgui(size))) {
-                                tmp.node_pos = mouse_grid;
-                                tmp.node_width = placeholder_width;
+                                tmp.primary_selection.pos = mouse_grid;
+                                tmp.primary_selection.width = placeholder_width;
                                 tmp.showing_new_node_popup = true;
                                 ImGui::OpenPopup("new node");
                             }
@@ -192,8 +204,8 @@ namespace rt::sk
                     }
 
                     if (tmp.showing_new_node_popup) {
-                        auto pos = grid_to_local(tmp.node_pos);
-                        auto size = glm::vec2{float(tmp.node_width), 1.0f} * grid_size;
+                        auto pos = grid_to_local(tmp.primary_selection.pos);
+                        auto size = glm::vec2{float(tmp.primary_selection.width), 1.0f} * grid_size;
                         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(80, 80, 80, 255));
                         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(50, 50, 50, 255));
                         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(50, 50, 50, 255));
@@ -204,7 +216,7 @@ namespace rt::sk
                     }
 
                     if (ImGui::BeginPopup("new node", ImGuiWindowFlags_NoMove)) {
-                        auto pos = grid_to_screen(tmp.node_pos + glm::ivec2{0, 1});
+                        auto pos = grid_to_screen(tmp.primary_selection.pos + glm::ivec2{0, 1});
                         ImGui::SetWindowPos(to_imgui(pos));
 
                         kind_metadata const* prev_kind = nullptr;
@@ -239,9 +251,9 @@ namespace rt::sk
                                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
                                 if (ImGui::Button(op.name)) {
                                     g.emplace(
-                                        tmp.node_pos.x,
-                                        tmp.node_pos.y,
-                                        tmp.node_width,
+                                        tmp.primary_selection.pos.x,
+                                        tmp.primary_selection.pos.y,
+                                        tmp.primary_selection.width,
                                         id);
                                     ImGui::CloseCurrentPopup();
                                     changed |= true;
@@ -270,9 +282,10 @@ namespace rt::sk
                         auto& palette = kind.palette;
 
                         ImGui::PushID(node.id);
-                        auto node_new_x = node.x;
-                        auto node_new_y = node.y;
-                        auto node_new_w = node.width;
+                        tmp.primary_selection.new_pos.x = node.x;
+                        tmp.primary_selection.new_pos.y = node.y;
+                        tmp.primary_selection.new_width = node.width;
+                        tmp.primary_selection.n = &node;
 
                         { // operator node button
                             auto pos = grid_to_local({ node.x, node.y });
@@ -338,26 +351,32 @@ namespace rt::sk
                                 }
 
                                 else if (ImGui::IsMouseClicked(0)) {
-                                    tmp.node_pos = { node.x, node.y };
-                                    tmp.node_width = node.width;
+                                    tmp.primary_selection.pos = { node.x, node.y };
+                                    tmp.primary_selection.width = node.width;
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
-                                    node.is_ghost = true;
-                                    auto grid = tmp.node_pos + grid_delta;
-                                    auto avail_x = g.find_empty_x(grid.x, grid.y);
-                                    auto width = std::min(grid.x + tmp.node_width - avail_x, tmp.node_width);
-                                    if (width < 1) width = tmp.node_width;
-                                    grid.x = avail_x;
-                                    width = g.find_empty_width(grid.x, grid.y, width);
-                                    node.is_ghost = false;
+                                    auto drag_move = [&] (auto& selection) {
+                                        selection.n->is_ghost = true;
 
-                                    node_new_x = grid.x;
-                                    node_new_y = grid.y;
-                                    node_new_w = width;
+                                        auto grid = selection.pos + grid_delta;
+                                        auto avail_x = g.find_empty_x(grid.x, grid.y);
+                                        auto width = std::min(grid.x + selection.width - avail_x, selection.width);
+                                        if (width < 1) width = selection.width;
+                                        grid.x = avail_x;
+                                        width = g.find_empty_width(grid.x, grid.y, width);
+
+                                        selection.n->is_ghost = false;
+
+                                        selection.new_pos.x = grid.x;
+                                        selection.new_pos.y = grid.y;
+                                        selection.new_width = width;
+                                    };
+
+                                    drag_move(tmp.primary_selection);
 
                                     dragging_button = this_dragging_button;
                                 }
@@ -421,8 +440,8 @@ namespace rt::sk
                             ImGui::Button("##resize", to_imgui(size));
                             if (ImGui::IsItemActive()) {
                                 if (ImGui::IsMouseClicked(0)) {
-                                    tmp.node_pos = { node.x, node.y };
-                                    tmp.node_width = node.width;
+                                    tmp.primary_selection.pos = { node.x, node.y };
+                                    tmp.primary_selection.width = node.width;
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
@@ -430,10 +449,10 @@ namespace rt::sk
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
                                     node.is_ghost = true;
-                                    auto width = std::max(1, tmp.node_width + grid_delta.x);
-                                    width = g.find_empty_width(tmp.node_pos.x, tmp.node_pos.y, width);
+                                    auto width = std::max(1, tmp.primary_selection.width + grid_delta.x);
+                                    width = g.find_empty_width(tmp.primary_selection.pos.x, tmp.primary_selection.pos.y, width);
                                     node.is_ghost = false;
-                                    node_new_w = width;
+                                    tmp.primary_selection.new_width = width;
 
                                     resizing_button = this_resizing_button;
                                 }
@@ -446,12 +465,16 @@ namespace rt::sk
                             ImGui::PopStyleColor(3);
                         }
 
-                        changed |= (node.x != node_new_x);
-                        changed |= (node.y != node_new_y);
-                        changed |= (node.width != node_new_w);
-                        node.x = node_new_x;
-                        node.y = node_new_y;
-                        node.width = node_new_w;
+                        auto apply_move = [&] (auto& selection) {
+                            changed |= (selection.n->x != selection.new_pos.x);
+                            changed |= (selection.n->y != selection.new_pos.y);
+                            changed |= (selection.n->width != selection.new_width);
+
+                            selection.n->x = selection.new_pos.x;
+                            selection.n->y = selection.new_pos.y;
+                            selection.n->width = selection.new_width;
+                        };
+                        apply_move(tmp.primary_selection);
 
                         ImGui::PopID();
                     }
