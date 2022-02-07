@@ -19,6 +19,9 @@ namespace rt::sk
         auto inputs_of(node const* n) -> std::vector<node*>;
         auto count_inputs_of(node const* n) -> int;
 
+        // n will NOT be contained in the result.
+        auto stack_of(node const* n, bool strict) -> std::vector<node*>;
+
         auto node_range() { return util::range{begin(nodes), end(nodes)}; }
         auto op_metadata_range() { return util::range{begin(reg.ops), end(reg.ops)}; }
 

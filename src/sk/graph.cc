@@ -1,5 +1,6 @@
 #include "graph.hh"
 #include <algorithm>
+#include <unordered_set>
 
 namespace rt::sk
 {
@@ -72,6 +73,47 @@ namespace rt::sk
         for (auto& input: node_range())
             if (connects(input, *n))
                 result++;
+
+        return result;
+    }
+
+    auto graph::stack_of(node const* n, bool strict) -> std::vector<node*>
+    {
+        std::unordered_set<node*> stacked;
+        std::unordered_set<node*> pending{const_cast<node*>(n)};
+
+        while (!pending.empty()) {
+            auto nodes = std::vector<node*>{pending.begin(), pending.end()};
+            stacked.insert(pending.begin(), pending.end());
+            pending.clear();
+
+            for (auto& candidate: node_range()) {
+                if (stacked.count(&candidate) != 0u)
+                    continue;
+
+                for (auto known: nodes) {
+                    if (connects(candidate, *known))
+                        pending.insert(&candidate);
+
+                    if (!strict && candidate.y <= n->y && connects(*known, candidate))
+                        pending.insert(&candidate);
+                }
+            }
+        }
+
+        stacked.erase(const_cast<node*>(n));
+        auto result = std::vector<node*>{stacked.begin(), stacked.end()};
+        stacked.clear();
+
+        std::sort(
+            begin(result),
+            end(result),
+            [] (auto a, auto b) {
+                if (a->y > b->y) return true;
+                if (a->y < b->y) return false;
+                return (a->x < b->x);
+            }
+        );
 
         return result;
     }
