@@ -28,6 +28,7 @@
 #include <functional>
 #include <algorithm>
 #include <memory>
+#include <thread>
 
 namespace rt::app
 {
@@ -52,7 +53,7 @@ namespace rt::app
             std::deque<hdr_texture> images;
             std::list<visualization> visualizations;
             util::receiver<gl_job> rx_gl;
-            util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{4}};   // TODO: auto detect threads?
+            util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{(int) std::max(4u, std::thread::hardware_concurrency())}};
             int tile_size[2] = {64, 64};
             int morphing_tile_size[2] = {128, 128};
             int batch_samples = 16;
