@@ -5,6 +5,8 @@ my %opt;
 @opt{@ARGV} = ();
 $::sanitize = exists $opt{"-s"};
 
+$base_dir__source = "source";
+
 @include_dir__third_party = (
     'sanity-check',             # compiler sanity checks
     'gsl/include',              # guideline support library
