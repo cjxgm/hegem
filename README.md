@@ -6,7 +6,7 @@ Create 3D models via visual scripting, render with pathtracing, morph between im
 
 ## Pronounciation
 
-Hegem is pronounced like `heh gem', like in `hegemony'.
+Hegem is pronounced like `heh gem`, like in `hegemony`.
 
 ## Repository Branches
 
