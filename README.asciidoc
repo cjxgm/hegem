@@ -1,8 +1,4 @@
-= Hegem: Half-Edge-based GEnerator of Meshes
-
-== Motivation
-
-My homework.
+= Hegem: The Hegemonic Multimedia Creator
 
 == Pronounciation
 
