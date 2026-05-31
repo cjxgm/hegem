@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <title>Kul Timeline Model</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body, kul-model {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12pt;
+        }
+
+        article {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            margin: 1rem;
+            max-width: 70em;
+        }
+
+        h1 {
+            margin: 1em 0.5em;
+            font-size: 2em;
+        }
+
+        h2 {
+            margin: 1em 0.1em;
+            font-size: 1.5em;
+        }
+
+        kul-model > p {
+            margin: 0.3em 0em;
+        }
+
+        code {
+            font-size: 0.9em;
+        }
+
+        footer {
+            padding-top: 1em;
+            padding-bottom: 30%;
+            min-height: 4em;
+        }
+    </style>
+</head>
+<body>
+    <article>
+        <h1>Model of Kul Timeline</h1>
+
+        <kul-model data-num-particles="10" data-theta="t => 0" data-rho="ramp">
+            <h2 slot="heading">Newton's First Law Of Motion: Linear Ramp</h2>
+
+            <p><code>rho = ramp; theta = 0;</code></p>
+            <p>We use 10 particles and render (rho, theta) as Polar coordinates. They collide together so you can only see 1 particle.</p>
+
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="0" data-rho="ramp">
+                <p><code>rho</code></p>
+            </kul-curve>
+        </kul-model>
+
+        <kul-model data-num-particles="10" data-theta="t => id * 36" data-rho="ramp">
+            <h2 slot="heading">Particle ID and Polar Coordinates</h2>
+
+            <p><code>rho = ramp, theta = <u>id * 36</u>.</code></p>
+            <p>To split up the 10 particles, we can use the particle ID.</p>
+        </kul-model>
+
+        <kul-model data-num-particles="10" data-theta="t => id * 36" data-rho="ramp | window(10)">
+            <h2 slot="heading">To Be, Or Not To Be, That Is Not A Question</h2>
+
+            <p><code>rho = ramp | <u>window(10)</u>, theta = id * 36.</code></p>
+            <p>Particles should be able to die and reborn. Every 10 ticks (1 tick = 0.1 second) a particle dies.</p>
+
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="0" data-rho="ramp | window(10)">
+                <p><code>rho</code></p>
+            </kul-curve>
+        </kul-model>
+
+        <kul-model data-num-particles="10" data-theta="t => id * 36" data-rho="ramp | easeout(10) | window(10)">
+            <h2 slot="heading">Butter Smooth Motion</h2>
+
+            <p><code>rho = ramp | <u>easeout(10)</u> | window(10), theta = id * 36.</code></p>
+            <p>Non-linear movement looks better.</p>
+
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="0" data-rho="ramp | easeout(10)">
+                <p><code>easeout(10)</code></p>
+                <p>Remember that timeline must be defined from -infinity to +intinity? When x &lt; 0, we define easeout(10) to be 0.</p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="0" data-rho="ramp | easeout(10) | window(10)">
+                <p><code>rho</code></p>
+            </kul-curve>
+        </kul-model>
+
+        <kul-model data-num-particles="10" data-theta="t => id * 36" data-rho="ramp | easeout(10) | window(10) | timeshift(id * 0.3)">
+            <h2 slot="heading">One By One</h2>
+
+            <p><code>rho = ramp | easeout(10) | window(10) | <u>timeshift(id * 0.3)</u>, theta = id * 36.</code></p>
+            <p>Shows up one at a time.</p>
+
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="0" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=0</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="1" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=1</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="2" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=2</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="3" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=3</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="4" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=4</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="5" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=5</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="6" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=6</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="7" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=7</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="8" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=8</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="9" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=9</code></p>
+            </kul-curve>
+        </kul-model>
+
+        <kul-model data-num-particles="10" data-theta="t => id * 36" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+            <h2 slot="heading">Bursting</h2>
+
+            <p><code>rho = ramp | easeout(10) | <u>speedup(2) | timeshift(id * 0.3) | window(10)</u>, theta = id * 36.</code></p>
+            <p>Burstive one by one.</p>
+
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="0" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=0</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="1" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=1</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="2" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=2</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="3" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=3</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="4" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=4</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="5" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=5</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="6" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=6</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="7" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=7</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="8" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=8</code></p>
+            </kul-curve>
+            <kul-curve data-min-time="-10" data-max-time="30" data-min-value="-10" data-max-value="20" data-id="9" data-rho="ramp | easeout(10) | speedup(2) | timeshift(id * 0.3) | window(10)">
+                <p><code>rho, id=9</code></p>
+            </kul-curve>
+        </kul-model>
+
+        <footer>
+            Copyright (C) Giumo Clanjor (哆啦比猫/兰威举), 2017-2026. All Rights Reserved.
+        </footer>
+    </article>
+
+    <template id="tmpl-kul-model">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            article {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin: 0.5rem;
+                padding: 0.5em;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-shadow: 2px 2px 8px -4px #ccc;
+            }
+
+            section {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            aside, main {
+                display: flex;
+                flex-direction: column;
+                margin: 0.5em;
+            }
+
+            main {
+                flex: 1;
+            }
+
+            #preview {
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                width: 100%;
+                box-shadow: inset 2px 2px 4px #ddd, inset -2px -2px 8px -2px #fff;
+                background: #eee;
+            }
+
+            #snapshot {
+                border: 1px solid blue;
+                min-width: 200px;
+                width: 100%;
+            }
+        </style>
+        <article>
+            <slot name="heading"></slot>
+            <section>
+                <aside>
+                    <canvas width="200" height="200" id="preview"></canvas>
+                </aside>
+                <main>
+                    <canvas width="800" height="160" id="snapshot"></canvas>
+                    <slot></slot>
+                </main>
+            </section>
+        </article>
+    </template>
+
+    <template id="tmpl-kul-curve">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            article {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin: 0rem;
+                padding: 0em;
+            }
+
+            aside, main {
+                display: flex;
+                flex-direction: column;
+                margin: 0.3em;
+            }
+
+            aside {
+                flex-shrink: 1;
+                min-width: 100px;
+            }
+
+            main {
+                flex: 1;
+            }
+
+            #curve {
+                border: 1px solid blue;
+                width: 100%;
+            }
+        </style>
+        <article>
+            <aside>
+                <canvas width="400" height="50" id="curve"></canvas>
+            </aside>
+            <main>
+                <slot></slot>
+            </main>
+        </article>
+    </template>
+
+    <script>
+        (() => {
+            function compile_formula(formula)
+            {
+                const mod = (a, b) => ((a % b + b) % b);
+                const min = (a, b) => Math.min(a, b);
+                const max = (a, b) => Math.max(a, b);
+
+                const ramp = t => t;
+                const easeout = (f, max) => t => { const x = f(t); return (x < 0 ? 0 : max * (1 - Math.pow(Math.pow(2, 0.7), -x))); };
+                const speedup = (f, rate) => t => f(t * rate);
+                const timeshift = (f, offset) => t => f(t - offset);
+                const window = (f, size) => t => f(mod(t, size));
+
+                const find_beginning_of_last_pair = x => {
+                    let last_leaving = x.lastIndexOf(')');
+                    let last_entering = x.lastIndexOf('(');
+
+                    while (true) {
+                        if (last_entering < last_leaving) {
+                            last_entering = x.lastIndexOf('(', last_leaving - 1);
+                            last_leaving = x.lastIndexOf(')', last_leaving - 1);
+                            continue;
+                        }
+                        return last_entering + 1;
+                    }
+                };
+
+                const steps = formula.split(/\s*\|\s*/);
+                let step = steps[0];
+                for (let transform of steps.slice(1)) {
+                    const pos = find_beginning_of_last_pair(transform);
+                    if (!transform.substr(pos).match(/\(\s*\)/)) step += ', ';
+                    step = transform.substr(0, pos) + step + transform.substr(pos);
+                }
+
+                console.log(`COMPILE    ${formula}    TO    ${step}`)
+
+                return eval(`(t, id) => (${step})(t)`);
+            }
+
+            let fixed_time = null;
+
+            customElements.define(
+                'kul-model',
+                class extends HTMLElement
+                {
+                    constructor()
+                    {
+                        super();
+                        let tmpl = document.querySelector('#tmpl-kul-model').content.cloneNode(true);
+                        this.attachShadow({mode: 'open'}).appendChild(tmpl);
+
+                        const ctx = this.shadowRoot.querySelector('#preview').getContext('2d');
+                        const sctx = this.shadowRoot.querySelector('#snapshot').getContext('2d');
+                        const rho = compile_formula(this.dataset.rho);
+                        const theta = compile_formula(this.dataset.theta);
+
+                        const num_particles = this.dataset.numParticles;
+                        let frame = 0;
+                        let rendered_time = null;
+
+                        ctx.canvas.addEventListener('mousemove', ev => {
+                            const rt = (frame / 60 * 10) % 30;
+                            fixed_time = rt;
+                        });
+
+                        ctx.canvas.addEventListener('mouseleave', ev => {
+                            fixed_time = null;
+                            rendered_time = null;
+                        });
+
+                        sctx.canvas.addEventListener('mousemove', ev => {
+                            const rect = ev.target.getBoundingClientRect();
+                            const xrel = (ev.clientX - rect.left) / rect.width;
+                            const yrel = (ev.clientY - rect.top) / rect.height;
+                            const offset_due_to_row = Math.floor(yrel * 2) * 10;
+                            const offset_due_to_col = Math.floor(xrel * 10);
+                            const t = offset_due_to_row + offset_due_to_col;
+                            fixed_time = t;
+                        });
+
+                        sctx.canvas.addEventListener('mouseleave', ev => {
+                            fixed_time = null;
+                            rendered_time = null;
+                        });
+
+                        ctx.translate(ctx.canvas.width / 2, ctx.canvas.width / 2);
+                        ctx.scale(ctx.canvas.width / 30, -ctx.canvas.width / 30);
+
+                        function draw(ctx, t, tiny)
+                        {
+                            ctx.clearRect(-15, -15, 30, 30);
+                            for (let id=0; id<num_particles; id++) {
+                                const xrho = rho(t, id);
+                                const xtheta = theta(t, id);
+                                const x = xrho * Math.cos(xtheta * Math.PI / 180);
+                                const y = xrho * Math.sin(xtheta * Math.PI / 180);
+
+                                ctx.beginPath();
+                                ctx.arc(x, y, 1, 0, Math.PI * 2);
+
+                                if (!tiny) {
+                                    ctx.fillStyle = "#fff";
+                                    ctx.filter = "drop-shadow(1px 1px 2px #888)";
+                                    ctx.fill();
+                                }
+
+                                ctx.strokeStyle = (tiny ? "#444" : "#888");
+                                ctx.lineWidth = (tiny ? 0.5 : 0.3);
+                                ctx.filter = "none";
+                                ctx.stroke();
+                            }
+
+                            ctx.save();
+                            ctx.scale(1, -1);
+                            ctx.font = `${tiny ? 5 : 3}px monospace`;
+                            ctx.fillStyle = (tiny ? "#22a" : "#888");
+                            ctx.fillText(`t=${Math.floor(t)}`, -13, 13);
+                            ctx.filter = "drop-shadow(1px 1px 2px #888)";
+                            ctx.restore();
+                        }
+
+                        requestAnimationFrame(function animation() {
+                            const rt = (frame / 60 * 10) % 30;
+                            const t = (fixed_time === null ? rt : fixed_time);
+
+                            if (rendered_time !== t) {
+                                rendered_time = fixed_time;
+                                draw(ctx, t, false);
+                                frame++;
+                            }
+
+                            requestAnimationFrame(animation);
+                        });
+
+                        requestAnimationFrame(() => {
+                            const draw_size = sctx.canvas.height / 2;
+                            for (let n=0; n<20; n++) {
+                                const t = n;
+                                const row = Math.floor(n / 10);
+                                const col = n % 10;
+
+                                sctx.resetTransform();
+                                sctx.translate(draw_size / 2 + col * draw_size, draw_size / 2 + row * draw_size);
+                                sctx.scale(draw_size / 30, -draw_size / 30);
+
+                                sctx.save();
+                                sctx.beginPath();
+                                sctx.rect(-15, -15, 30, 30);
+                                sctx.clip();
+                                draw(sctx, t, true);
+                                sctx.restore();
+
+                                sctx.beginPath();
+                                if (col > 0) {
+                                    sctx.moveTo(-15, -15);
+                                    sctx.lineTo(-15, +15);
+                                }
+                                if (row > 0) {
+                                    sctx.moveTo(-15, +15);
+                                    sctx.lineTo(+15, +15);
+                                }
+                                sctx.lineWidth = 0.2;
+                                sctx.strokeStyle = "blue";
+                                sctx.stroke();
+                            }
+                        });
+                    }
+                },
+            );
+
+            customElements.define(
+                'kul-curve',
+                class extends HTMLElement
+                {
+                    constructor()
+                    {
+                        super();
+                        let tmpl = document.querySelector('#tmpl-kul-curve').content.cloneNode(true);
+                        this.attachShadow({mode: 'open'}).appendChild(tmpl);
+
+                        const ctx = this.shadowRoot.querySelector('#curve').getContext('2d');
+                        const rho = compile_formula(this.dataset.rho);
+                        const id = this.dataset.id;
+
+                        const min_time = parseFloat(this.dataset.minTime);
+                        const max_time = parseFloat(this.dataset.maxTime);
+                        const min_value = parseFloat(this.dataset.minValue);
+                        const max_value = parseFloat(this.dataset.maxValue);
+
+                        let frame = 0;
+                        let rendered_time = null;
+
+                        ctx.canvas.addEventListener('mousemove', ev => {
+                            const rect = ev.target.getBoundingClientRect();
+                            const xrel = (ev.clientX - rect.left) / rect.width;
+                            const t = xrel * (max_time - min_time) + min_time;
+                            fixed_time = t;
+                        });
+
+                        ctx.canvas.addEventListener('mouseleave', ev => {
+                            fixed_time = null;
+                            rendered_time = null;
+                        });
+
+                        function draw_cursor(ctx, t, v)
+                        {
+                            const x = (t - min_time) / (max_time - min_time) * ctx.canvas.width;
+                            ctx.beginPath();
+                            ctx.moveTo(x, 0);
+                            ctx.lineTo(x, ctx.canvas.height);
+                            ctx.strokeStyle = "#88f";
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+
+                            ctx.font = "12px monospace";
+                            ctx.fillStyle = "#88f";
+                            ctx.fillText(`t=${Math.floor(t)}`, x + 2, ctx.canvas.height - 2);
+
+                            if (v != null) {
+                                const y = ctx.canvas.height - (v - min_value) / (max_value - min_value) * ctx.canvas.height;
+                                ctx.beginPath();
+                                ctx.moveTo(0, y);
+                                ctx.lineTo(ctx.canvas.width, y);
+                                ctx.strokeStyle = "#44f";
+                                ctx.lineWidth = 1;
+                                ctx.stroke();
+
+                                ctx.fillStyle = "#44f";
+                                ctx.fillText(`${v.toFixed(1)}`, 2, y - 2);
+                            }
+                        }
+
+                        requestAnimationFrame(function animation() {
+                            const rt = (frame / 60 * 10) % 30;
+                            const t = (fixed_time === null ? rt : fixed_time);
+
+                            if (rendered_time !== t) {
+                                rendered_time = fixed_time;
+
+                                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+                                ctx.beginPath();
+                                for (let x=0; x<ctx.canvas.width; x++) {
+                                    const t = x / ctx.canvas.width * (max_time - min_time) + min_time;
+                                    const xrho = rho(t, id);
+                                    const y = ctx.canvas.height - (xrho - min_value) / (max_value - min_value) * ctx.canvas.height;
+                                    if (x == 0) {
+                                        ctx.moveTo(x, y);
+                                    } else {
+                                        ctx.lineTo(x, y);
+                                    }
+                                }
+                                ctx.strokeStyle = "#888";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+
+                                draw_cursor(ctx, 0);
+                                draw_cursor(ctx, 10);
+                                draw_cursor(ctx, t, rho(t, id));
+
+                                frame++;
+                            }
+
+                            requestAnimationFrame(animation);
+                        });
+                    }
+                },
+            );
+        }) ();
+    </script>
+</body>
+</html>
+
