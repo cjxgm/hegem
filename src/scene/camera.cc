@@ -58,7 +58,14 @@ namespace rt::scene::cameras
         });
     }
 
-    glm::mat4 world_space_to_clip_space(camera_type const& cam, float aspect_ratio)
+    glm::mat4 world_space_to_camera_space(camera_type const& cam)
+    {
+        auto c2w = camera_space_to_world_space(cam);
+        auto w2c = inverse(c2w);
+        return w2c;
+    }
+
+    glm::mat4 projection_of(camera_type const& cam, float aspect_ratio)
         // TODO: allow user to adjust far plane?
     {
         // aspect corrected normalized width and height
@@ -79,9 +86,13 @@ namespace rt::scene::cameras
                 return glm::ortho(-xmax, xmax, -ymax, ymax, 1e-5f, 1e2f);
             });
 
-        auto c2w = camera_space_to_world_space(cam);
-        auto w2c = inverse(c2w);
+        return proj;
+    }
 
+    glm::mat4 world_space_to_clip_space(camera_type const& cam, float aspect_ratio)
+    {
+        auto proj = projection_of(cam, aspect_ratio);
+        auto w2c = world_space_to_camera_space(cam);
         return proj * w2c;
     }
 

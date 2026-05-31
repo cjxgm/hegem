@@ -6,4 +6,10 @@
 #include "repetition.pull"
 #include "advanced.pull"
 #include "subdivision.pull"
+#include "timeline-primitive.pull"
+#include "timeline-timewarping.pull"
+#include "timeline-tweening.pull"
+#include "timeline-arithmetic.pull"
+#include "timeline-coordinate.pull"
+#include "timeline-system.pull"
 

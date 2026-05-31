@@ -1,6 +1,7 @@
 #include "../lib/glm/op/common.hh"
 #include "../lib/imgui.hh"
 #include "../hegem/mesh.hh"
+#include "../kul/system.hh"
 #include "invoke.impl/model.hh"
 #include "editor.hh"
 #include "palette.hh"
@@ -9,6 +10,7 @@
 #include "serialize.hh"
 #include "serializer.hh"
 #include "parse.hh"
+#include "../util/unreachable.macro.hh"
 #include <algorithm>
 #include <string>
 
@@ -18,8 +20,20 @@ namespace rt::sk
     {
         struct temporary_state
         {
-            glm::ivec2 node_pos;
-            int node_width;
+            struct selected_node
+            {
+                glm::ivec2 pos{};
+                glm::ivec2 new_pos{};
+                int width{};
+                int new_width{};
+                node* n{};
+
+                selected_node() = default;
+                selected_node(node& n): pos{n.x, n.y}, new_pos{pos}, width{n.width}, new_width{width}, n{&n} {}
+            };
+
+            selected_node primary_selection;
+            std::vector<selected_node> extra_selections;
             std::string error_message;
             palette_type error_palette;
             bool showing_new_node_popup{};
@@ -100,6 +114,8 @@ namespace rt::sk
                             (void) fields; \
                             FIELDS \
                         } break;
+                    #define SECTION(ID, ...) \
+                        case op_id::section_##ID##_##ID: RT_UNREACHABLE();
                     #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP) \
                         ImGui::PushItemWidth(-100); \
                         ImGui::PushID(#VAR); \
@@ -140,9 +156,8 @@ namespace rt::sk
                     }
                 }
 
-                auto font_scaling = scaling < 1.0f
-                    ? scaling * 0.5f + 0.5f
-                    : std::min(2.0f, scaling * 0.4f + 0.6f);
+                auto max_font_scaling = 2.0f;
+                auto font_scaling = max_font_scaling * (1.0f - exp((-1.0f / max_font_scaling) * scaling));
                 auto grid_size = initial_grid_size * scaling;
                 ImGui::SetWindowFontScale(font_scaling);
 
@@ -179,8 +194,8 @@ namespace rt::sk
                             ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(45, 45, 45, 255));
                             ImGui::SetCursorPos(to_imgui(pos));
                             if (ImGui::Button("+", to_imgui(size))) {
-                                tmp.node_pos = mouse_grid;
-                                tmp.node_width = placeholder_width;
+                                tmp.primary_selection.pos = mouse_grid;
+                                tmp.primary_selection.width = placeholder_width;
                                 tmp.showing_new_node_popup = true;
                                 ImGui::OpenPopup("new node");
                             }
@@ -189,8 +204,8 @@ namespace rt::sk
                     }
 
                     if (tmp.showing_new_node_popup) {
-                        auto pos = grid_to_local(tmp.node_pos);
-                        auto size = glm::vec2{float(tmp.node_width), 1.0f} * grid_size;
+                        auto pos = grid_to_local(tmp.primary_selection.pos);
+                        auto size = glm::vec2{float(tmp.primary_selection.width), 1.0f} * grid_size;
                         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(80, 80, 80, 255));
                         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(50, 50, 50, 255));
                         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(50, 50, 50, 255));
@@ -201,7 +216,7 @@ namespace rt::sk
                     }
 
                     if (ImGui::BeginPopup("new node", ImGuiWindowFlags_NoMove)) {
-                        auto pos = grid_to_screen(tmp.node_pos + glm::ivec2{0, 1});
+                        auto pos = grid_to_screen(tmp.primary_selection.pos + glm::ivec2{0, 1});
                         ImGui::SetWindowPos(to_imgui(pos));
 
                         kind_metadata const* prev_kind = nullptr;
@@ -216,7 +231,7 @@ namespace rt::sk
                             if (prev_kind != &kind) {
                                 prev_kind = &kind;
                                 ImGui::AlignTextToFramePadding();
-                                ImGui::PushStyleColor(ImGuiCol_Text, palette.fg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_Text, (kind.name[0] == '-' ? palette.fg : palette.fg_accent));
                                 ImGui::Text("%s", kind.name);
                                 if (ImGui::IsItemHovered()) {
                                     tooltip = kind.tooltip;
@@ -224,26 +239,31 @@ namespace rt::sk
                                 }
                                 ImGui::PopStyleColor(1);
                             }
-                            ImGui::SameLine();
 
-                            ImGui::PushStyleColor(ImGuiCol_Text, palette.fg);
-                            ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg);
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
-                            if (ImGui::Button(op.name)) {
-                                g.emplace(
-                                    tmp.node_pos.x,
-                                    tmp.node_pos.y,
-                                    tmp.node_width,
-                                    id);
-                                ImGui::CloseCurrentPopup();
-                                changed |= true;
+                            if (op.name[0] == '\0') {
+                                // Skip intentionally.
+                            } else {
+                                ImGui::SameLine();
+
+                                ImGui::PushStyleColor(ImGuiCol_Text, palette.fg);
+                                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                                if (ImGui::Button(op.name)) {
+                                    g.emplace(
+                                        tmp.primary_selection.pos.x,
+                                        tmp.primary_selection.pos.y,
+                                        tmp.primary_selection.width,
+                                        id);
+                                    ImGui::CloseCurrentPopup();
+                                    changed |= true;
+                                }
+                                if (ImGui::IsItemHovered()) {
+                                    tooltip = op.tooltip;
+                                    tooltip_palette = &palette;
+                                }
+                                ImGui::PopStyleColor(4);
                             }
-                            if (ImGui::IsItemHovered()) {
-                                tooltip = op.tooltip;
-                                tooltip_palette = &palette;
-                            }
-                            ImGui::PopStyleColor(4);
 
                             ImGui::PopID();
                         }
@@ -262,9 +282,10 @@ namespace rt::sk
                         auto& palette = kind.palette;
 
                         ImGui::PushID(node.id);
-                        auto node_new_x = node.x;
-                        auto node_new_y = node.y;
-                        auto node_new_w = node.width;
+                        tmp.primary_selection.new_pos.x = node.x;
+                        tmp.primary_selection.new_pos.y = node.y;
+                        tmp.primary_selection.new_width = node.width;
+                        tmp.primary_selection.n = &node;
 
                         { // operator node button
                             auto pos = grid_to_local({ node.x, node.y });
@@ -278,23 +299,39 @@ namespace rt::sk
                                 error_message += node.runtime_error;
                             }
 
+                            ImGui::PushID("operator");
+
+                            static auto dragging_button = ImGuiID{};
+                            auto this_dragging_button = ImGui::GetID(op.name);
+
                             if (node.id == previewing_node) {
                                 ImGui::PushStyleColor(ImGuiCol_Text, palette.bg);
-                                ImGui::PushStyleColor(ImGuiCol_Button, palette.fg);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                if (dragging_button == this_dragging_button) {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                } else {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.fg);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                }
                             } else {
                                 ImGui::PushStyleColor(ImGuiCol_Text, palette.fg);
-                                ImGui::PushStyleColor(ImGuiCol_Button, palette.bg);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
-                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                if (dragging_button == this_dragging_button) {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                } else {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, palette.bg);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
+                                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.fg_accent);
+                                }
                             }
 
-                            ImGui::PushID("operator");
                             ImGui::SetCursorPos(to_imgui(pos));
                             ImGui::Button(op.name, to_imgui(size));
                             if (!error_message.empty()) {
-                                if (ImGui::IsItemHovered()) {
+                                if (ImGui::IsItemHovered() || dragging_button == this_dragging_button) {
                                     tmp.error_message = std::move(error_message);
                                     tooltip = tmp.error_message.data();
                                     tooltip_palette = &tmp.error_palette;
@@ -314,25 +351,47 @@ namespace rt::sk
                                 }
 
                                 else if (ImGui::IsMouseClicked(0)) {
-                                    tmp.node_pos = { node.x, node.y };
-                                    tmp.node_width = node.width;
+                                    tmp.primary_selection.pos = { node.x, node.y };
+                                    tmp.primary_selection.width = node.width;
+
+                                    tmp.extra_selections.clear();
+                                    tmp.extra_selections.emplace_back(tmp.primary_selection);
+
+                                    if (io.KeyShift) {
+                                        auto strict = io.KeyAlt;
+                                        auto stack = g.stack_of(&node, strict);
+                                        for (auto n: stack)
+                                            tmp.extra_selections.emplace_back(*n);
+                                    }
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
-                                    auto grid = tmp.node_pos + grid_delta;
-                                    auto avail_x = g.find_empty_x(grid.x, grid.y, node.id);
-                                    auto width = std::min(grid.x + tmp.node_width - avail_x, tmp.node_width);
-                                    if (width < 1) width = tmp.node_width;
-                                    grid.x = avail_x;
-                                    width = g.find_empty_width(grid.x, grid.y, width, node.id);
+                                    auto drag_move = [&] (auto& selection) {
+                                        auto grid = selection.pos + grid_delta;
+                                        auto avail_x = g.find_empty_x(grid.x, grid.y);
+                                        auto width = std::min(grid.x + selection.width - avail_x, selection.width);
+                                        if (width < 1) width = selection.width;
+                                        grid.x = avail_x;
+                                        width = g.find_empty_width(grid.x, grid.y, width);
 
-                                    node_new_x = grid.x;
-                                    node_new_y = grid.y;
-                                    node_new_w = width;
+                                        selection.new_pos.x = grid.x;
+                                        selection.new_pos.y = grid.y;
+                                        selection.new_width = width;
+                                    };
+
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = true;
+                                    for (auto& selection: tmp.extra_selections) drag_move(selection);
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = false;
+
+                                    dragging_button = this_dragging_button;
                                 }
+                            }
+                            else if (dragging_button == this_dragging_button) {
+                                dragging_button = ImGuiID{};
+                                tmp.extra_selections.clear();
                             }
 
                             ImGui::PopID();
@@ -373,42 +432,94 @@ namespace rt::sk
                             auto size = glm::vec2{0.3f, 1.0f} * grid_size;
                             pos.x -= 0.3f * grid_size.x;
 
-                            ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg);
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                            static auto resizing_button = ImGuiID{};
+                            auto this_resizing_button = ImGui::GetID("##resize");
+
+                            if (resizing_button == this_resizing_button) {
+                                ImGui::PushStyleColor(ImGuiCol_Button, palette.bg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.bg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Button, palette.fg_accent);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, palette.fg);
+                                ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.bg_accent);
+                            }
 
                             ImGui::SetCursorPos(to_imgui(pos));
                             ImGui::Button("##resize", to_imgui(size));
                             if (ImGui::IsItemActive()) {
                                 if (ImGui::IsMouseClicked(0)) {
-                                    tmp.node_pos = { node.x, node.y };
-                                    tmp.node_width = node.width;
+                                    tmp.primary_selection.pos = { node.x, node.y };
+                                    tmp.primary_selection.width = node.width;
+
+                                    tmp.extra_selections.clear();
+                                    tmp.extra_selections.emplace_back(tmp.primary_selection);
+
+                                    if (io.KeyShift) {
+                                        auto strict = io.KeyAlt;
+                                        auto stack = g.stack_of(&node, strict);
+                                        for (auto n: stack)
+                                            tmp.extra_selections.emplace_back(*n);
+                                    }
                                 }
 
                                 else if (ImGui::IsMouseDragging(0)) {
                                     auto old_mouse = to_glm(io.MouseClickedPos[0]);
                                     auto grid_delta = screen_to_grid(mouse_screen_pos) - screen_to_grid(old_mouse);
 
-                                    auto width = std::max(1, tmp.node_width + grid_delta.x);
-                                    width = g.find_empty_width(tmp.node_pos.x, tmp.node_pos.y, width, node.id);
-                                    node_new_w = width;
+                                    auto drag_resize = [&] (auto& selection) {
+                                        auto width = std::max(1, selection.width + grid_delta.x);
+                                        width = g.find_empty_width(selection.pos.x, selection.pos.y, width);
+
+                                        selection.new_width = width;
+                                    };
+
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = true;
+                                    for (auto& selection: tmp.extra_selections) drag_resize(selection);
+                                    for (auto& selection: tmp.extra_selections) selection.n->is_ghost = false;
+
+                                    resizing_button = this_resizing_button;
                                 }
+                            }
+
+                            else if (resizing_button == this_resizing_button) {
+                                resizing_button = ImGuiID{};
+                                tmp.extra_selections.clear();
                             }
 
                             ImGui::PopStyleColor(3);
                         }
 
-                        changed |= (node.x != node_new_x);
-                        changed |= (node.y != node_new_y);
-                        changed |= (node.width != node_new_w);
-                        node.x = node_new_x;
-                        node.y = node_new_y;
-                        node.width = node_new_w;
-
                         ImGui::PopID();
                     }
                     ImGui::PopID();
                 }
+
+                auto apply_move = [&] (auto& selection) {
+                    changed |= (selection.n->x != selection.new_pos.x);
+                    changed |= (selection.n->y != selection.new_pos.y);
+                    changed |= (selection.n->width != selection.new_width);
+
+                    selection.n->x = selection.new_pos.x;
+                    selection.n->y = selection.new_pos.y;
+                    selection.n->width = selection.new_width;
+                };
+                for (auto& selection: tmp.extra_selections)
+                    apply_move(selection);
+
+                auto insert_again = [&] (auto& node) {
+                    node.is_ghost = true;
+                    auto avail_x = g.find_empty_x(node.x, node.y);
+                    auto width = std::min(node.x + node.width - avail_x, node.width);
+                    if (width < 1) width = node.width;
+                    width = g.find_empty_width(avail_x, node.y, width);
+                    node.is_ghost = false;
+
+                    node.x = avail_x;
+                    node.width = width;
+                };
+                for (auto& selection: tmp.extra_selections)
+                    insert_again(*selection.n);
 
                 if (tooltip && tooltip[0] != '\0') {
                     ImGui::PushStyleColor(ImGuiCol_Text, tooltip_palette->fg);
@@ -461,6 +572,17 @@ namespace rt::sk
                         1,
                         std::move(m.hmesh),
                     });
+            }
+
+            if (result.type() == typeid(kul::spark_system)) {
+                auto s = std::any_cast<kul::spark_system>(std::move(result));
+
+                nodes.emplace_back(
+                    scene::nodes::object {
+                        0,
+                        std::move(s),
+                    }
+                );
             }
 
             s.rebuild_cache();

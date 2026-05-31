@@ -32,7 +32,7 @@ $build__output_bin = "hegem";
 $compiler__flags__standard = "c++17";
 $compiler__flags__optimization_level = "0" if exists $opt{"-g"};
 $compiler__flags__architecture = "ivybridge";
-@compiler__flags__extra = qw[-Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-unused-parameter -ggdb -Wno-missing-braces];
+@compiler__flags__extra = qw[-Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter -ggdb -Wno-missing-braces];
 @loader__flags__extra = qw[-pthread -lstdc++fs -ggdb];    # FIXME: feature detection on "libstdc++fs" / C++17 filesystem
 
 $makefile__show_commands = exists $opt{"-c"};

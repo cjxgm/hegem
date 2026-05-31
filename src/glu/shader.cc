@@ -3,6 +3,7 @@
 #include "../util/journal.hh"
 #include "shader.hh"
 #include "traits.hh"
+#include <algorithm>
 
 namespace rt::glu::shader_factory
 {
@@ -49,7 +50,7 @@ namespace rt::glu::shader_factory
         }
 
         template <gl::enum_type Type>
-        auto maybe_shader_from_name(util::as_czstring name) -> lib::optional<shared_shader<Type>>
+        auto maybe_shader_from_name(util::as_czstring name, std::string const& injection) -> lib::optional<shared_shader<Type>>
         {
             auto path = "support/shaders/" + name.to_string() + "/"
                 + traits::shader<Type>::name_abbr() + ".glsl";
@@ -57,6 +58,11 @@ namespace rt::glu::shader_factory
             if (auto maybe_src = util::maybe_slurp(path)) {
                 j() << "\e[0;32m(" << name.data() << ")\e[0m compiling shader: " << path << "\n";
                 auto src = std::move(maybe_src.value());
+                if (!injection.empty()) {
+                    auto injection_pos = std::min(src.find_first_of('\n'), src.size());
+                    src.insert(injection_pos, injection);
+                    src.insert(injection_pos, "\n");
+                }
                 auto s = shader_pool<Type>::instance().allocate();
                 auto data = src.data();
                 int size = src.size();
@@ -70,9 +76,9 @@ namespace rt::glu::shader_factory
         }
 
         template <gl::enum_type Type>
-        void attach_available_shader(gl::uint_type prog, util::as_czstring name)
+        void attach_available_shader(gl::uint_type prog, util::as_czstring name, std::string const& injection)
         {
-            if (auto maybe_shader = maybe_shader_from_name<Type>(name)) {
+            if (auto maybe_shader = maybe_shader_from_name<Type>(name, injection)) {
                 gl::attach_shader(prog, *maybe_shader);
             }
         }
@@ -81,23 +87,24 @@ namespace rt::glu::shader_factory
         void attach_available_shaders(
             gl::uint_type prog,
             util::as_czstring name,
+            std::string const& injection,
             traits::gl_enum_sequence<Types...>)
         {
-            (attach_available_shader<Types>(prog, name), ...);
+            (attach_available_shader<Types>(prog, name, injection), ...);
         }
 
-        void attach_all_available_shaders(gl::uint_type prog, util::as_czstring name)
+        void attach_all_available_shaders(gl::uint_type prog, util::as_czstring name, std::string const& injection)
         {
-            attach_available_shaders(prog, name, traits::shader_types{});
+            attach_available_shaders(prog, name, injection, traits::shader_types{});
         }
     }
 
-    shared_program program_from_name(util::as_czstring name)
+    shared_program program_from_name(util::as_czstring name, std::string const& injection)
     {
         j() << "\e[0;32m(" << name << ")\e[0m compiling program" << "\n";
         auto prog = program_pool::instance().allocate();
         try {
-            attach_all_available_shaders(prog, name);
+            attach_all_available_shaders(prog, name, injection);
             gl::link_program(prog);
             check_program_error(prog, name);
         }

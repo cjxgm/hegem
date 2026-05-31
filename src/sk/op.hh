@@ -10,12 +10,14 @@ namespace rt::sk
         enum class kind_id
         {
             #define KIND(KIND, ...) KIND,
+            #define SECTION(ID, ...) section_##ID,
             #include "op.inl"
         };
 
         enum class op_id
         {
             #define OP(KIND, ID, ...) KIND##_##ID,
+            #define SECTION(ID, ...) section_##ID##_##ID,
             #include "op.inl"
         };
 

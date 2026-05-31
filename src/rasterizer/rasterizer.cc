@@ -15,7 +15,9 @@ namespace rt::rasterizer
     {
         auto& sm = glu::states_manager::instance();
         float aspect_ratio = float(s.view.size.x) / s.view.size.y;
-        auto proj_view = world_space_to_clip_space(s.view.camera, aspect_ratio);
+        auto view = world_space_to_camera_space(s.view.camera);
+        auto proj = projection_of(s.view.camera, aspect_ratio);
+        auto proj_view = proj * view;
         auto cam_apex = apex_in_world_space(s.view.camera, aspect_ratio);
         auto pixel_size = glm::vec2{1.0f} / glm::vec2{s.view.size};
 
@@ -163,6 +165,26 @@ namespace rt::rasterizer
             });
         }
         gl::depth_mask(true);
+
+        // - spark system
+        if (wireframed) gl::funcs::polygon_mode(gl::front_and_back, gl::line);
+        sm.enable_only({ gl::depth_test, gl::blend });
+        gl::depth_mask(false);
+        gl::blend_equation(gl::func_add);
+        gl::blend_func(gl::src_alpha, gl::one);
+        gl::bind_framebuffer(gl::framebuffer, s.fbo_combined);
+        gl::bind_vertex_array(s.vao_empty);
+        for (auto& spark: s.geometry.sparks) {
+            auto view_model = view * spark.model_to_world;
+            gl::use_program(spark.shape.prog_spark);
+            gl::uniform1f(0, time);
+            gl::uniform_matrix4fv(1, 1, false, &view_model[0][0]);
+            gl::uniform_matrix4fv(2, 1, false, &proj[0][0]);
+            gl::uniform1i(3, (wireframed ? 1 : 0));
+            gl::draw_arrays_instanced(gl::points, 0, 1, spark.shape.num_particles);
+        }
+        gl::depth_mask(true);
+        if (wireframed) gl::funcs::polygon_mode(gl::front_and_back, gl::fill);
 
         // blit to output
         sm.enable_only({});

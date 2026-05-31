@@ -95,6 +95,12 @@ namespace rt::raytracer
             {
                 throw std::logic_error{"hemeshes should have been converted into meshes."};
             }
+
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::spark_system const& /*shape*/, optional_mesh_bvh_type const& /*opt_bvh*/)
+            {
+                // Sparks are invisible to raytracers/pathtracers
+                return hits::missed{ray};
+            }
         }
 
         shape_hit_type intersect(ray_type const& ray, shape_type const& shape, optional_mesh_bvh_type const& opt_bvh)
