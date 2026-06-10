@@ -28,6 +28,7 @@ $base_dir__source = "source";
 $compiler__bin = "clang++";
 $loader__bin = $compiler__bin;
 $build__output_bin = "hegem";
+$build__main_impl = "main.cxx";
 
 &output__variable__bool('::sanitize');
 @compiler__sanitizers = qw[undefined address] if $::sanitize;

@@ -1,8 +1,8 @@
 #pragma once
-#include "../lib/gl/gl.hh"
-#include "../util/integral-allocator.hh"
-#include "../util/constraints.hh"
-#include "../util/journal.hh"
+#include "../lib/gl/gl.hxx"
+#include "../util/integral-allocator.hxx"
+#include "../util/constraints.hxx"
+#include "../util/journal.hxx"
 #include <vector>
 #include <utility>  // for std::swap and std::move
 #include <functional>
@@ -11,7 +11,7 @@
 
 #ifndef RESOURCE_INCLUDED
 #define RESOURCE_INCLUDED
-#include "resource.hh"
+#include "resource.hxx"
 #undef RESOURCE_INCLUDED
 #endif
 
