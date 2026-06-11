@@ -5,7 +5,7 @@
 #include "image-viewer.hxx"
 #include <utility>      // for std::move
 
-namespace rt::morpha
+namespace hegem::morpha
 {
     namespace
     {

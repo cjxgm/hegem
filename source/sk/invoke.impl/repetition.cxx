@@ -9,7 +9,7 @@
 #include "select.hxx"
 #include <utility>      // for std::move
 
-namespace rt::sk::op::invoke_impl
+namespace hegem::sk::op::invoke_impl
 {
     auto invoke(op_fields_repetition_array const& fields, util::span<lib::any> args) -> lib::any
     {

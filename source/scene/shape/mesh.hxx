@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace shapes
     {

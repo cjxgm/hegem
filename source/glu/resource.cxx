@@ -1,7 +1,7 @@
 #include "resource.hxx"
 #include "traits.hxx"
 
-namespace rt::glu
+namespace hegem::glu
 {
     inline namespace resource_details
     {

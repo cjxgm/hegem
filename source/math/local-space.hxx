@@ -3,7 +3,7 @@
 #include "../lib/glm/fwd.hxx"
 #include "direction.hxx"
 
-namespace rt::math
+namespace hegem::math
 {
     glm::mat3 local_space(direction_type z);
 }

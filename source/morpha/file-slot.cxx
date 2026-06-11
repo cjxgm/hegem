@@ -3,7 +3,7 @@
 #include "../lib/imgui.hxx"
 #include "file-slot.hxx"
 
-namespace rt::morpha
+namespace hegem::morpha
 {
     struct file_slot::temporary_state
     {

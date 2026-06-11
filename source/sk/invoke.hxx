@@ -3,7 +3,7 @@
 #include "../util/span.hxx"
 #include "op.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op
     {

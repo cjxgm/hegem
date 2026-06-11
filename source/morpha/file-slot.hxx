@@ -2,7 +2,7 @@
 #include "../util/constraints.hxx"
 #include <memory>
 
-namespace rt::morpha
+namespace hegem::morpha
 {
     struct file_slot final: util::constraints::only_movable
     {

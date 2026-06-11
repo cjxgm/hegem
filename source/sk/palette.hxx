@@ -2,7 +2,7 @@
 #include "../lib/glm/vec3.hxx"
 #include "../image/color.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace palette_details
     {

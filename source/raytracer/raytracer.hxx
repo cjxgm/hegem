@@ -9,7 +9,7 @@
 #include "ray.hxx"
 #include <tuple>
 
-namespace rt::raytracer
+namespace hegem::raytracer
 {
     namespace raytracer_details
     {

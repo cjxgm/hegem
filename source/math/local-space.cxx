@@ -3,7 +3,7 @@
 #include "../lib/glm/vec3.hxx"
 #include "../lib/glm/op/geom.hxx"
 
-namespace rt::math
+namespace hegem::math
 {
     glm::mat3 local_space(direction_type z)
     {

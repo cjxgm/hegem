@@ -3,7 +3,7 @@
 #include "range.hxx"
 #include <vector>
 
-namespace rt::util
+namespace hegem::util
 {
     template <class T>
     struct span

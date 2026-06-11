@@ -4,7 +4,7 @@
 #include "../math/direction.hxx"
 #include "../scene/camera.hxx"
 
-namespace rt::raytracer
+namespace hegem::raytracer
 {
     namespace ray_details
     {

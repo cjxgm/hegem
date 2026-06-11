@@ -2,7 +2,7 @@
 #include "../lib/glm/fwd.hxx"
 #include "color.hxx"
 
-namespace rt::image
+namespace hegem::image
 {
     namespace colorspace
     {

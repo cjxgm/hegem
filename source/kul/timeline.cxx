@@ -1,7 +1,7 @@
 #include "timeline.hxx"
 #include <utility>      // for std::move
 
-namespace rt::kul
+namespace hegem::kul
 {
     namespace
     {

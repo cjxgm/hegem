@@ -2,7 +2,7 @@
 #include "../lib/glm/mat4.hxx"
 #include "turn-table.hxx"
 
-namespace rt::math
+namespace hegem::math
 {
     glm::mat4 rotation(turn_table const& tt)
     {

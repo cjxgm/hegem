@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace serializer
     {

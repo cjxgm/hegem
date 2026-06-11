@@ -13,7 +13,7 @@
 #include <limits>
 #include <numeric>
 
-namespace rt::util
+namespace hegem::util
 {
     namespace grid_details
     {

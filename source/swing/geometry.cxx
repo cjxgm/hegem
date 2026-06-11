@@ -3,7 +3,7 @@
 #include "primitive.hxx"
 #include "list.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace geometry_operator
     {

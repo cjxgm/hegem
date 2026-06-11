@@ -2,7 +2,7 @@
 #include "../global/counter.hxx"
 #include "statistics.hxx"
 
-namespace rt::app::view
+namespace hegem::app::view
 {
     namespace
     {

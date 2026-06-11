@@ -3,7 +3,7 @@
 #include "list.hxx"
 #include "primitive.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     namespace iter
     {

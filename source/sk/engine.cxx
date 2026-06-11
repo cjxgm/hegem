@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace engine
     {

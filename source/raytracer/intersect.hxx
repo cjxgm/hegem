@@ -3,7 +3,7 @@
 #include "hit.hxx"
 #include "ray.hxx"
 
-namespace rt::raytracer
+namespace hegem::raytracer
 {
     object_hit_type intersect(scene::scene_cache const& sc, ray_type const& ray);
 

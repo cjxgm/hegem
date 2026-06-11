@@ -5,7 +5,7 @@
 
 int main(int argc, char const* argv[]) try
 {
-    rt::app::run_once({argc, argv});
+    hegem::app::run_once({argc, argv});
 }
 catch (std::runtime_error const& ex)
 {

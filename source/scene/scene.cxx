@@ -2,7 +2,7 @@
 #include "parser.hxx"
 #include <stdexcept>
 
-namespace rt::scene::scene_details
+namespace hegem::scene::scene_details
 {
     namespace
     {

@@ -3,7 +3,7 @@
 #include <string>
 #include <deque>
 
-namespace rt::app
+namespace hegem::app
 {
     struct options
     {

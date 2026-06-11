@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace primitive
     {

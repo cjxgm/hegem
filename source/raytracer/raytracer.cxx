@@ -12,7 +12,7 @@
 #include "shade.hxx"
 #include <cmath>
 
-namespace rt::raytracer::raytracer_details
+namespace hegem::raytracer::raytracer_details
 {
     namespace
     {

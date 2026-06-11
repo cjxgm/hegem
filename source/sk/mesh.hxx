@@ -3,7 +3,7 @@
 #include "../scene/shape/mesh.hxx"
 #include "invoke.impl/model.fwd.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     inline namespace mesh
     {

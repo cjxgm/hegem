@@ -2,7 +2,7 @@
 #include "mesh.hxx"
 #include <fstream>
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace shapes
     {

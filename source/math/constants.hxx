@@ -1,7 +1,7 @@
 #pragma once
 #include <limits>
 
-namespace rt::math
+namespace hegem::math
 {
     inline namespace constants
     {

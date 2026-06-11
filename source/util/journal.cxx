@@ -1,7 +1,7 @@
 #include "journal.hxx"
 #include <iostream>
 
-namespace rt::util
+namespace hegem::util
 {
     inline namespace journal_details
     {

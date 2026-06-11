@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <string>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace editor_details
     {

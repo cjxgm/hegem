@@ -6,7 +6,7 @@
 #include "../util/tile.hxx"
 #include <string>
 
-namespace rt::app
+namespace hegem::app
 {
     struct hdr_texture
     {

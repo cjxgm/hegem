@@ -31,7 +31,7 @@
 #include <memory>
 #include <thread>
 
-namespace rt::app
+namespace hegem::app
 {
     namespace
     {

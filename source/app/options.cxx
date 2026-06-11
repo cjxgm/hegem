@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iterator>
 
-namespace rt::app
+namespace hegem::app
 {
     namespace
     {

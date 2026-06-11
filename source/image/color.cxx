@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <cassert>
 
-namespace rt::image::color
+namespace hegem::image::color
 {
     namespace
     {

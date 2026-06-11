@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <string>
 
-namespace rt::sk
+namespace hegem::sk
 {
     using node_id_type = std::size_t;
 

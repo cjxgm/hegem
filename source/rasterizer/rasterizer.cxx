@@ -4,7 +4,7 @@
 #include "../glu/states.hxx"
 #include "rasterizer.hxx"
 
-namespace rt::rasterizer
+namespace hegem::rasterizer
 {
     namespace
     {

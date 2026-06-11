@@ -1,7 +1,7 @@
 #pragma once
 #include "../lib/glm/fwd.hxx"
 
-namespace rt::math
+namespace hegem::math
 {
     // Some rotation model
     struct turn_table

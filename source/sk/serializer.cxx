@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <ios>
 
-namespace rt::sk::serializer
+namespace hegem::sk::serializer
 {
     namespace
     {

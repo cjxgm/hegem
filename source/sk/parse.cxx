@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace
     {

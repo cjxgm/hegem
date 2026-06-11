@@ -8,7 +8,7 @@
 #include <vector>
 #include <tuple>
 
-namespace rt::raytracer
+namespace hegem::raytracer
 {
     namespace face_trait
     {
@@ -39,12 +39,12 @@ namespace rt::raytracer
     }
 }
 
-namespace rt::util::bvh_details
+namespace hegem::util::bvh_details
 {
     extern template struct bvh<raytracer::face_trait::mesh>;
 }
 
-namespace rt::util::grid_details
+namespace hegem::util::grid_details
 {
     extern template struct grid<raytracer::face_trait::mesh>;
 }

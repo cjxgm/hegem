@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-namespace rt::swrast
+namespace hegem::swrast
 {
     namespace state_details
     {

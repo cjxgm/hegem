@@ -4,7 +4,7 @@
 #include "../lib/glm/op/intersect.hxx"
 #include "face-trait.hxx"
 
-namespace rt::raytracer::face_trait
+namespace hegem::raytracer::face_trait
 {
     mesh::mesh(shapes::mesh const& m)
         : verts{m.verts.data()}
@@ -62,12 +62,12 @@ namespace rt::raytracer::face_trait
     }
 }
 
-namespace rt::util::bvh_details
+namespace hegem::util::bvh_details
 {
     template struct bvh<raytracer::face_trait::mesh>;
 }
 
-namespace rt::util::grid_details
+namespace hegem::util::grid_details
 {
     template struct grid<raytracer::face_trait::mesh>;
 }

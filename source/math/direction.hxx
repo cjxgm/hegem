@@ -2,7 +2,7 @@
 #include "../lib/glm/vec3.hxx"
 #include "unit.hxx"
 
-namespace rt::math
+namespace hegem::math
 {
     using direction_type = unit<glm::vec3>;
 

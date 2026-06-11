@@ -8,7 +8,7 @@
 #include "../glu/states.hxx"
 #include "hdr-texture.hxx"
 
-namespace rt::app
+namespace hegem::app
 {
     namespace
     {

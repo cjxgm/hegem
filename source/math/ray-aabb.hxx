@@ -2,11 +2,11 @@
 #include "../lib/glm/vec3.hxx"
 #include "../raytracer/ray.hxx"
 
-namespace rt::math
+namespace hegem::math
 {
     namespace ray_aabb_details
     {
-        using rt::raytracer::ray_type;
+        using hegem::raytracer::ray_type;
 
         // Pretend the ray's origin is at `ray.at(-inf)`,
         // then intersect the ray with the aabb defined in [bmin, bmax].

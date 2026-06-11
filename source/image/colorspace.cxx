@@ -3,7 +3,7 @@
 #include "colorspace.hxx"
 #include <cmath>
 
-namespace rt::image::colorspace
+namespace hegem::image::colorspace
 {
     // Adapted from https://gist.github.com/stepheneb/3019585
     namespace

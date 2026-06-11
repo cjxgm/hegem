@@ -4,7 +4,7 @@
 #include "../math/noise.hxx"
 #include "texture-pack.hxx"
 
-namespace rt::scene::texture_packs
+namespace hegem::scene::texture_packs
 {
     namespace
     {

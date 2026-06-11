@@ -2,7 +2,7 @@
 #include "state.hxx"
 #include <array>
 
-namespace rt::swrast::state_details
+namespace hegem::swrast::state_details
 {
     namespace
     {
@@ -105,7 +105,7 @@ namespace rt::swrast::state_details
     }
 }
 
-namespace rt::swrast::state_details
+namespace hegem::swrast::state_details
 {
     edge_descriptor::edge_descriptor(polygon_id_type id, screen_coord_type lower, screen_coord_type upper)
         : x{lower.x}
@@ -116,7 +116,7 @@ namespace rt::swrast::state_details
     {}
 }
 
-namespace rt::swrast::state_details
+namespace hegem::swrast::state_details
 {
     namespace
     {

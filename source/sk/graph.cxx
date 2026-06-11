@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <unordered_set>
 
-namespace rt::sk
+namespace hegem::sk
 {
     auto graph::emplace(int x, int y, int width, op_id id) -> node&
     {

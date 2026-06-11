@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rt::app
+namespace hegem::app
 {
     namespace view
     {

@@ -2,7 +2,7 @@
 #include "serialize.hxx"
 #include <unordered_map>
 
-namespace rt::swing
+namespace hegem::swing
 {
     struct cpp_serializer final: serializer
     {

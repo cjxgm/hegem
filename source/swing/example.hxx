@@ -2,7 +2,7 @@
 #include "../scene/scene.hxx"
 #include "hemesh.fwd.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace example
     {

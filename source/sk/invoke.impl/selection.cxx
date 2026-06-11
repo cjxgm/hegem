@@ -11,7 +11,7 @@
 #include "util.hxx"
 #include <utility>      // for std::move
 
-namespace rt::sk::op::invoke_impl
+namespace hegem::sk::op::invoke_impl
 {
     namespace
     {

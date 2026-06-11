@@ -1,6 +1,6 @@
 #include "tile.hxx"
 
-namespace rt::util::tile_details
+namespace hegem::util::tile_details
 {
     tile_iterator::tile_iterator(int tile_w, int tile_h, int canvas_w, int canvas_h)
         : state{}

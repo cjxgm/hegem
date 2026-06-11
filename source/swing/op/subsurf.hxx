@@ -2,7 +2,7 @@
 // Subdivision surface
 #include "../hemesh.fwd.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace op
     {

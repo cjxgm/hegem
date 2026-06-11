@@ -2,7 +2,7 @@
 #include "../util/unreachable.macro.hxx"
 #include <algorithm>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op
     {

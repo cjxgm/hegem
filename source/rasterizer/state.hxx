@@ -10,7 +10,7 @@
 #include <vector>
 #include <array>
 
-namespace rt::rasterizer
+namespace hegem::rasterizer
 {
     namespace state_details
     {

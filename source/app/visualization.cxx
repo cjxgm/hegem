@@ -2,7 +2,7 @@
 #include "visualization.hxx"
 #include <utility>      // for std::move
 
-namespace rt::app::visualization_details
+namespace hegem::app::visualization_details
 {
     visualization::visualization(std::string name, scene_type& scene, view_type& view, bool trace)
         : name{std::move(name)}

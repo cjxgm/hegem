@@ -1,6 +1,6 @@
 #include "node.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace
     {

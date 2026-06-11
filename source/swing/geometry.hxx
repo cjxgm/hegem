@@ -2,7 +2,7 @@
 #include "type.hxx"
 #include "primitive.fwd.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace geometry_operator
     {

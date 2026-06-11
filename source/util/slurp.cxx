@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace rt::util
+namespace hegem::util
 {
     lib::optional<std::string> maybe_slurp(as_czstring path)
     {

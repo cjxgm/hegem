@@ -2,7 +2,7 @@
 #include "graph.hxx"
 #include "../util/unreachable.macro.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     template <class Serializer>
     void serialize(Serializer& s, graph& g, node_id_type previewing_node)

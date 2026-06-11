@@ -9,7 +9,7 @@
 #include "../math/direction.hxx"
 #include <vector>
 
-namespace rt::rasterizer
+namespace hegem::rasterizer
 {
     namespace sort_details
     {

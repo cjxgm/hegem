@@ -7,7 +7,7 @@
 #include <vector>
 #include <stdexcept>
 
-namespace rt::sk::op::invoke_impl
+namespace hegem::sk::op::invoke_impl
 {
     namespace
     {

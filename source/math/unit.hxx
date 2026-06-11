@@ -1,7 +1,7 @@
 #pragma once
 #include "../lib/glm/op/geom.hxx"
 
-namespace rt::math
+namespace hegem::math
 {
     // unit vector
     template <class T>

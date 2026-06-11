@@ -10,7 +10,7 @@
 #include "../lib/stb/image-write.inl"
 #include "../lib/stb/image-read.inl"
 
-namespace rt::image::image_impl
+namespace hegem::image::image_impl
 {
     template struct image<linear_rgb>;
     template struct image<srgb>;

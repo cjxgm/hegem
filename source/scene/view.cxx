@@ -1,7 +1,7 @@
 #include "../lib/glm/mat3.hxx"
 #include "view.hxx"
 
-namespace rt::scene
+namespace hegem::scene
 {
     glm::mat3 view_type::screen_space_to_camera_plane_space() const
     {

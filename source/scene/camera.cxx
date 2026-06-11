@@ -6,7 +6,7 @@
 #include "../lib/glm/op/mat.hxx"
 #include "camera.hxx"
 
-namespace rt::scene::cameras
+namespace hegem::scene::cameras
 {
     namespace
     {

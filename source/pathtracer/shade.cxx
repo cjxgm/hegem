@@ -8,7 +8,7 @@
 #include "shade.hxx"
 #include <cmath>
 
-namespace rt::pathtracer::shading_details
+namespace hegem::pathtracer::shading_details
 {
     namespace
     {

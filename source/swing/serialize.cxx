@@ -2,7 +2,7 @@
 #include "hemesh.hxx"
 #include "meta.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     void serialize(hemesh const& m, serializer& sr)
     {

@@ -6,7 +6,7 @@
 #include "../raytracer/ray.hxx"
 #include "../raytracer/hit.hxx"
 
-namespace rt::pathtracer
+namespace hegem::pathtracer
 {
     namespace shading_details
     {

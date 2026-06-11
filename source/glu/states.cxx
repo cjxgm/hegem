@@ -1,7 +1,7 @@
 #include "states.hxx"
 #include <utility>  // for std::move
 
-namespace rt::glu
+namespace hegem::glu
 {
     namespace
     {

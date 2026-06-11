@@ -4,7 +4,7 @@
 #include "list.hxx"
 #include <stdexcept>
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace meta
     {

@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <stdexcept>
 
-namespace rt::math
+namespace hegem::math
 {
     template <class T>
     struct rat

@@ -6,7 +6,7 @@
 #include "registry.hxx"
 #include <vector>
 
-namespace rt::sk
+namespace hegem::sk
 {
     struct graph: util::constraints::only_movable
     {

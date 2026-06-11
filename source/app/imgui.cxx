@@ -14,11 +14,11 @@
 #include <memory>
 #include <vector>
 
-namespace rt::app::imgui
+namespace hegem::app::imgui
 {
     namespace
     {
-        using rt::util::journal;
+        using hegem::util::journal;
         journal j() { return {"IMGUI"}; }
 
         struct glfw_cursor_deleter

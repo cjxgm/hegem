@@ -4,7 +4,7 @@
 #include "transform.hxx"
 #include <unordered_set>
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace op
     {

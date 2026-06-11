@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace meta
     {

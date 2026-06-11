@@ -4,7 +4,7 @@
 #include "node.hxx"
 #include <deque>
 
-namespace rt::scene::cache_details
+namespace hegem::scene::cache_details
 {
     cached_object::cached_object(material_id_type material_id, shape_type shape, glm::mat4 const& model_to_world)
         : material_id{material_id}

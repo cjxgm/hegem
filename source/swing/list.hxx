@@ -3,7 +3,7 @@
 #include "../util/priter.hxx"
 #include <utility>      // for std::forward
 
-namespace rt::swing
+namespace hegem::swing
 {
     namespace list
     {

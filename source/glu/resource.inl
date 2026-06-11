@@ -15,7 +15,7 @@
 #undef RESOURCE_INCLUDED
 #endif
 
-namespace rt::glu
+namespace hegem::glu
 {
     inline namespace resource_details
     {

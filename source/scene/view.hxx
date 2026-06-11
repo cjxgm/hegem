@@ -5,7 +5,7 @@
 #include <utility>
 #include <string>
 
-namespace rt::scene
+namespace hegem::scene
 {
     struct view_type
     {

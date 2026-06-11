@@ -8,7 +8,7 @@
 #include "pathtracer.hxx"
 #include <utility>      // for std::move
 
-namespace rt::pathtracer::pathtracer_details
+namespace hegem::pathtracer::pathtracer_details
 {
     namespace
     {

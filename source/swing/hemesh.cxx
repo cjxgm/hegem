@@ -7,7 +7,7 @@
 #include <string>
 
 // misc
-namespace rt::swing
+namespace hegem::swing
 {
     void hemesh::extend(hemesh const& m)
     {
@@ -27,7 +27,7 @@ namespace rt::swing
 }
 
 // makers
-namespace rt::swing
+namespace hegem::swing
 {
     body_type* hemesh::make_body()
     {

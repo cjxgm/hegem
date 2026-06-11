@@ -1,7 +1,7 @@
 #pragma once
 #include "timeline.hxx"
 
-namespace rt::kul
+namespace hegem::kul
 {
     struct spark_system
     {

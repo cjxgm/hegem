@@ -5,7 +5,7 @@
 #include "../math/direction.hxx"
 #include "../math/turn-table.hxx"
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace cameras
     {

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace rt::raytracer
+namespace hegem::raytracer
 {
     namespace
     {

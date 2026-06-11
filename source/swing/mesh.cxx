@@ -9,7 +9,7 @@
 #include <vector>
 #include <array>
 
-namespace rt::swing
+namespace hegem::swing
 {
     namespace
     {

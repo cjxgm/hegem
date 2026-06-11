@@ -5,7 +5,7 @@
 #include "resource.hxx"
 #include <string>
 
-namespace rt::glu
+namespace hegem::glu
 {
     namespace shader_factory
     {

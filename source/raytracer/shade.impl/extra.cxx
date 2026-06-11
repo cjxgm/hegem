@@ -6,7 +6,7 @@
 #include "../../math/constants.hxx"
 #include "../shade.hxx"
 
-namespace rt::raytracer::shading_details
+namespace hegem::raytracer::shading_details
 {
     namespace
     {

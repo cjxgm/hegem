@@ -4,7 +4,7 @@
 #include "palette.hxx"
 #include <map>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op
     {

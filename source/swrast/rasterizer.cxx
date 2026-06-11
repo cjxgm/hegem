@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <array>
 
-namespace rt::swrast
+namespace hegem::swrast
 {
     namespace
     {

@@ -4,7 +4,7 @@
 #include "../math/direction.hxx"
 #include "../image/color.hxx"
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace lamps
     {

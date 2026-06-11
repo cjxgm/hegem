@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op
     {

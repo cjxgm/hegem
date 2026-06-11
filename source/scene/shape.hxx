@@ -9,7 +9,7 @@
 #include "shape/mesh.hxx"
 #include <array>
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace shapes
     {
@@ -33,8 +33,8 @@ namespace rt::scene
             util::grid<raytracer::face_trait::mesh> voxelized;
         };
 
-        using rt::swing::hemesh;
-        using rt::kul::spark_system;
+        using hegem::swing::hemesh;
+        using hegem::kul::spark_system;
 
         using shape_type = mapbox::util::variant<
             sphere,

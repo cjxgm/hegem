@@ -2,7 +2,7 @@
 #include "../lib/glm/op/common.hxx"
 #include "constants.hxx"
 
-namespace rt::math::ray_aabb_details
+namespace hegem::math::ray_aabb_details
 {
     namespace
     {

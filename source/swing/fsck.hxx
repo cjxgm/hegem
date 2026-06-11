@@ -2,7 +2,7 @@
 // fsck: Formal Self-ChecK, or, "i want to F*CK my past Self".
 #include "hemesh.fwd.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     // fsck::fsck_* functions return true when bad things happened.
     inline namespace fsck

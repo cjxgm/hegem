@@ -1,7 +1,7 @@
 #include "../lib/glm/op/geom.hxx"
 #include "material.hxx"
 
-namespace rt::scene::materials
+namespace hegem::scene::materials
 {
     bool reflective(material_type const& mat)
     {

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace rt::util
+namespace hegem::util
 {
     namespace types
     {

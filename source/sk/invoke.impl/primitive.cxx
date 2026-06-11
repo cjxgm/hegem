@@ -6,7 +6,7 @@
 #include "select.hxx"
 #include <utility>      // for std::move
 
-namespace rt::sk::op::invoke_impl
+namespace hegem::sk::op::invoke_impl
 {
     auto invoke(op_fields_primitive_poly_disk const& fields, util::span<lib::any> args) -> lib::any
     {

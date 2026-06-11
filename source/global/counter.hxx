@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
 
-namespace rt::global
+namespace hegem::global
 {
     namespace counter_details
     {

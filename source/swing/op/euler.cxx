@@ -4,7 +4,7 @@
 #include "euler.hxx"
 #include <stdexcept>
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace op
     {

@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <utility>      // for std::integer_sequence
 
-namespace rt::glu
+namespace hegem::glu
 {
     namespace traits
     {

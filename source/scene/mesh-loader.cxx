@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <iostream>     // TODO: use journal
 
-namespace rt::scene::mesh_loader
+namespace hegem::scene::mesh_loader
 {
     shapes::mesh from_path(util::as_czstring path)
     {

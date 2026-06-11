@@ -4,7 +4,7 @@
 #include "state.hxx"
 #include <utility>      // for std::move
 
-namespace rt::rasterizer::state_details
+namespace hegem::rasterizer::state_details
 {
     namespace
     {

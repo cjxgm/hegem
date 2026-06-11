@@ -3,7 +3,7 @@
 #include "../util/constraints.hxx"
 #include <unordered_set>
 
-namespace rt::glu
+namespace hegem::glu
 {
     struct states_manager: util::non_transferable
     {

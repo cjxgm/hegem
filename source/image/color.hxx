@@ -2,7 +2,7 @@
 #include "../lib/glm/fwd.hxx"
 #include "../util/as-czstring.hxx"
 
-namespace rt::image
+namespace hegem::image
 {
     namespace color
     {

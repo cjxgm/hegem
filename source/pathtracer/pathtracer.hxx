@@ -5,7 +5,7 @@
 #include "../util/tile.hxx"
 #include <functional>
 
-namespace rt::pathtracer
+namespace hegem::pathtracer
 {
     namespace pathtracer_details
     {

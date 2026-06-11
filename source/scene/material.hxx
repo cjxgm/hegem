@@ -5,7 +5,7 @@
 #include "texture-pack.hxx"
 #include <cstddef>
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace materials
     {

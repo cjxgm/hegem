@@ -3,7 +3,7 @@
 // It is guranteed that 0 <= modulus(a, b) < b.
 #include <cmath>
 
-namespace rt::math
+namespace hegem::math
 {
     inline auto modulus(int a, int b) -> int
     {

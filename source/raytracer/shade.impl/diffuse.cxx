@@ -11,7 +11,7 @@
 #include "unified-lamp.hxx"
 #include <limits>
 
-namespace rt::raytracer::shading_details
+namespace hegem::raytracer::shading_details
 {
     namespace
     {

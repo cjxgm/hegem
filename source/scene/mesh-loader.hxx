@@ -2,7 +2,7 @@
 #include "../util/as-czstring.hxx"
 #include "shape.hxx"
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace mesh_loader
     {

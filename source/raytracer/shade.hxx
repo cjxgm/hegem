@@ -7,7 +7,7 @@
 #include "ray.hxx"
 #include "hit.hxx"
 
-namespace rt::raytracer
+namespace hegem::raytracer
 {
     namespace shading_details
     {

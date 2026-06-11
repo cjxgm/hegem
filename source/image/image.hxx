@@ -7,7 +7,7 @@
 #include <utility>
 #include <type_traits>
 
-namespace rt::image
+namespace hegem::image
 {
     namespace image_impl
     {

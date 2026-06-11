@@ -11,7 +11,7 @@
 #include <functional>
 #include <condition_variable>
 
-namespace rt::util
+namespace hegem::util
 {
     namespace channel_details
     {

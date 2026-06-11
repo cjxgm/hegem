@@ -8,7 +8,7 @@
 #include <iterator>
 #include <stdexcept>
 
-namespace rt::rasterizer::sort_details
+namespace hegem::rasterizer::sort_details
 {
     namespace
     {
@@ -19,7 +19,7 @@ namespace rt::rasterizer::sort_details
         static constexpr auto sun_lamp_capacity = 32;
         static constexpr auto omni_lamp_capacity = 32;
 
-        auto j() { return rt::util::journal{"RAST"}; }
+        auto j() { return hegem::util::journal{"RAST"}; }
 
         namespace sort_materials
         {

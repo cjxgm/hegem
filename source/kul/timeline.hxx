@@ -6,7 +6,7 @@
 #include <functional>
 #include <cstddef>
 
-namespace rt::kul
+namespace hegem::kul
 {
     using timeline_evaluator_fn = auto (float time) -> float;
     using timeline_evaluator = std::function<timeline_evaluator_fn>;

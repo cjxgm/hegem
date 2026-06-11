@@ -4,7 +4,7 @@
 #include "hemesh.fwd.hxx"
 #include "type.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     struct serializer
     {

@@ -1,6 +1,6 @@
 #include "counter.hxx"
 
-namespace rt::global::counter_details
+namespace hegem::global::counter_details
 {
     aggregation_type counter;
 

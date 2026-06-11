@@ -4,7 +4,7 @@
 #include "../math/direction.hxx"
 #include "../util/types.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace type
     {

@@ -6,7 +6,7 @@
 #include "polar-path.hxx"
 #include <vector>
 
-namespace rt::morpha
+namespace hegem::morpha
 {
     struct morphing_cache_entry
     {

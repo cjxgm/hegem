@@ -8,11 +8,11 @@
 #include <string>
 #include <utility>  // for std::move
 
-namespace rt::app::glfw
+namespace hegem::app::glfw
 {
     namespace
     {
-        using rt::util::journal;
+        using hegem::util::journal;
         journal j() { return {"WSI"}; }
 
         GLFWwindow* win{};

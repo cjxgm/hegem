@@ -2,7 +2,7 @@
 #include "model.hxx"
 #include "select.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op::invoke_impl
     {

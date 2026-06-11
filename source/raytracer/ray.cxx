@@ -3,7 +3,7 @@
 #include "../lib/glm/op/trig.hxx"
 #include "ray.hxx"
 
-namespace rt::raytracer::ray_details
+namespace hegem::raytracer::ray_details
 {
     namespace
     {

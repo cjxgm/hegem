@@ -3,7 +3,7 @@
 #include "../../swing/primitive.fwd.hxx"
 #include "model.fwd.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op::invoke_impl
     {

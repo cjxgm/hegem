@@ -5,7 +5,7 @@
 #include "traits.hxx"
 #include <algorithm>
 
-namespace rt::glu::shader_factory
+namespace hegem::glu::shader_factory
 {
     namespace
     {

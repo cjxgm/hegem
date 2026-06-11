@@ -7,7 +7,7 @@
 #include "../image/color.hxx"
 #include "ray.hxx"
 
-namespace rt::raytracer
+namespace hegem::raytracer
 {
     namespace hits
     {
@@ -78,7 +78,7 @@ namespace rt::raytracer
     using hits::hit_buffer_type;
 }
 
-namespace rt::image::image_impl
+namespace hegem::image::image_impl
 {
     extern template struct image<raytracer::object_hit_type>;
 }

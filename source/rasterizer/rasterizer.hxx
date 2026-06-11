@@ -3,7 +3,7 @@
 #include "../scene/view.hxx"
 #include "state.hxx"
 
-namespace rt::rasterizer
+namespace hegem::rasterizer
 {
     void rasterize(state const& s, bool wireframed, float time);
 }

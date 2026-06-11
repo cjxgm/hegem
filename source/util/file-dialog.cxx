@@ -7,7 +7,7 @@
 #include <thread>
 #include <utility>      // for std::move
 
-namespace rt::util
+namespace hegem::util
 {
     namespace
     {

@@ -5,7 +5,7 @@
 #include "../glu/resource.hxx"
 #include <memory>
 
-namespace rt::morpha
+namespace hegem::morpha
 {
     struct image_viewer final: util::constraints::only_movable
     {

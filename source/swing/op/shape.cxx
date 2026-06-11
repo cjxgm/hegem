@@ -10,7 +10,7 @@
 #include <vector>
 #include <cmath>
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace op
     {

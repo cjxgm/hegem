@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rt::swing
+namespace hegem::swing
 {
     struct hemesh;
 }

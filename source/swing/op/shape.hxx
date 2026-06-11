@@ -5,7 +5,7 @@
 #include "../primitive.fwd.hxx"
 #include "../type.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace op
     {

@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>      // for std::move
 
-namespace rt::swing
+namespace hegem::swing
 {
     void cpp_serializer::declare_structure(
         char const* type,
@@ -48,7 +48,7 @@ namespace rt::swing
     }
 }
 
-namespace rt::swing
+namespace hegem::swing
 {
     void dump_serializer::declare_structure(
         char const* type,
@@ -87,7 +87,7 @@ namespace rt::swing
     }
 }
 
-namespace rt::swing
+namespace hegem::swing
 {
     void dump(hemesh const& m, bool starts_with_newline)
     {
@@ -102,7 +102,7 @@ namespace rt::swing
     }
 }
 
-namespace rt::swing
+namespace hegem::swing
 {
     std::string pointer_name(
         pointer_name_map_type const& names,
@@ -171,7 +171,7 @@ namespace rt::swing
     }
 }
 
-namespace rt::swing
+namespace hegem::swing
 {
     void dump_memory_usage_map(hemesh const& m)
     {

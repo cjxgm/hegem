@@ -3,7 +3,7 @@
 #include "hemesh.fwd.hxx"
 #include "primitive.hxx"
 
-namespace rt::swing
+namespace hegem::swing
 {
     struct hemesh
     {

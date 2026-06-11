@@ -2,7 +2,7 @@
 #include "../lib/std/any.hxx"
 #include "graph.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace engine
     {

@@ -2,7 +2,7 @@
 
 extern "C" struct GLFWwindow;
 
-namespace rt::app::imgui
+namespace hegem::app::imgui
 {
     void init_once();
     void on_char(GLFWwindow* win, unsigned int codepoint);

@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace editor_details
     {

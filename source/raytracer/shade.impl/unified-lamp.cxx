@@ -2,7 +2,7 @@
 #include "../../math/constants.hxx"
 #include "unified-lamp.hxx"
 
-namespace rt::raytracer::shading_details::unified_lamp_details
+namespace hegem::raytracer::shading_details::unified_lamp_details
 {
     namespace
     {

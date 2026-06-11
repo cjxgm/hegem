@@ -9,7 +9,7 @@
 #include <random>
 #include <cmath>
 
-namespace rt::math
+namespace hegem::math
 {
     struct uniform_sampler
     {

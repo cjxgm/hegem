@@ -4,7 +4,7 @@
 #include "../op.hxx"
 #include <stdexcept>
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op::invoke_impl
     {

@@ -2,7 +2,7 @@
 #include "../lib/mapbox/variant.hxx"
 #include "../image/color.hxx"
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace texture_packs
     {

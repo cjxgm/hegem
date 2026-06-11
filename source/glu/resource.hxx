@@ -4,7 +4,7 @@
 #include <utility>  // for std::forward
 #include <functional>
 
-namespace rt::glu
+namespace hegem::glu
 {
     inline namespace resource_details
     {

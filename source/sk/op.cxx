@@ -1,7 +1,7 @@
 #include "op.hxx"
 #include "../util/unreachable.macro.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace op
     {

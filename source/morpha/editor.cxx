@@ -15,7 +15,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace rt::morpha
+namespace hegem::morpha
 {
     inline namespace editor_details
     {

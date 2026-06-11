@@ -1,7 +1,7 @@
 #include "../image/colorspace.hxx"
 #include "palette.hxx"
 
-namespace rt::sk
+namespace hegem::sk
 {
     namespace palette_details
     {

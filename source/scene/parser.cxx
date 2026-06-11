@@ -20,7 +20,7 @@
 #include <string>
 #include <type_traits>
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace
     {

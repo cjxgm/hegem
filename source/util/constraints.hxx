@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rt::util
+namespace hegem::util
 {
 	inline namespace constraints
 	{

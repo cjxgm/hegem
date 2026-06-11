@@ -7,7 +7,7 @@
 #include <iostream>
 #include <deque>
 
-namespace rt::swing
+namespace hegem::swing
 {
     inline namespace fsck
     {

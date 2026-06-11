@@ -7,7 +7,7 @@
 #include "hdr-texture.hxx"
 #include <string>
 
-namespace rt::app
+namespace hegem::app
 {
     namespace visualization_details
     {

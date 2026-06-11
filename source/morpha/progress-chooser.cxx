@@ -2,7 +2,7 @@
 #include "progress-chooser.hxx"
 #include <cmath>
 
-namespace rt::morpha
+namespace hegem::morpha
 {
     auto progress_chooser(int* progress) -> bool
     {

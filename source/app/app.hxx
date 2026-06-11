@@ -2,7 +2,7 @@
 #include "options.hxx"
 #include <vector>
 
-namespace rt::app
+namespace hegem::app
 {
     using task_type = util::task_type<util::possibly_canceled_job>;
     using task_group_type = std::vector<task_type>;

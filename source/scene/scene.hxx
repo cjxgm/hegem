@@ -8,7 +8,7 @@
 #include <deque>
 #include <string>
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace scene_details
     {

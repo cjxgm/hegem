@@ -6,7 +6,7 @@
 #include "material.hxx"
 #include <deque>
 
-namespace rt::scene
+namespace hegem::scene
 {
     namespace scene_details
     {
