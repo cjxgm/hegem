@@ -14,7 +14,7 @@
 #include "../rasterizer/state.hxx"
 #include "../swrast/rasterizer.hxx"
 #include "../skein/editor.hxx"
-#include "../morpha/editor.hxx"
+#include "../silo/editor.hxx"
 #include "app.hxx"
 #include "glfw.hxx"
 #include "hdr-texture.hxx"
@@ -62,7 +62,7 @@ namespace hegem::app
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
             skein::editor skein_editor;
-            morpha::editor morpha_editor{morphing_tile_size};
+            silo::editor silo_editor{morphing_tile_size};
             visualization* skein_visualization{};
             util::file_dialog skein_file_open_dialog;
             util::file_dialog skein_file_save_dialog;
@@ -828,8 +828,8 @@ namespace hegem::app
 
                 ImGui::SetNextWindowPos(ImVec2(400, 50), ImGuiCond_Appearing);
                 ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiCond_FirstUseEver);
-                ImGui::Begin("Morpha - The Morphing Editor");
-                ctx.morpha_editor();
+                ImGui::Begin("Silo - The Morphing Editor");
+                ctx.silo_editor();
                 ImGui::End();
 
                 process_pending_jobs();

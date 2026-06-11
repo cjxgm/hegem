@@ -2,7 +2,7 @@
 #include "../lib/imgui.hxx"
 #include "polar-path.hxx"
 
-namespace hegem::morpha
+namespace hegem::silo
 {
     void update_polar_path_cache(polar_path const& path, polar_path_cache& cache)
     {

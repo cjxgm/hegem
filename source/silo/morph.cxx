@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <utility>      // for std::pair
 
-namespace hegem::morpha
+namespace hegem::silo
 {
     namespace
     {

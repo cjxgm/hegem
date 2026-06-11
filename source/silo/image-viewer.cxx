@@ -5,7 +5,7 @@
 #include "image-viewer.hxx"
 #include <utility>      // for std::move
 
-namespace hegem::morpha
+namespace hegem::silo
 {
     namespace
     {

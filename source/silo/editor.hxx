@@ -4,7 +4,7 @@
 #include "../util/task-manager.hxx"
 #include <memory>
 
-namespace hegem::morpha
+namespace hegem::silo
 {
     struct editor final: util::constraints::only_movable
     {

@@ -15,7 +15,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace hegem::morpha
+namespace hegem::silo
 {
     inline namespace editor_details
     {
@@ -239,7 +239,7 @@ namespace hegem::morpha
             // color palette
             const auto origin_color = glm::vec3{1.0f, 0.5f, 0.5f};
 
-            ImGui::BeginChild("morpha canvas", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::BeginChild("silo canvas", {}, {}, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 auto window_origin = glm::vec2{ImGui::GetCursorScreenPos()};
                 auto mouse_screen_pos = glm::vec2{ImGui::GetMousePos()};

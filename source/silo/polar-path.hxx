@@ -5,7 +5,7 @@
 #include <vector>
 #include <cmath>
 
-namespace hegem::morpha
+namespace hegem::silo
 {
     struct polar_vertex
     {
