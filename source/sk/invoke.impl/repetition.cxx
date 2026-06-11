@@ -2,7 +2,7 @@
 #include "../../lib/std/any.hxx"
 #include "../../math/direction.hxx"
 #include "../../util/span.hxx"
-#include "../../hegem/op/transform.hxx"
+#include "../../swing/op/transform.hxx"
 #include "../op.hxx"
 #include "model.hxx"
 #include "util.hxx"
@@ -27,7 +27,7 @@ namespace rt::sk::op::invoke_impl
         for (float i=0.0f; i<count; i++) {
             auto instance = tmpl.hmesh;
             auto t = recenter_transform * glm::translate(offset * i);
-            hegem::affine_transform_all(instance.any_body, t);
+            swing::affine_transform_all(instance.any_body, t);
             m.extend(instance);
         }
 
@@ -53,7 +53,7 @@ namespace rt::sk::op::invoke_impl
             auto angle = -glm::radians(i / upper_bound * 360.0f * fields.fraction + fields.start);
             auto t = glm::translate(fields.radius * glm::vec3{glm::cos(angle), 0.0f, glm::sin(angle)});
             if (fields.local_rotation) t = t * glm::rotate(-angle, glm::vec3{0.0f, 1.0f, 0.0f});
-            hegem::affine_transform_all(instance.any_body, t);
+            swing::affine_transform_all(instance.any_body, t);
             m.extend(instance);
         }
 

@@ -2,7 +2,7 @@
 #include "../../lib/std/any.hxx"
 #include "../../math/direction.hxx"
 #include "../../util/span.hxx"
-#include "../../hegem/op/transform.hxx"
+#include "../../swing/op/transform.hxx"
 #include "../op.hxx"
 #include "model.hxx"
 #include "util.hxx"
@@ -38,7 +38,7 @@ namespace rt::sk::op::invoke_impl
         auto t = glm::translate(offset);
 
         for (auto vert: m.vert_selection)
-            hegem::affine_transform(vert, t);
+            swing::affine_transform(vert, t);
 
         return std::move(m);
     }
@@ -54,7 +54,7 @@ namespace rt::sk::op::invoke_impl
             * glm::translate(-pivot);
 
         for (auto vert: m.vert_selection)
-            hegem::affine_transform(vert, t);
+            swing::affine_transform(vert, t);
 
         return std::move(m);
     }
@@ -71,7 +71,7 @@ namespace rt::sk::op::invoke_impl
             * glm::translate(-pivot);
 
         for (auto vert: m.vert_selection)
-            hegem::affine_transform(vert, t);
+            swing::affine_transform(vert, t);
 
         return std::move(m);
     }

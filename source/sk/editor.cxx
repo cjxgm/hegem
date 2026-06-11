@@ -1,6 +1,6 @@
 #include "../lib/glm/op/common.hxx"
 #include "../lib/imgui.hxx"
-#include "../hegem/mesh.hxx"
+#include "../swing/mesh.hxx"
 #include "../kul/system.hxx"
 #include "invoke.impl/model.hxx"
 #include "editor.hxx"

@@ -1,4 +1,4 @@
-#include "../hegem/mesh.hxx"
+#include "../swing/mesh.hxx"
 #include "cache.hxx"
 #include "scene.hxx"
 #include "node.hxx"

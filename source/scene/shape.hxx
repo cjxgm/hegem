@@ -4,7 +4,7 @@
 #include "../math/direction.hxx"
 #include "../util/grid.hxx"
 #include "../raytracer/face-trait.hxx"
-#include "../hegem/hemesh.hxx"
+#include "../swing/hemesh.hxx"
 #include "../kul/system.hxx"
 #include "shape/mesh.hxx"
 #include <array>
@@ -33,7 +33,7 @@ namespace rt::scene
             util::grid<raytracer::face_trait::mesh> voxelized;
         };
 
-        using rt::hegem::hemesh;
+        using rt::swing::hemesh;
         using rt::kul::spark_system;
 
         using shape_type = mapbox::util::variant<

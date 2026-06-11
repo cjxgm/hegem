@@ -775,7 +775,7 @@ namespace rt::app
                 if (ctx.sk_visualization == nullptr || !ctx.sk_visualization->show) {
                     auto& scene = ctx.sk_editor.scene;
                     auto& view = scene.views.front();
-                    ctx.sk_visualization = &vis.emplace_back("Hegem Preview", scene, view, false);
+                    ctx.sk_visualization = &vis.emplace_back("Preview", scene, view, false);
                     ctx.sk_editor.force_execute(ctx.sk_visualization->with_gizmo);
                     update_sk_visualization();
                 }

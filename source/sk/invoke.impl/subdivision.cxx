@@ -1,6 +1,6 @@
 #include "../../lib/std/any.hxx"
 #include "../../util/span.hxx"
-#include "../../hegem/op/subsurf.hxx"
+#include "../../swing/op/subsurf.hxx"
 #include "../op.hxx"
 #include "model.hxx"
 #include "util.hxx"

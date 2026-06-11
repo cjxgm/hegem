@@ -1,6 +1,6 @@
 #include "../lib/std/filesystem.hxx"
 #include "../util/journal.hxx"
-#include "../hegem/example.hxx"
+#include "../swing/example.hxx"
 #include "options.hxx"
 #include <vector>
 #include <algorithm>
@@ -35,7 +35,7 @@ namespace rt::app
         if (argc > 1) scene_basedir = argv[1];
 
         j() << "making example scene\n";
-        scenes.emplace_back(hegem::make_example_scene());
+        scenes.emplace_back(swing::make_example_scene());
         populate_scenes(*this);
     }
 }

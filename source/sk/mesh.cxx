@@ -1,6 +1,6 @@
-#include "../hegem/primitive.hxx"
-#include "../hegem/geometry.hxx"
-#include "../hegem/list.hxx"
+#include "../swing/primitive.hxx"
+#include "../swing/geometry.hxx"
+#include "../swing/list.hxx"
 #include "../math/direction.hxx"
 #include "../math/local-space.hxx"
 #include "../math/constants.hxx"
@@ -14,13 +14,13 @@ namespace rt::sk
     {
         namespace
         {
-            auto barycenter_of(hegem::hege_type* first) -> glm::vec3
+            auto barycenter_of(swing::hege_type* first) -> glm::vec3
             {
                 if (first == nullptr) return {};
 
                 glm::vec3 bary;
                 int count{};
-                for (auto& h: hegem::list::iterate(first)) {
+                for (auto& h: swing::list::iterate(first)) {
                     bary += h.start->pos;
                     count++;
                 }
@@ -28,7 +28,7 @@ namespace rt::sk
                 return (count == 0 ? bary : bary / float(count));
             }
 
-            auto vertex_mesh(hegem::vert_type* v) -> scene::shapes::mesh
+            auto vertex_mesh(swing::vert_type* v) -> scene::shapes::mesh
             {
                 constexpr auto radius = 0.05f;
                 constexpr glm::vec3 positions[] = {
@@ -66,7 +66,7 @@ namespace rt::sk
                 return m;
             }
 
-            auto face_mesh(hegem::face_type* f) -> scene::shapes::mesh
+            auto face_mesh(swing::face_type* f) -> scene::shapes::mesh
             {
                 if (f->boundary->any_hege == nullptr)
                     return {};
@@ -121,7 +121,7 @@ namespace rt::sk
                     { 11,  8, 12 },
                 };
 
-                auto nf = hegem::normal(f->boundary->any_hege);
+                auto nf = swing::normal(f->boundary->any_hege);
                 auto local_axis = math::local_space(nf);
                 auto median = barycenter_of(f->boundary->any_hege);
 

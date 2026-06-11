@@ -407,13 +407,13 @@ namespace rt::morpha
 
     void editor::draw()
     {
-        if (auto& filename = tmp->file0("morphing source", "/usr/share/hegem/support/morphing"); !filename.empty()) {
+        if (auto& filename = tmp->file0("morphing source", "/usr/share/swing/support/morphing"); !filename.empty()) {
             tmp->image0 = std::make_shared<image::image_rgb>(image::load(filename));
             tmp->morphing_progress = 0;
             tmp->interpolated_features_needs_update = true;
             tmp->morphing_needs_update = true;
         }
-        if (auto& filename = tmp->file1("morphing target", "/usr/share/hegem/support/morphing"); !filename.empty()) {
+        if (auto& filename = tmp->file1("morphing target", "/usr/share/swing/support/morphing"); !filename.empty()) {
             tmp->image1 = std::make_shared<image::image_rgb>(image::load(filename));
             tmp->morphing_progress = 100;
             tmp->interpolated_features_needs_update = true;

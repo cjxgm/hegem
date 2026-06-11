@@ -1,4 +1,4 @@
-#include "../../hegem/primitive.hxx"
+#include "../../swing/primitive.hxx"
 #include "model.hxx"
 #include "select.hxx"
 
@@ -37,12 +37,12 @@ namespace rt::sk
             }
         }
 
-        void select_faces(model& m, bool exclusive, util::span<hegem::face_type*> faces, bool inverse)
+        void select_faces(model& m, bool exclusive, util::span<swing::face_type*> faces, bool inverse)
         {
             select(m.face_selection, exclusive, m.hmesh.faces, inverse, faces);
         }
 
-        void select_verts(model& m, bool exclusive, util::span<hegem::vert_type*> verts, bool inverse)
+        void select_verts(model& m, bool exclusive, util::span<swing::vert_type*> verts, bool inverse)
         {
             select(m.vert_selection, exclusive, m.hmesh.verts, inverse, verts);
         }

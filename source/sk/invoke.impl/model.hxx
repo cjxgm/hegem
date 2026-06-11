@@ -1,6 +1,6 @@
 #pragma once
 // A model is an hemesh with selections
-#include "../../hegem/hemesh.hxx"
+#include "../../swing/hemesh.hxx"
 #include <unordered_set>
 
 namespace rt::sk
@@ -21,9 +21,9 @@ namespace rt::sk
                 return *this;
             }
 
-            hegem::hemesh hmesh;
-            std::unordered_set<hegem::face_type*> face_selection;
-            std::unordered_set<hegem::vert_type*> vert_selection;
+            swing::hemesh hmesh;
+            std::unordered_set<swing::face_type*> face_selection;
+            std::unordered_set<swing::vert_type*> vert_selection;
         };
     }
 }

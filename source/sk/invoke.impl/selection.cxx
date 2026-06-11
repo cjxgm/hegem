@@ -2,9 +2,9 @@
 #include "../../lib/std/any.hxx"
 #include "../../util/span.hxx"
 #include "../../math/direction.hxx"
-#include "../../hegem/list.hxx"
-#include "../../hegem/iteration.hxx"
-#include "../../hegem/geometry.hxx"
+#include "../../swing/list.hxx"
+#include "../../swing/iteration.hxx"
+#include "../../swing/geometry.hxx"
 #include "../op.hxx"
 #include "model.hxx"
 #include "select.hxx"
@@ -21,13 +21,13 @@ namespace rt::sk::op::invoke_impl
             return (dot(delta, delta) <= radius*radius);
         }
 
-        auto front_facing(hegem::face_type const* f, math::direction_type front) -> bool
+        auto front_facing(swing::face_type const* f, math::direction_type front) -> bool
         {
-            auto n = hegem::normal(f->boundary->any_hege);
+            auto n = swing::normal(f->boundary->any_hege);
             return (dot(*n, *front) > 1e-5f);
         }
 
-        auto match_no_backfaces(hegem::face_type const* f, float3 front3, bool no_backfaces) -> bool
+        auto match_no_backfaces(swing::face_type const* f, float3 front3, bool no_backfaces) -> bool
         {
             if (no_backfaces) {
                 auto front = math::direction_type{to_glm(front3)};
@@ -36,17 +36,17 @@ namespace rt::sk::op::invoke_impl
             return true;
         }
 
-        auto match(hegem::vert_type const* v, op_fields_selection_select_verts const& fields) -> bool
+        auto match(swing::vert_type const* v, op_fields_selection_select_verts const& fields) -> bool
         {
             return in_sphere(v->pos, to_glm(fields.center), fields.radius);
         }
 
-        auto match(hegem::face_type const* f, op_fields_selection_select_faces const& fields) -> bool
+        auto match(swing::face_type const* f, op_fields_selection_select_faces const& fields) -> bool
         {
             glm::vec3 median{};
             {
                 int vert_count{};
-                for (auto& h: hegem::list::iterate(f->boundary->any_hege)) {
+                for (auto& h: swing::list::iterate(f->boundary->any_hege)) {
                     median += h.start->pos;
                     vert_count++;
                 }
@@ -68,9 +68,9 @@ namespace rt::sk::op::invoke_impl
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
         auto& slab = m.hmesh.verts;
-        std::unordered_set<hegem::vert_type*> frees{begin(slab.frees), end(slab.frees)};
+        std::unordered_set<swing::vert_type*> frees{begin(slab.frees), end(slab.frees)};
 
-        std::vector<hegem::vert_type*> verts;
+        std::vector<swing::vert_type*> verts;
         if (fields.radius >= 0.0f) {
             for (auto& node: slab.nodes)
                 if (frees.count(&node) == 0 && match(&node, fields))
@@ -86,9 +86,9 @@ namespace rt::sk::op::invoke_impl
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
         auto& slab = m.hmesh.faces;
-        std::unordered_set<hegem::face_type*> frees{begin(slab.frees), end(slab.frees)};
+        std::unordered_set<swing::face_type*> frees{begin(slab.frees), end(slab.frees)};
 
-        std::vector<hegem::face_type*> faces;
+        std::vector<swing::face_type*> faces;
         if (fields.radius >= 0.0f) {
             for (auto& node: slab.nodes)
                 if (frees.count(&node) == 0 && match(&node, fields))
@@ -97,10 +97,10 @@ namespace rt::sk::op::invoke_impl
         select_faces(m, fields.exclusive, faces, fields.inverse);
 
         if (fields.affect_verts) {
-            std::vector<hegem::vert_type*> verts;
+            std::vector<swing::vert_type*> verts;
             for (auto face: faces)
-                for (auto& r: hegem::list::iterate(face->boundary))
-                    for (auto& h: hegem::list::iterate(r.any_hege))
+                for (auto& r: swing::list::iterate(face->boundary))
+                    for (auto& h: swing::list::iterate(r.any_hege))
                         verts.emplace_back(h.start);
             select_verts(m, fields.exclusive, verts, fields.inverse);
         }
@@ -112,9 +112,9 @@ namespace rt::sk::op::invoke_impl
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
-        std::vector<hegem::face_type*> faces;
+        std::vector<swing::face_type*> faces;
         for (auto vert: m.vert_selection) {
-            for (auto& h: hegem::iter::heges_around_vert(vert->any_hege)) {
+            for (auto& h: swing::iter::heges_around_vert(vert->any_hege)) {
                 auto face = h.ring->face;
                 if (fields.only_boundary && face->boundary != h.ring)
                     continue;
@@ -126,14 +126,14 @@ namespace rt::sk::op::invoke_impl
         select_faces(m, fields.exclusive, faces, fields.inverse);
 
         if (fields.affect_verts) {
-            std::vector<hegem::vert_type*> verts;
+            std::vector<swing::vert_type*> verts;
             for (auto face: faces) {
                 if (fields.only_boundary) {
-                    for (auto& h: hegem::list::iterate(face->boundary->any_hege))
+                    for (auto& h: swing::list::iterate(face->boundary->any_hege))
                         verts.emplace_back(h.start);
                 } else {
-                    for (auto& r: hegem::list::iterate(face->boundary))
-                        for (auto& h: hegem::list::iterate(r.any_hege))
+                    for (auto& r: swing::list::iterate(face->boundary))
+                        for (auto& h: swing::list::iterate(r.any_hege))
                             verts.emplace_back(h.start);
                 }
             }
