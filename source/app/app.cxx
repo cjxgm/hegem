@@ -13,7 +13,7 @@
 #include "../rasterizer/rasterizer.hxx"
 #include "../rasterizer/state.hxx"
 #include "../swrast/rasterizer.hxx"
-#include "../sk/editor.hxx"
+#include "../skein/editor.hxx"
 #include "../morpha/editor.hxx"
 #include "app.hxx"
 #include "glfw.hxx"
@@ -61,11 +61,11 @@ namespace hegem::app
             int frame_task_capacity = 64;
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
-            sk::editor sk_editor;
+            skein::editor skein_editor;
             morpha::editor morpha_editor{morphing_tile_size};
-            visualization* sk_visualization{};
-            util::file_dialog sk_file_open_dialog;
-            util::file_dialog sk_file_save_dialog;
+            visualization* skein_visualization{};
+            util::file_dialog skein_file_open_dialog;
+            util::file_dialog skein_file_save_dialog;
 
             static context& instance()
             {
@@ -358,7 +358,7 @@ namespace hegem::app
         void update_sk_visualization()
         {
             auto& ctx = context::instance();
-            auto& vi = *ctx.sk_visualization;
+            auto& vi = *ctx.skein_visualization;
             vi.update_rasterization_state();
             vi.reset_raytracing_task_io();
             vi.reset_swrast_task_io();
@@ -384,16 +384,16 @@ namespace hegem::app
         {
             auto& ctx = context::instance();
 
-            if (auto opt_path = ctx.sk_file_save_dialog()) {
+            if (auto opt_path = ctx.skein_file_save_dialog()) {
                 auto path = std::move(*opt_path);
                 if (path.size() < 5 || path.substr(path.size() - 5) != ".toml")
                     path += ".toml";
-                ctx.sk_editor.save_toml(path);
+                ctx.skein_editor.save_toml(path);
             }
 
-            if (auto opt_path = ctx.sk_file_open_dialog()) {
+            if (auto opt_path = ctx.skein_file_open_dialog()) {
                 auto path = std::move(*opt_path);
-                ctx.sk_editor.load_toml(path, ctx.sk_visualization->with_gizmo);
+                ctx.skein_editor.load_toml(path, ctx.skein_visualization->with_gizmo);
                 update_sk_visualization();
             }
         }
@@ -451,7 +451,7 @@ namespace hegem::app
 
                 ImGui::SameLine();
                 if (ImGui::Checkbox("Gizmos", &vi.with_gizmo)) {
-                    ctx.sk_editor.force_execute(vi.with_gizmo);
+                    ctx.skein_editor.force_execute(vi.with_gizmo);
                     update_sk_visualization();
                     vi.reset_raytracing_task_io();
                     vi.reset_swrast_task_io();
@@ -723,23 +723,23 @@ namespace hegem::app
                     ImGui::PopItemWidth();
                 }
                 if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
-                    if (ctx.sk_file_open_dialog) {
+                    if (ctx.skein_file_open_dialog) {
                         ImGui::AlignTextToFramePadding();
                         ImGui::TextDisabled("Open");
                     } else {
                         if (ImGui::Button("Open")) {
-                            ctx.sk_file_open_dialog.open(
+                            ctx.skein_file_open_dialog.open(
                                 util::file_dialog::action::open,
                                 "Open stack graph",
                                 "/usr/share/hegem/support/graph");
                         }
                     }
                     ImGui::SameLine();
-                    if (ctx.sk_file_save_dialog) {
+                    if (ctx.skein_file_save_dialog) {
                         ImGui::TextDisabled("Save");
                     } else {
                         if (ImGui::Button("Save")) {
-                            ctx.sk_file_save_dialog.open(
+                            ctx.skein_file_save_dialog.open(
                                 util::file_dialog::action::save,
                                 "Save stack graph");
                         }
@@ -772,11 +772,11 @@ namespace hegem::app
                     ImGui::End();
                 }
 
-                if (ctx.sk_visualization == nullptr || !ctx.sk_visualization->show) {
-                    auto& scene = ctx.sk_editor.scene;
+                if (ctx.skein_visualization == nullptr || !ctx.skein_visualization->show) {
+                    auto& scene = ctx.skein_editor.scene;
                     auto& view = scene.views.front();
-                    ctx.sk_visualization = &vis.emplace_back("Preview", scene, view, false);
-                    ctx.sk_editor.force_execute(ctx.sk_visualization->with_gizmo);
+                    ctx.skein_visualization = &vis.emplace_back("Preview", scene, view, false);
+                    ctx.skein_editor.force_execute(ctx.skein_visualization->with_gizmo);
                     update_sk_visualization();
                 }
 
@@ -822,7 +822,7 @@ namespace hegem::app
                     ImGuiWindowFlags_NoScrollbar |
                     ImGuiWindowFlags_NoBringToFrontOnFocus);
                 style.WindowPadding = padding;
-                if (ctx.sk_editor.draw(ctx.sk_visualization->with_gizmo))
+                if (ctx.skein_editor.draw(ctx.skein_visualization->with_gizmo))
                     update_sk_visualization();
                 ImGui::End();
 
