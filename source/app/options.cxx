@@ -1,5 +1,5 @@
 #include "../lib/std/filesystem.hxx"
-#include "../util/journal.hxx"
+#include "../tool/journal.hxx"
 #include "../swing/example.hxx"
 #include "options.hxx"
 #include <vector>
@@ -10,7 +10,7 @@ namespace hegem::app
 {
     namespace
     {
-        using util::journal;
+        using tool::journal;
         namespace fs = lib::filesystem;
 
         journal j() { return {"OPT"}; }

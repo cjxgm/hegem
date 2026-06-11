@@ -1,6 +1,6 @@
 #include "../lib/cpptoml.hxx"
-#include "../util/journal.hxx"
-#include "../util/unreachable.macro.hxx"
+#include "../tool/journal.hxx"
+#include "../tool/unreachable.macro.hxx"
 #include "parse.hxx"
 #include <stdexcept>
 #include <array>
@@ -12,7 +12,7 @@ namespace hegem::skein
 {
     namespace
     {
-        util::journal j() { return {"SK.PARSE"}; }
+        tool::journal j() { return {"SK.PARSE"}; }
 
         auto op_id_from_name(graph& g, std::string const& name)
         {

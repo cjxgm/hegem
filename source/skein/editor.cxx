@@ -10,7 +10,7 @@
 #include "serialize.hxx"
 #include "serializer.hxx"
 #include "parse.hxx"
-#include "../util/unreachable.macro.hxx"
+#include "../tool/unreachable.macro.hxx"
 #include <algorithm>
 #include <string>
 

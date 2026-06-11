@@ -1,5 +1,5 @@
 #pragma once
-#include "../util/constraints.hxx"
+#include "../tool/constraints.hxx"
 #include "../image/color.hxx"
 #include "../image/image.hxx"
 #include "../glu/resource.hxx"
@@ -7,7 +7,7 @@
 
 namespace hegem::silo
 {
-    struct image_viewer final: util::constraints::only_movable
+    struct image_viewer final: tool::constraints::only_movable
     {
         struct temporary_state;
 

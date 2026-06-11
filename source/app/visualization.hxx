@@ -3,7 +3,7 @@
 #include "../scene/scene.hxx"
 #include "../scene/view.hxx"
 #include "../rasterizer/state.hxx"
-#include "../util/task-manager.hxx"
+#include "../tool/task-manager.hxx"
 #include "hdr-texture.hxx"
 #include <string>
 
@@ -21,12 +21,12 @@ namespace hegem::app
             glu::shared_framebuffer fbo;
             rasterizer::state s;
 
-            lib::optional<util::task_io> raytracing_task_io;
+            lib::optional<tool::task_io> raytracing_task_io;
             int suppress_raytracing{};
             bool show_raytracing_overlay{false};
             bool trace_path{false};
 
-            lib::optional<util::task_io> swrast_task_io;
+            lib::optional<tool::task_io> swrast_task_io;
             int suppress_swrast{};
             bool show_swrast_overlay{false};
 
@@ -36,9 +36,9 @@ namespace hegem::app
 
             visualization(std::string name, scene_type& scene, view_type& view, bool trace);
             void reset_raytracing_task_io();
-            void reset_raytracing_task_io(util::task_io io);
+            void reset_raytracing_task_io(tool::task_io io);
             void reset_swrast_task_io();
-            void reset_swrast_task_io(util::task_io io);
+            void reset_swrast_task_io(tool::task_io io);
             void update_rasterization_state();
         };
     }

@@ -446,7 +446,7 @@ namespace hegem::scene
                 FN_PARSE(shapes::voxel)
                 {
                     using mesh_face_trait = raytracer::face_trait::mesh;
-                    using mesh_grid_type = util::grid<mesh_face_trait>;
+                    using mesh_grid_type = tool::grid<mesh_face_trait>;
 
                     auto md = PARSE(voxel_metadata, voxel);
                     auto& m = md.mesh;
@@ -541,7 +541,7 @@ namespace hegem::scene
         return scene;
     }
 
-    scene_type from_path(util::as_czstring path)
+    scene_type from_path(tool::as_czstring path)
     {
         std::ifstream ifs{path.data()};
         return from_istream(ifs);

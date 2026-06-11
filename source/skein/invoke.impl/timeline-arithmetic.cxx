@@ -1,9 +1,9 @@
 #include "../../lib/std/any.hxx"
 #include "../../math/modulus.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../kul/timeline.hxx"
 #include "../op.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move, std::swap
 #include <string>
 #include <cmath>
@@ -40,7 +40,7 @@ namespace hegem::skein::op::invoke_impl
         }
     }
 
-    auto invoke(op_fields_timeline_arithmetic_add const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_arithmetic_add const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
@@ -53,7 +53,7 @@ namespace hegem::skein::op::invoke_impl
         };
         tl.expression.partial_expression = "( + )";
         tl.expression.independent_variables_positions = {1u, 4u};
-        tl.expression = tl.expression.apply(util::span<kul::independent_expression const>{iexprs});
+        tl.expression = tl.expression.apply(tool::span<kul::independent_expression const>{iexprs});
 
         tl.value_min = tl0.value_min + tl1.value_min;
         tl.value_max = tl0.value_max + tl1.value_max;
@@ -62,7 +62,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_arithmetic_sub const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_arithmetic_sub const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
@@ -75,7 +75,7 @@ namespace hegem::skein::op::invoke_impl
         };
         tl.expression.partial_expression = "( - )";
         tl.expression.independent_variables_positions = {1u, 4u};
-        tl.expression = tl.expression.apply(util::span<kul::independent_expression const>{iexprs});
+        tl.expression = tl.expression.apply(tool::span<kul::independent_expression const>{iexprs});
 
         tl.value_min = tl0.value_min - tl1.value_max;
         tl.value_max = tl0.value_max - tl1.value_min;
@@ -84,7 +84,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_arithmetic_mul const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_arithmetic_mul const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
@@ -97,7 +97,7 @@ namespace hegem::skein::op::invoke_impl
         };
         tl.expression.partial_expression = "( * )";
         tl.expression.independent_variables_positions = {1u, 4u};
-        tl.expression = tl.expression.apply(util::span<kul::independent_expression const>{iexprs});
+        tl.expression = tl.expression.apply(tool::span<kul::independent_expression const>{iexprs});
 
         tl.value_min = tl0.value_min * tl1.value_max;
         tl.value_max = tl0.value_max * tl1.value_min;
@@ -107,7 +107,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_arithmetic_div const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_arithmetic_div const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
@@ -120,7 +120,7 @@ namespace hegem::skein::op::invoke_impl
         };
         tl.expression.partial_expression = "kul_div(, )";
         tl.expression.independent_variables_positions = {8u, 10u};
-        tl.expression = tl.expression.apply(util::span<kul::independent_expression const>{iexprs});
+        tl.expression = tl.expression.apply(tool::span<kul::independent_expression const>{iexprs});
 
         tl.value_min = kul_div([&] (float) { return tl0.value_min; }, [&] (float) { return tl1.value_max; }, 0.0f);
         tl.value_max = kul_div([&] (float) { return tl0.value_max; }, [&] (float) { return tl1.value_min; }, 0.0f);
@@ -130,7 +130,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_arithmetic_mod const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_arithmetic_mod const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
@@ -143,7 +143,7 @@ namespace hegem::skein::op::invoke_impl
         };
         tl.expression.partial_expression = "kul_mod(, )";
         tl.expression.independent_variables_positions = {8u, 10u};
-        tl.expression = tl.expression.apply(util::span<kul::independent_expression const>{iexprs});
+        tl.expression = tl.expression.apply(tool::span<kul::independent_expression const>{iexprs});
 
         tl.window_min = 0.0f;
         tl.window_max = std::abs(tl1.value_max);

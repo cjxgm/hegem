@@ -1,6 +1,6 @@
 #pragma once
-#include "../util/constraints.hxx"
-#include "../util/range.hxx"
+#include "../tool/constraints.hxx"
+#include "../tool/range.hxx"
 #include "op.hxx"
 #include "node.hxx"
 #include "registry.hxx"
@@ -8,7 +8,7 @@
 
 namespace hegem::skein
 {
-    struct graph: util::constraints::only_movable
+    struct graph: tool::constraints::only_movable
     {
         auto emplace(int x, int y, int width, op_id id) -> node&;
         auto find_node(node_id_type id) -> node*;
@@ -22,8 +22,8 @@ namespace hegem::skein
         // n will NOT be contained in the result.
         auto stack_of(node const* n, bool strict) -> std::vector<node*>;
 
-        auto node_range() { return util::range{begin(nodes), end(nodes)}; }
-        auto op_metadata_range() { return util::range{begin(reg.ops), end(reg.ops)}; }
+        auto node_range() { return tool::range{begin(nodes), end(nodes)}; }
+        auto op_metadata_range() { return tool::range{begin(reg.ops), end(reg.ops)}; }
 
         void collect_garbage();
 

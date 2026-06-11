@@ -1,9 +1,9 @@
 #include "../../lib/std/any.hxx"
 #include "../../math/modulus.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../kul/timeline.hxx"
 #include "../op.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move, std::swap
 #include <string>
 #include <cmath>
@@ -19,7 +19,7 @@ namespace hegem::skein::op::invoke_impl
         }
     }
 
-    auto invoke(op_fields_timeline_timewarping_timeshift const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_timewarping_timeshift const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument must be a timeline.");
         auto tl = kul::timeline{};
@@ -34,7 +34,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_timewarping_speedup const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_timewarping_speedup const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument must be a timeline.");
         auto tl = kul::timeline{};
@@ -50,7 +50,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_timewarping_window const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_timewarping_window const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument must be a timeline.");
         auto tl = kul::timeline{};

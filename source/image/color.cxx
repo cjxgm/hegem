@@ -46,7 +46,7 @@ namespace hegem::image::color
         return clamp(src, linear_rgb{0}, linear_rgb{1}) * linear_rgb{255.0};
     }
 
-    srgb to_srgb(util::as_czstring hex_rrggbb)
+    srgb to_srgb(tool::as_czstring hex_rrggbb)
     {
         try {
             if (hex_rrggbb.size() != 6) {

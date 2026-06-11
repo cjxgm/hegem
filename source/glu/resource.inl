@@ -1,8 +1,8 @@
 #pragma once
 #include "../lib/gl/gl.hxx"
-#include "../util/integral-allocator.hxx"
-#include "../util/constraints.hxx"
-#include "../util/journal.hxx"
+#include "../tool/integral-allocator.hxx"
+#include "../tool/constraints.hxx"
+#include "../tool/journal.hxx"
 #include <vector>
 #include <utility>  // for std::swap and std::move
 #include <functional>
@@ -21,13 +21,13 @@ namespace hegem::glu
     {
         // can only exists (allocated and destructed) in 1 thread.
         template <class T, class Traits>
-        struct resource_pool: util::non_transferable
+        struct resource_pool: tool::non_transferable
         {
             using resource_type = T;
             using traits = Traits;
             using resource_id_type = typename traits::id_type;
 
-            using name_allocator_type = util::integral_allocator;
+            using name_allocator_type = tool::integral_allocator;
             using shared = shared_resource<resource_type, traits>;
             friend shared;
 
@@ -137,7 +137,7 @@ namespace hegem::glu
 
             auto j() const
             {
-                return util::journal{"POOL"}
+                return tool::journal{"POOL"}
                     << "\e[0;36m[" << traits::name() << "|" << pool_id << "]\e[0m ";
             }
         };

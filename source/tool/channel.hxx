@@ -11,7 +11,7 @@
 #include <functional>
 #include <condition_variable>
 
-namespace hegem::util
+namespace hegem::tool
 {
     namespace channel_details
     {

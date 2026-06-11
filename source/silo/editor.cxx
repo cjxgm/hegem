@@ -63,7 +63,7 @@ namespace hegem::silo
         glm::vec2 origin{0.0f, 0.0f};
 
         image_viewer preview;
-        lib::optional<util::task_io> preview_high_quality_io;
+        lib::optional<tool::task_io> preview_high_quality_io;
         int preview_high_quality_countdown = -1;
         file_slot file0;
         file_slot file1;
@@ -371,7 +371,7 @@ namespace hegem::silo
                     amount
                 ] (auto tx, auto shared_canceled) {
                     auto result = morph(lower_quality, *image0, *image1, *cache, amount, tile, smoothness, decay, length_influence);
-                    tx.send(util::possibly_canceled_job{
+                    tx.send(tool::possibly_canceled_job{
                         shared_canceled,
                         [image=std::move(result), tex=std::move(preview_tex), tile] () {
                             gl::texture_sub_image2d(
@@ -393,7 +393,7 @@ namespace hegem::silo
 
             auto [tile_w, tile_h] = tmp.tile_size;
             app::task_group_type tasks;
-            for (auto& tile: util::tile_iterator{tile_w, tile_h, preview_size.x, preview_size.y}) {
+            for (auto& tile: tool::tile_iterator{tile_w, tile_h, preview_size.x, preview_size.y}) {
                 tasks.emplace_back(make_task(tile));
             }
 

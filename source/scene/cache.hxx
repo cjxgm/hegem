@@ -17,7 +17,7 @@ namespace hegem::scene
     namespace cache_details
     {
         using mesh_face_trait = raytracer::face_trait::mesh;
-        using mesh_bvh_type = util::bvh<mesh_face_trait>;
+        using mesh_bvh_type = tool::bvh<mesh_face_trait>;
         using optional_mesh_bvh_type = lib::optional<mesh_bvh_type>;
 
         struct cached_object

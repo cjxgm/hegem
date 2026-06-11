@@ -14,7 +14,7 @@ namespace hegem::skein
                 bool exclusive,
                 Slab& slab,
                 bool inverse,
-                util::span<T*> propose)
+                tool::span<T*> propose)
             {
                 if (exclusive) {
                     if (inverse) {
@@ -37,12 +37,12 @@ namespace hegem::skein
             }
         }
 
-        void select_faces(model& m, bool exclusive, util::span<swing::face_type*> faces, bool inverse)
+        void select_faces(model& m, bool exclusive, tool::span<swing::face_type*> faces, bool inverse)
         {
             select(m.face_selection, exclusive, m.hmesh.faces, inverse, faces);
         }
 
-        void select_verts(model& m, bool exclusive, util::span<swing::vert_type*> verts, bool inverse)
+        void select_verts(model& m, bool exclusive, tool::span<swing::vert_type*> verts, bool inverse)
         {
             select(m.vert_selection, exclusive, m.hmesh.verts, inverse, verts);
         }

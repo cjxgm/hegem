@@ -1,7 +1,7 @@
 #pragma once
 #include "as-czstring.hxx"
 
-namespace hegem::util
+namespace hegem::tool
 {
     inline namespace journal_details
     {

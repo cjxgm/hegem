@@ -1,7 +1,7 @@
 #include "../../lib/mapbox/earcut.hxx"
 #include "../../lib/glm/mat3.hxx"
 #include "../../math/local-space.hxx"
-#include "../../util/range.hxx"
+#include "../../tool/range.hxx"
 #include "../hemesh.hxx"
 #include "../list.hxx"
 #include "../geometry.hxx"
@@ -231,7 +231,7 @@ namespace hegem::swing
                     if (it == last) continue;
 
                     auto barycenter_vert = make_edge(m, it->second, pos)->any_hege->twin->start;
-                    for (auto [_, hege_to_edge_point]: util::range{++it, last}) {
+                    for (auto [_, hege_to_edge_point]: tool::range{++it, last}) {
                         (void)_;
 
                         auto first = [&, hege_to_edge_point = hege_to_edge_point] {

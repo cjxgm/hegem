@@ -1,7 +1,7 @@
 #include "journal.hxx"
 #include <iostream>
 
-namespace hegem::util
+namespace hegem::tool
 {
     inline namespace journal_details
     {

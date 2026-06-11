@@ -8,7 +8,7 @@
 
 namespace hegem::scene::mesh_loader
 {
-    shapes::mesh from_path(util::as_czstring path)
+    shapes::mesh from_path(tool::as_czstring path)
     {
         shapes::mesh m;
         tinyobj::attrib_t attrib;

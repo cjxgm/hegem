@@ -1,5 +1,5 @@
 #pragma once
-#include "../util/constraints.hxx"
+#include "../tool/constraints.hxx"
 #include "op.hxx"
 #include "palette.hxx"
 #include <map>
@@ -25,7 +25,7 @@ namespace hegem::skein
             int arity;
         };
 
-        struct op_registry: util::constraints::only_movable
+        struct op_registry: tool::constraints::only_movable
         {
             std::map<kind_id, kind_metadata> kinds;
             std::map<op_id, op_metadata> ops;

@@ -1,11 +1,11 @@
 #pragma once
 #include "../lib/gl/gl.hxx"
-#include "../util/constraints.hxx"
+#include "../tool/constraints.hxx"
 #include <unordered_set>
 
 namespace hegem::glu
 {
-    struct states_manager: util::non_transferable
+    struct states_manager: tool::non_transferable
     {
         static states_manager& instance();
 

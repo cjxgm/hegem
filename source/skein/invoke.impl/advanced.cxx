@@ -1,5 +1,5 @@
 #include "../../lib/std/any.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../swing/op/sweep.hxx"
 #include "../../swing/op/euler.hxx"
 #include "../../swing/geometry.hxx"
@@ -8,7 +8,7 @@
 #include "../op.hxx"
 #include "model.hxx"
 #include "select.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move
 #include <stdexcept>
 #include <vector>
@@ -74,7 +74,7 @@ namespace hegem::skein::op::invoke_impl
         }
     }
 
-    auto invoke(op_fields_advanced_merge const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_advanced_merge const& fields, tool::span<lib::any> args) -> lib::any
     {
         model m;
         for (auto& arg: args.range()) {
@@ -87,7 +87,7 @@ namespace hegem::skein::op::invoke_impl
         return m;
     }
 
-    auto invoke(op_fields_advanced_extrude const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_advanced_extrude const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
@@ -115,7 +115,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(m);
     }
 
-    auto invoke(op_fields_advanced_embed const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_advanced_embed const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto target = extract_or_croak<model>(args[0], "First argument must be a model.");
         auto source = extract_or_croak<model>(args[1], "Second argument must be a model.");

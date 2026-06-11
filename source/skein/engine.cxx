@@ -1,5 +1,5 @@
 #include "../lib/boost/format.hxx"
-#include "../util/span.hxx"
+#include "../tool/span.hxx"
 #include "engine.hxx"
 #include "invoke.hxx"
 #include <unordered_map>

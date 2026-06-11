@@ -4,7 +4,7 @@
 #include <vector>
 #include <deque>
 
-namespace hegem::util
+namespace hegem::tool
 {
     // The one implemented here is special because it's designed for
     // trivially copyable types, hence there is "trivial" in its name.

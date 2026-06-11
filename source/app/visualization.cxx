@@ -26,7 +26,7 @@ namespace hegem::app::visualization_details
         raytracing_task_io.reset();
     }
 
-    void visualization::reset_raytracing_task_io(util::task_io io)
+    void visualization::reset_raytracing_task_io(tool::task_io io)
     {
         if (raytracing_task_io)
             raytracing_task_io->cancel();
@@ -40,7 +40,7 @@ namespace hegem::app::visualization_details
         swrast_task_io.reset();
     }
 
-    void visualization::reset_swrast_task_io(util::task_io io)
+    void visualization::reset_swrast_task_io(tool::task_io io)
     {
         if (swrast_task_io)
             swrast_task_io->cancel();

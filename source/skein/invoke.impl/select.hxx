@@ -1,5 +1,5 @@
 #pragma once
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../swing/primitive.fwd.hxx"
 #include "model.fwd.hxx"
 
@@ -24,8 +24,8 @@ namespace hegem::skein
         //
         // - deselect:
         //      select_*(m, false, selection, true)
-        void select_faces(model& m, bool exclusive, util::span<swing::face_type*> faces, bool inverse);
-        void select_verts(model& m, bool exclusive, util::span<swing::vert_type*> verts, bool inverse);
+        void select_faces(model& m, bool exclusive, tool::span<swing::face_type*> faces, bool inverse);
+        void select_verts(model& m, bool exclusive, tool::span<swing::vert_type*> verts, bool inverse);
 
         inline void select_all(model& m)
         {

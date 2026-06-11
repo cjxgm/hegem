@@ -1,8 +1,8 @@
 #include "../lib/gl/gl.hxx"
 #include "../lib/gl/glfw.hxx"
 #include "../lib/imgui.hxx"
-#include "../util/journal.hxx"
-#include "../util/constraints.hxx"
+#include "../tool/journal.hxx"
+#include "../tool/constraints.hxx"
 #include "../glu/resource.hxx"
 #include "../glu/traits.hxx"
 #include "../glu/states.hxx"
@@ -18,7 +18,7 @@ namespace hegem::app::imgui
 {
     namespace
     {
-        using hegem::util::journal;
+        using hegem::tool::journal;
         journal j() { return {"IMGUI"}; }
 
         struct glfw_cursor_deleter
@@ -29,7 +29,7 @@ namespace hegem::app::imgui
             }
         };
 
-        struct context: util::non_transferable
+        struct context: tool::non_transferable
         {
             using unique_cursor = std::unique_ptr<GLFWcursor, glfw_cursor_deleter>;
 

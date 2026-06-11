@@ -62,12 +62,12 @@ namespace hegem::raytracer::face_trait
     }
 }
 
-namespace hegem::util::bvh_details
+namespace hegem::tool::bvh_details
 {
     template struct bvh<raytracer::face_trait::mesh>;
 }
 
-namespace hegem::util::grid_details
+namespace hegem::tool::grid_details
 {
     template struct grid<raytracer::face_trait::mesh>;
 }

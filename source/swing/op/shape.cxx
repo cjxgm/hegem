@@ -18,7 +18,7 @@ namespace hegem::swing
         {
             inline namespace _2d
             {
-                hege_type* make_polygon(hemesh & m, util::const_span<position_type> points, face_type* outer_face, face_type* counter_face)
+                hege_type* make_polygon(hemesh & m, tool::const_span<position_type> points, face_type* outer_face, face_type* counter_face)
                 {
                     if (points.size() < 3) {
                         throw std::invalid_argument{

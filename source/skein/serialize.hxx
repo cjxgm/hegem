@@ -1,6 +1,6 @@
 #pragma once
 #include "graph.hxx"
-#include "../util/unreachable.macro.hxx"
+#include "../tool/unreachable.macro.hxx"
 
 namespace hegem::skein
 {
@@ -33,5 +33,5 @@ namespace hegem::skein
     }
 }
 
-#include "../util/unreachable.undef.hxx"
+#include "../tool/unreachable.undef.hxx"
 

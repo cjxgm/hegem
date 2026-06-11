@@ -1,17 +1,17 @@
 #include "../../lib/glm/op/transform.hxx"
 #include "../../lib/std/any.hxx"
 #include "../../math/direction.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../swing/op/transform.hxx"
 #include "../op.hxx"
 #include "model.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include "select.hxx"
 #include <utility>      // for std::move
 
 namespace hegem::skein::op::invoke_impl
 {
-    auto invoke(op_fields_repetition_array const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_repetition_array const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tmpl = extract_or_croak<model>(args[0], "Argument must be a model.");
 
@@ -36,7 +36,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(md);
     }
 
-    auto invoke(op_fields_repetition_spin const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_repetition_spin const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tmpl = extract_or_croak<model>(args[0], "Argument must be a model.");
 

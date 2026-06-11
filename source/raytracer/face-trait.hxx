@@ -1,8 +1,8 @@
 #pragma once
 #include "../lib/glm/vec3.hxx"
 #include "../scene/shape/mesh.hxx"
-#include "../util/bvh.hxx"
-#include "../util/grid.hxx"
+#include "../tool/bvh.hxx"
+#include "../tool/grid.hxx"
 #include "ray.hxx"
 #include "hit.hxx"
 #include <vector>
@@ -39,12 +39,12 @@ namespace hegem::raytracer
     }
 }
 
-namespace hegem::util::bvh_details
+namespace hegem::tool::bvh_details
 {
     extern template struct bvh<raytracer::face_trait::mesh>;
 }
 
-namespace hegem::util::grid_details
+namespace hegem::tool::grid_details
 {
     extern template struct grid<raytracer::face_trait::mesh>;
 }

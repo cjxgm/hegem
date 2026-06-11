@@ -1,14 +1,14 @@
 #include "../../lib/std/any.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../kul/timeline.hxx"
 #include "../op.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move
 #include <string>
 
 namespace hegem::skein::op::invoke_impl
 {
-    auto invoke(op_fields_timeline_primitive_constant const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_primitive_constant const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl = kul::timeline{};
         tl.evaluator = [x=fields.value] (float) -> float { return x; };
@@ -18,7 +18,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_primitive_ramp const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_primitive_ramp const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl = kul::timeline{};
         tl.evaluator = [] (float t) -> float { return t; };
@@ -26,7 +26,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_primitive_id const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_primitive_id const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl = kul::timeline{};
         tl.evaluator = [] (float) -> float { return 0.0f; };
@@ -34,7 +34,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_primitive_apply const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_primitive_apply const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");

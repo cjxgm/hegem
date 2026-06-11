@@ -1,5 +1,5 @@
 #include "registry.hxx"
-#include "../util/unreachable.macro.hxx"
+#include "../tool/unreachable.macro.hxx"
 #include <algorithm>
 
 namespace hegem::skein

@@ -3,7 +3,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace hegem::util
+namespace hegem::tool
 {
     inline namespace as_czstring_details
     {

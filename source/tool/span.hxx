@@ -3,7 +3,7 @@
 #include "range.hxx"
 #include <vector>
 
-namespace hegem::util
+namespace hegem::tool
 {
     template <class T>
     struct span
@@ -21,8 +21,8 @@ namespace hegem::util
 
         auto base() const { return ptr_; }
         auto size() const { return size_; }
-        auto range() const { return util::range{ptr_, ptr_+size_}; }
-        auto range(int i) const { return util::range{ptr_+i, ptr_+size_}; }
+        auto range() const { return tool::range{ptr_, ptr_+size_}; }
+        auto range(int i) const { return tool::range{ptr_+i, ptr_+size_}; }
 
         auto& operator [] (int i) const { return ptr_[i]; }
 
@@ -47,8 +47,8 @@ namespace hegem::util
 
         auto base() const { return ptr_; }
         auto size() const { return size_; }
-        auto range() const { return util::range{ptr_, ptr_+size_}; }
-        auto range(int i) const { return util::range{ptr_+i, ptr_+size_}; }
+        auto range() const { return tool::range{ptr_, ptr_+size_}; }
+        auto range(int i) const { return tool::range{ptr_+i, ptr_+size_}; }
 
         auto& operator [] (int i) const { return ptr_[i]; }
 

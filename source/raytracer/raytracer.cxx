@@ -223,7 +223,7 @@ namespace hegem::raytracer::raytracer_details
     raytracing_result_type raytrace(
             scene_type const& scene,
             view_type const& view,
-            util::tile const& tile)
+            tool::tile const& tile)
     {
         raytracer_impl impl{scene};
         auto& cam = view.camera;

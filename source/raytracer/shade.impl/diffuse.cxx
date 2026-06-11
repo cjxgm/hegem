@@ -1,7 +1,7 @@
 #include "../../lib/glm/vec3.hxx"
 #include "../../lib/glm/op/geom.hxx"
 #include "../../lib/glm/op/common.hxx"
-#include "../../util/unreachable.macro.hxx"
+#include "../../tool/unreachable.macro.hxx"
 #include "../../math/direction.hxx"
 #include "../../scene/material.hxx"
 #include "../../scene/lamp.hxx"

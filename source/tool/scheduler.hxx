@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-namespace hegem::util
+namespace hegem::tool
 {
     struct pool_scheduler
     {

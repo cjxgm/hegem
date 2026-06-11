@@ -2,7 +2,7 @@
 #include <vector>
 #include <limits>
 
-namespace hegem::util
+namespace hegem::tool
 {
     // Allocates integers from 0 to maximum value.
     struct integral_allocator

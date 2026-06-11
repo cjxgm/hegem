@@ -1,5 +1,5 @@
 #pragma once
-#include "../util/slab.hxx"
+#include "../tool/slab.hxx"
 #include "hemesh.fwd.hxx"
 #include "primitive.hxx"
 
@@ -46,7 +46,7 @@ namespace hegem::swing
         body_type* any_body{};
 
         // Expands to `unbound_slab<body_type> bodys;` and etc.
-        #define STRUCT(NAME, VAR) util::unbound_trivial_slab<NAME> VAR ## s;
+        #define STRUCT(NAME, VAR) tool::unbound_trivial_slab<NAME> VAR ## s;
         #include "primitive.inl"
     };
 }

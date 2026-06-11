@@ -2,10 +2,10 @@
 #include "../scene/parser.hxx"
 #include "../scene/view.hxx"
 #include "../image/image.hxx"
-#include "../util/journal.hxx"
-#include "../util/tile.hxx"
-#include "../util/scheduler.hxx"
-#include "../util/file-dialog.hxx"
+#include "../tool/journal.hxx"
+#include "../tool/tile.hxx"
+#include "../tool/scheduler.hxx"
+#include "../tool/file-dialog.hxx"
 #include "../glu/states.hxx"
 #include "../raytracer/raytracer.hxx"
 #include "../raytracer/shade.hxx"
@@ -35,7 +35,7 @@ namespace hegem::app
 {
     namespace
     {
-        using util::journal;
+        using tool::journal;
         using image::image_rgb;
         using image::color::linear_rgb;
         using scene::scene_type;
@@ -47,14 +47,14 @@ namespace hegem::app
         static constexpr auto framerate_history_size = 60*2;
         float const background[] = { 0.2667, 0.5333, 1.0000, 0.0000 };
 
-        using gl_job = util::possibly_canceled_job;
+        using gl_job = tool::possibly_canceled_job;
 
         struct context
         {
             std::deque<hdr_texture> images;
             std::list<visualization> visualizations;
-            util::receiver<gl_job> rx_gl;
-            util::task_manager<util::pool_scheduler> tman{util::pool_scheduler{(int) std::max(4u, std::thread::hardware_concurrency())}};
+            tool::receiver<gl_job> rx_gl;
+            tool::task_manager<tool::pool_scheduler> tman{tool::pool_scheduler{(int) std::max(4u, std::thread::hardware_concurrency())}};
             int tile_size[2] = {64, 64};
             int morphing_tile_size[2] = {128, 128};
             int batch_samples = 16;
@@ -64,8 +64,8 @@ namespace hegem::app
             skein::editor skein_editor;
             silo::editor silo_editor{morphing_tile_size};
             visualization* skein_visualization{};
-            util::file_dialog skein_file_open_dialog;
-            util::file_dialog skein_file_save_dialog;
+            tool::file_dialog skein_file_open_dialog;
+            tool::file_dialog skein_file_save_dialog;
 
             static context& instance()
             {
@@ -96,7 +96,7 @@ namespace hegem::app
             {
                 hdr_texture& hdr;
                 image_rgb image;
-                util::tile tile;
+                tool::tile tile;
 
                 void operator () () const
                 {
@@ -113,7 +113,7 @@ namespace hegem::app
             struct mark_as_working_tile
             {
                 hdr_texture& hdr;
-                util::tile tile;
+                tool::tile tile;
 
                 void operator () () const
                 {
@@ -122,9 +122,9 @@ namespace hegem::app
             };
         }
 
-        util::task_io render_view(scene_type const& scene, view_type view)
+        tool::task_io render_view(scene_type const& scene, view_type view)
         {
-            using task_type = util::task_type<gl_job>;
+            using task_type = tool::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& images = ctx.images;
             auto& tman = ctx.tman;
@@ -174,16 +174,16 @@ namespace hegem::app
 
             auto [tile_w, tile_h] = ctx.tile_size;
             std::vector<task_type> tasks;
-            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+            for (auto& tile: tool::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
                 tasks.emplace_back(make_task(view, tile));
             }
 
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io raytrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        tool::task_io raytrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
-            using task_type = util::task_type<gl_job>;
+            using task_type = tool::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& tman = ctx.tman;
             auto shared_scene = std::make_shared<scene_type>(std::move(scene));
@@ -211,11 +211,11 @@ namespace hegem::app
 
             auto [tile_w, tile_h] = ctx.tile_size;
             std::vector<task_type> tasks;
-            for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+            for (auto& tile: tool::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
                 tasks.emplace_back(make_task(false, 1, view, tile));
             }
             if (view.samples > 1) {
-                for (auto& tile: util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
+                for (auto& tile: tool::tile_iterator{tile_w, tile_h, view.size.x, view.size.y}) {
                     tasks.emplace_back(make_task(true, view.samples, view, tile));
                 }
             }
@@ -223,7 +223,7 @@ namespace hegem::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io pathtrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        tool::task_io pathtrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
             struct partial_result
             {
@@ -249,7 +249,7 @@ namespace hegem::app
 
             struct tile_pos_less
             {
-                auto operator () (util::tile const& a, util::tile const& b) const -> bool
+                auto operator () (tool::tile const& a, tool::tile const& b) const -> bool
                 {
                     if (a.x < b.x) return true;
                     if (a.x > b.x) return false;
@@ -257,7 +257,7 @@ namespace hegem::app
                 }
             };
 
-            using task_type = util::task_type<gl_job>;
+            using task_type = tool::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& tman = ctx.tman;
             auto shared_scene = std::make_shared<scene_type>(std::move(scene));
@@ -298,10 +298,10 @@ namespace hegem::app
 
             auto make_tile_iter = [&] {
                 auto [tile_w, tile_h] = ctx.tile_size;
-                return util::tile_iterator{tile_w, tile_h, view.size.x, view.size.y};
+                return tool::tile_iterator{tile_w, tile_h, view.size.x, view.size.y};
             };
 
-            std::map<util::tile, shared_partial_result, tile_pos_less> pres_per_tile;
+            std::map<tool::tile, shared_partial_result, tile_pos_less> pres_per_tile;
             std::vector<task_type> tasks;
 
             for (auto& tile: make_tile_iter()) {
@@ -331,12 +331,12 @@ namespace hegem::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        util::task_io swrast_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
+        tool::task_io swrast_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
         {
-            using task_type = util::task_type<gl_job>;
+            using task_type = tool::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& tman = ctx.tman;
-            auto tile = util::tile{0, 0, view.size.x, view.size.y};
+            auto tile = tool::tile{0, 0, view.size.x, view.size.y};
 
             scene.rebuild_cache();
 
@@ -729,7 +729,7 @@ namespace hegem::app
                     } else {
                         if (ImGui::Button("Open")) {
                             ctx.skein_file_open_dialog.open(
-                                util::file_dialog::action::open,
+                                tool::file_dialog::action::open,
                                 "Open stack graph",
                                 "/usr/share/hegem/support/graph");
                         }
@@ -740,7 +740,7 @@ namespace hegem::app
                     } else {
                         if (ImGui::Button("Save")) {
                             ctx.skein_file_save_dialog.open(
-                                util::file_dialog::action::save,
+                                tool::file_dialog::action::save,
                                 "Save stack graph");
                         }
                     }
@@ -851,7 +851,7 @@ namespace hegem::app
         });
     }
 
-    auto schedule_tasks(task_group_type tasks) -> util::task_io
+    auto schedule_tasks(task_group_type tasks) -> tool::task_io
     {
         auto& ctx = context::instance();
         auto& tman = ctx.tman;

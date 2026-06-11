@@ -1,6 +1,6 @@
 #pragma once
 
-namespace hegem::util
+namespace hegem::tool
 {
     namespace tile_details
     {

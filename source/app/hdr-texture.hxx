@@ -3,7 +3,7 @@
 #include "../lib/glm/vec3.hxx"
 #include "../lib/glm/vec2.hxx"
 #include "../glu/resource.hxx"
-#include "../util/tile.hxx"
+#include "../tool/tile.hxx"
 #include <string>
 
 namespace hegem::app
@@ -27,8 +27,8 @@ namespace hegem::app
 
         hdr_texture(int w, int h);
 
-        void mark(util::tile tile);
-        void unmark(util::tile tile);
+        void mark(tool::tile tile);
+        void unmark(tool::tile tile);
 
     private:
         glu::shared_framebuffer fbo;

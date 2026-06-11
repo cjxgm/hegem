@@ -80,7 +80,7 @@ namespace hegem::silo
         }
     }
 
-    auto morph(int lower_quality, image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, util::tile tile, float smoothness, float decay, float length_influence) -> image::image_rgb
+    auto morph(int lower_quality, image::image_rgb const& src, image::image_rgb const& dst, morphing_cache const& cache, float amount, tool::tile tile, float smoothness, float decay, float length_influence) -> image::image_rgb
     {
         using sample_fn = auto (image::image_rgb const& img, glm::vec2 pos) -> image::color::linear_rgb;
         sample_fn* sample;

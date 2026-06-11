@@ -7,7 +7,7 @@
 #include <thread>
 #include <utility>      // for std::move
 
-namespace hegem::util
+namespace hegem::tool
 {
     namespace
     {
@@ -38,10 +38,10 @@ namespace hegem::util
             file_dialog::action act;
             std::string title;
             lib::optional<std::string> directory;
-            util::transmitter<std::string> result_tx;
+            tool::transmitter<std::string> result_tx;
         };
 
-        struct dialog_system: util::non_transferable
+        struct dialog_system: tool::non_transferable
         {
             static auto& instance()
             {
@@ -59,8 +59,8 @@ namespace hegem::util
 
         private:
             using message_type = lib::optional<dialog_command>;
-            util::receiver<message_type> rx;
-            util::transmitter<message_type> tx;
+            tool::receiver<message_type> rx;
+            tool::transmitter<message_type> tx;
             std::thread th;
 
             dialog_system()

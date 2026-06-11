@@ -153,7 +153,7 @@ namespace hegem::app
         gl::named_framebuffer_texture(fbo, gl::color_attachment0, markers, 0);
     }
 
-    void hdr_texture::mark(util::tile tile)
+    void hdr_texture::mark(tool::tile tile)
     {
         auto& ctx = context::instance();
         gl::funcs::viewport(tile.x, tile.y, tile.w, tile.h);
@@ -165,7 +165,7 @@ namespace hegem::app
         gl::draw_arrays(gl::points, 0, 1);
     }
 
-    void hdr_texture::unmark(util::tile tile)
+    void hdr_texture::unmark(tool::tile tile)
     {
         gl::clear_tex_sub_image(
             markers,

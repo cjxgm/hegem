@@ -1,6 +1,6 @@
 #include "../lib/std/optional.hxx"
-#include "../util/slurp.hxx"
-#include "../util/journal.hxx"
+#include "../tool/slurp.hxx"
+#include "../tool/journal.hxx"
 #include "shader.hxx"
 #include "traits.hxx"
 #include <algorithm>
@@ -9,9 +9,9 @@ namespace hegem::glu::shader_factory
 {
     namespace
     {
-        auto j() { return util::journal{"FACTORY"} << "\e[0;36m[SHADER]\e[0m "; }
+        auto j() { return tool::journal{"FACTORY"} << "\e[0;36m[SHADER]\e[0m "; }
 
-        void check_shader_error(gl::uint_type id, util::as_czstring path)
+        void check_shader_error(gl::uint_type id, tool::as_czstring path)
         {
             gl::int_type ok;
             gl::get_shaderiv(id, gl::compile_status, &ok);
@@ -30,7 +30,7 @@ namespace hegem::glu::shader_factory
             throw std::runtime_error{err};
         }
 
-        void check_program_error(gl::uint_type id, util::as_czstring name)
+        void check_program_error(gl::uint_type id, tool::as_czstring name)
         {
             gl::int_type ok;
             gl::get_programiv(id, gl::link_status, &ok);
@@ -50,12 +50,12 @@ namespace hegem::glu::shader_factory
         }
 
         template <gl::enum_type Type>
-        auto maybe_shader_from_name(util::as_czstring name, std::string const& injection) -> lib::optional<shared_shader<Type>>
+        auto maybe_shader_from_name(tool::as_czstring name, std::string const& injection) -> lib::optional<shared_shader<Type>>
         {
             auto path = "support/shaders/" + name.to_string() + "/"
                 + traits::shader<Type>::name_abbr() + ".glsl";
 
-            if (auto maybe_src = util::maybe_slurp(path)) {
+            if (auto maybe_src = tool::maybe_slurp(path)) {
                 j() << "\e[0;32m(" << name.data() << ")\e[0m compiling shader: " << path << "\n";
                 auto src = std::move(maybe_src.value());
                 if (!injection.empty()) {
@@ -76,7 +76,7 @@ namespace hegem::glu::shader_factory
         }
 
         template <gl::enum_type Type>
-        void attach_available_shader(gl::uint_type prog, util::as_czstring name, std::string const& injection)
+        void attach_available_shader(gl::uint_type prog, tool::as_czstring name, std::string const& injection)
         {
             if (auto maybe_shader = maybe_shader_from_name<Type>(name, injection)) {
                 gl::attach_shader(prog, *maybe_shader);
@@ -86,20 +86,20 @@ namespace hegem::glu::shader_factory
         template <gl::enum_type ...Types>
         void attach_available_shaders(
             gl::uint_type prog,
-            util::as_czstring name,
+            tool::as_czstring name,
             std::string const& injection,
             traits::gl_enum_sequence<Types...>)
         {
             (attach_available_shader<Types>(prog, name, injection), ...);
         }
 
-        void attach_all_available_shaders(gl::uint_type prog, util::as_czstring name, std::string const& injection)
+        void attach_all_available_shaders(gl::uint_type prog, tool::as_czstring name, std::string const& injection)
         {
             attach_available_shaders(prog, name, injection, traits::shader_types{});
         }
     }
 
-    shared_program program_from_name(util::as_czstring name, std::string const& injection)
+    shared_program program_from_name(tool::as_czstring name, std::string const& injection)
     {
         j() << "\e[0;32m(" << name << ")\e[0m compiling program" << "\n";
         auto prog = program_pool::instance().allocate();

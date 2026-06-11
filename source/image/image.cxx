@@ -32,7 +32,7 @@ namespace hegem::image::image_impl
         return dst;
     }
 
-    void write(image<srgb> const& src, util::as_czstring output_path)
+    void write(image<srgb> const& src, tool::as_czstring output_path)
     {
         std::ofstream file{output_path.data()};
         auto size = src.size();
@@ -92,7 +92,7 @@ namespace hegem::image::image_impl
         using stb_image_buffer = std::unique_ptr<float, stb_image_deleter>;
     }
 
-    auto load(util::as_czstring filename) -> image<linear_rgb>
+    auto load(tool::as_czstring filename) -> image<linear_rgb>
     {
         int w;
         int h;

@@ -3,7 +3,7 @@
 #include "channel.hxx"
 #include <string>
 
-namespace hegem::util
+namespace hegem::tool
 {
     // - You should constantly call get() to make progress.
     // - All functions are guaranteed to not block.

@@ -1,15 +1,15 @@
 #include "../../lib/std/any.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../swing/op/subsurf.hxx"
 #include "../op.hxx"
 #include "model.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include "select.hxx"
 #include <utility>      // for std::move
 
 namespace hegem::skein::op::invoke_impl
 {
-    auto invoke(op_fields_subdivision_catmull_clark const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_subdivision_catmull_clark const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto md = extract_or_croak<model>(args[0], "Argument must be a model.");
         auto& m = md.hmesh;

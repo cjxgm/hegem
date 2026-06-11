@@ -1,7 +1,7 @@
 #pragma once
 #include "../lib/glm/vec2.hxx"
 #include "../lib/glm/relational.hxx"
-#include "../util/as-czstring.hxx"
+#include "../tool/as-czstring.hxx"
 #include "color.hxx"
 #include <vector>
 #include <utility>
@@ -47,14 +47,14 @@ namespace hegem::image
             auto& size() const { return size_; }
 
             friend image<srgb> to_srgb(image<linear_rgb> const& src);
-            friend void write(image<srgb> const& src, util::as_czstring output_path);
+            friend void write(image<srgb> const& src, tool::as_czstring output_path);
             friend image<linear_rgb> half(image<linear_rgb> const& src);
             friend image<linear_rgb> tonemap(
                     image<linear_rgb> const& src,
                     linear_rgb const& black,
                     linear_rgb const& white);
 
-            #include "../util/const-helper.macro.hxx"
+            #include "../tool/const-helper.macro.hxx"
             CONST_HELPER(
                 template <class F>
                 void each(F&& f) CONST
@@ -82,7 +82,7 @@ namespace hegem::image
                     return get(pos);
                 }
             )
-            #include "../util/const-helper.undef.hxx"
+            #include "../tool/const-helper.undef.hxx"
 
             color_type const* data() const { return pixels.data(); }
 
@@ -111,10 +111,10 @@ namespace hegem::image
                 return (pos % size_ + size_) % size_;
             }
 
-            friend auto load(util::as_czstring filename) -> image<linear_rgb>;
+            friend auto load(tool::as_czstring filename) -> image<linear_rgb>;
         };
 
-        auto load(util::as_czstring filename) -> image<linear_rgb>;
+        auto load(tool::as_czstring filename) -> image<linear_rgb>;
         auto sample_bilinear(image<linear_rgb> const& img, glm::vec2 p) -> linear_rgb;
 
         extern template struct image<linear_rgb>;

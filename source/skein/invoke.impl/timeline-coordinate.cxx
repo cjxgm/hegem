@@ -1,15 +1,15 @@
 #include "../../lib/std/any.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../kul/timeline.hxx"
 #include "../op.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move
 #include <string>
 #include <cmath>
 
 namespace hegem::skein::op::invoke_impl
 {
-    auto invoke(op_fields_timeline_coordinate_polar_to_cartesian_x const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_coordinate_polar_to_cartesian_x const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
@@ -22,7 +22,7 @@ namespace hegem::skein::op::invoke_impl
         };
         tl.expression.partial_expression = "(kul_cos() * )";
         tl.expression.independent_variables_positions = {9u, 13u};
-        tl.expression = tl.expression.apply(util::span<kul::independent_expression const>{iexprs});
+        tl.expression = tl.expression.apply(tool::span<kul::independent_expression const>{iexprs});
 
         tl.value_min = 0.0f;
         tl.value_max = std::max(std::abs(tl1.value_min), std::abs(tl1.value_max));
@@ -31,7 +31,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(tl);
     }
 
-    auto invoke(op_fields_timeline_coordinate_polar_to_cartesian_y const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_coordinate_polar_to_cartesian_y const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl1 = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");
@@ -44,7 +44,7 @@ namespace hegem::skein::op::invoke_impl
         };
         tl.expression.partial_expression = "(kul_sin() * )";
         tl.expression.independent_variables_positions = {9u, 13u};
-        tl.expression = tl.expression.apply(util::span<kul::independent_expression const>{iexprs});
+        tl.expression = tl.expression.apply(tool::span<kul::independent_expression const>{iexprs});
 
         tl.value_min = 0.0f;
         tl.value_max = std::max(std::abs(tl1.value_min), std::abs(tl1.value_max));

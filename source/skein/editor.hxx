@@ -1,6 +1,6 @@
 #pragma once
 #include "../lib/glm/vec2.hxx"
-#include "../util/constraints.hxx"
+#include "../tool/constraints.hxx"
 #include "../scene/scene.hxx"
 #include "graph.hxx"
 #include <vector>
@@ -12,7 +12,7 @@ namespace hegem::skein
     {
         struct temporary_state;
 
-        struct editor: util::constraints::only_movable
+        struct editor: tool::constraints::only_movable
         {
             scene::scene_type scene;
 

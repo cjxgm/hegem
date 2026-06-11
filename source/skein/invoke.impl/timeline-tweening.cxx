@@ -1,8 +1,8 @@
 #include "../../lib/std/any.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../kul/timeline.hxx"
 #include "../op.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move
 #include <string>
 #include <cmath>
@@ -18,7 +18,7 @@ namespace hegem::skein::op::invoke_impl
         }
     }
 
-    auto invoke(op_fields_timeline_tweening_easeout const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_tweening_easeout const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl0 = extract_or_croak<kul::timeline>(args[0], "Argument must be a timeline.");
         auto tl = kul::timeline{};

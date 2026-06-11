@@ -2,7 +2,7 @@
 #include "../lib/glm/vec3.hxx"
 #include "../lib/mapbox/variant.hxx"
 #include "../math/direction.hxx"
-#include "../util/grid.hxx"
+#include "../tool/grid.hxx"
 #include "../raytracer/face-trait.hxx"
 #include "../swing/hemesh.hxx"
 #include "../kul/system.hxx"
@@ -30,7 +30,7 @@ namespace hegem::scene
         struct voxel
         {
             mesh source;
-            util::grid<raytracer::face_trait::mesh> voxelized;
+            tool::grid<raytracer::face_trait::mesh> voxelized;
         };
 
         using hegem::swing::hemesh;

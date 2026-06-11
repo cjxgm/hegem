@@ -1,6 +1,6 @@
 #include "scheduler.hxx"
 
-namespace hegem::util
+namespace hegem::tool
 {
     pool_scheduler::pool_scheduler(int thread_count)
         : pool{std::make_unique<cxxpool::thread_pool>(thread_count)}

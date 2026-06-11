@@ -6,7 +6,7 @@
 #include <utility>      // for std::move
 #include <functional>
 
-namespace hegem::util
+namespace hegem::tool
 {
     using shared_canceled_type = std::shared_ptr<std::atomic_bool>;
 

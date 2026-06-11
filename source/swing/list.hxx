@@ -1,6 +1,6 @@
 #pragma once
 // Operators for generic doubly-linked cyclic lists.
-#include "../util/priter.hxx"
+#include "../tool/priter.hxx"
 #include <utility>      // for std::forward
 
 namespace hegem::swing
@@ -92,7 +92,7 @@ namespace hegem::swing
         template <class Next_Policy, class ...Ts>
         auto range(Ts &&... xs)
         {
-            return util::range_from_priter(
+            return tool::range_from_priter(
                 priter<Next_Policy>{
                     std::forward<Ts>(xs)...,
                 });

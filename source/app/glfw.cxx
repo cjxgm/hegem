@@ -1,7 +1,7 @@
 #include "../lib/gl/glfw.hxx"
 #include "../lib/gl/gl.hxx"
-#include "../util/journal.hxx"
-#include "../util/unreachable.macro.hxx"
+#include "../tool/journal.hxx"
+#include "../tool/unreachable.macro.hxx"
 #include "glfw.hxx"
 #include "imgui.hxx"
 #include <stdexcept>
@@ -12,7 +12,7 @@ namespace hegem::app::glfw
 {
     namespace
     {
-        using hegem::util::journal;
+        using hegem::tool::journal;
         journal j() { return {"WSI"}; }
 
         GLFWwindow* win{};
@@ -126,7 +126,7 @@ namespace hegem::app::glfw
 
         struct context
         {
-            context(util::as_czstring title)
+            context(tool::as_czstring title)
             {
                 j() << "glfw: (ctor)\n";
                 if (!glfwInit()) throw std::runtime_error{"[WSI] glfw: init failed."};
@@ -206,7 +206,7 @@ namespace hegem::app::glfw
         };
     }
 
-    void init_once(util::as_czstring title)
+    void init_once(tool::as_czstring title)
     {
         static context _{title};
     }

@@ -2,7 +2,7 @@
 // basic types
 #include "../lib/glm/vec3.hxx"
 #include "../math/direction.hxx"
-#include "../util/types.hxx"
+#include "../tool/types.hxx"
 
 namespace hegem::swing
 {
@@ -11,7 +11,7 @@ namespace hegem::swing
         using position_type = glm::vec3;
         using offset_type = glm::vec3;
         using direction_type = math::direction_type;
-        using util::types::usize;
+        using tool::types::usize;
     }
 }
 

@@ -25,10 +25,10 @@ namespace hegem::kul
 
     auto independent_expression::apply(independent_expression const& x) const noexcept -> independent_expression
     {
-        return apply(util::span<independent_expression const>{&x, 1});
+        return apply(tool::span<independent_expression const>{&x, 1});
     }
 
-    auto independent_expression::apply(util::span<independent_expression const> xs) const noexcept -> independent_expression
+    auto independent_expression::apply(tool::span<independent_expression const> xs) const noexcept -> independent_expression
         // Assumes: independent_variables_positions is monotonically increasing.
     {
         auto offset = std::size_t{};

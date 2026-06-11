@@ -1,9 +1,9 @@
 #include "../../lib/std/any.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../kul/timeline.hxx"
 #include "../../kul/system.hxx"
 #include "../op.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move
 #include <string>
 #include <stdexcept>
@@ -12,7 +12,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    auto invoke(op_fields_timeline_system_inspect const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_system_inspect const& fields, tool::span<lib::any> args) -> lib::any
     {
         if (args.size() != 0u) {
             auto result = std::string{};
@@ -37,7 +37,7 @@ namespace hegem::skein::op::invoke_impl
         return {};
     }
 
-    auto invoke(op_fields_timeline_system_spark const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_timeline_system_spark const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto tl_pos_x = extract_or_croak<kul::timeline>(args[0], "Argument #1 must be a timeline.");
         auto tl_pos_y = extract_or_croak<kul::timeline>(args[1], "Argument #2 must be a timeline.");

@@ -1,6 +1,6 @@
 #include "../../lib/glm/op/geom.hxx"
 #include "../../lib/std/any.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../math/direction.hxx"
 #include "../../swing/list.hxx"
 #include "../../swing/iteration.hxx"
@@ -8,7 +8,7 @@
 #include "../op.hxx"
 #include "model.hxx"
 #include "select.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move
 
 namespace hegem::skein::op::invoke_impl
@@ -63,7 +63,7 @@ namespace hegem::skein::op::invoke_impl
         }
     }
 
-    auto invoke(op_fields_selection_select_verts const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_selection_select_verts const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
@@ -81,7 +81,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(m);
     }
 
-    auto invoke(op_fields_selection_select_faces const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_selection_select_faces const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
@@ -108,7 +108,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(m);
     }
 
-    auto invoke(op_fields_selection_containing_faces const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_selection_containing_faces const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 

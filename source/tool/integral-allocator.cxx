@@ -1,7 +1,7 @@
 #include "integral-allocator.hxx"
 #include <cassert>
 
-namespace hegem::util
+namespace hegem::tool
 {
     auto integral_allocator::allocate() -> value_type
     {

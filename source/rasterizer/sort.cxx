@@ -1,7 +1,7 @@
 #include "sort.hxx"
 #include "../lib/gl/gl.hxx"
 #include "../scene/node.hxx"
-#include "../util/journal.hxx"
+#include "../tool/journal.hxx"
 #include "../glu/shader.hxx"
 #include <string>
 #include <algorithm>
@@ -19,7 +19,7 @@ namespace hegem::rasterizer::sort_details
         static constexpr auto sun_lamp_capacity = 32;
         static constexpr auto omni_lamp_capacity = 32;
 
-        auto j() { return hegem::util::journal{"RAST"}; }
+        auto j() { return hegem::tool::journal{"RAST"}; }
 
         namespace sort_materials
         {

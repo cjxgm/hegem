@@ -1,6 +1,6 @@
 #pragma once
 #include "../math/constants.hxx"
-#include "../util/span.hxx"
+#include "../tool/span.hxx"
 #include <string>
 #include <vector>
 #include <functional>
@@ -20,7 +20,7 @@ namespace hegem::kul
 
         auto apply(std::string x) const noexcept -> std::string;
         auto apply(independent_expression const& x) const noexcept -> independent_expression;
-        auto apply(util::span<independent_expression const> xs) const noexcept -> independent_expression;
+        auto apply(tool::span<independent_expression const> xs) const noexcept -> independent_expression;
     };
 
     struct timeline final

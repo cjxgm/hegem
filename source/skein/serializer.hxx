@@ -1,5 +1,5 @@
 #pragma once
-#include "../util/constraints.hxx"
+#include "../tool/constraints.hxx"
 #include "op.hxx"
 #include <fstream>
 #include <string>
@@ -8,9 +8,9 @@ namespace hegem::skein
 {
     namespace serializer
     {
-        struct toml: util::non_transferable
+        struct toml: tool::non_transferable
         {
-            struct instance: util::non_transferable
+            struct instance: tool::non_transferable
             {
                 void value(char const* var, float x);
                 void value(char const* var, int x);

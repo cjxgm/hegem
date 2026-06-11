@@ -44,7 +44,7 @@ namespace hegem::pathtracer::pathtracer_details
         };
     }
 
-    auto pathtrace(scene_type const& scene, view_type const& view, util::tile const& tile, update_fn update) -> image_type
+    auto pathtrace(scene_type const& scene, view_type const& view, tool::tile const& tile, update_fn update) -> image_type
     {
         math::normal_sampler pixel_jitter{0, 0.2};
         pathtracer_impl impl{scene};

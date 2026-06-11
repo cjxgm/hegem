@@ -4,7 +4,7 @@
 #include "../image/color.hxx"
 #include "../scene/scene.hxx"
 #include "../scene/view.hxx"
-#include "../util/tile.hxx"
+#include "../tool/tile.hxx"
 #include "hit.hxx"
 #include "ray.hxx"
 #include <tuple>
@@ -31,7 +31,7 @@ namespace hegem::raytracer
         };
         using ray_visualizations = std::vector<ray_visualization>;
 
-        raytracing_result_type raytrace(scene_type const& scene, view_type const& view, util::tile const& tile);
+        raytracing_result_type raytrace(scene_type const& scene, view_type const& view, tool::tile const& tile);
         ray_visualizations raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos);
     }
 

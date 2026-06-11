@@ -2,7 +2,7 @@
 // Just a begin/end pair
 #include <utility>      // for std::move
 
-namespace hegem::util
+namespace hegem::tool
 {
     template <class Iterator>
     struct range

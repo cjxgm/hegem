@@ -25,7 +25,7 @@
 #include <utility>      // for std::move
 #include <type_traits>
 
-namespace hegem::util
+namespace hegem::tool
 {
     template <class Iterator>
     struct priter_from_iterators

@@ -1,10 +1,10 @@
 #pragma once
-#include "../util/constraints.hxx"
+#include "../tool/constraints.hxx"
 #include <memory>
 
 namespace hegem::silo
 {
-    struct file_slot final: util::constraints::only_movable
+    struct file_slot final: tool::constraints::only_movable
     {
         struct temporary_state;
 

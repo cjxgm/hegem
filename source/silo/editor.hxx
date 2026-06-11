@@ -1,12 +1,12 @@
 #pragma once
-#include "../util/constraints.hxx"
-#include "../util/channel.hxx"
-#include "../util/task-manager.hxx"
+#include "../tool/constraints.hxx"
+#include "../tool/channel.hxx"
+#include "../tool/task-manager.hxx"
 #include <memory>
 
 namespace hegem::silo
 {
-    struct editor final: util::constraints::only_movable
+    struct editor final: tool::constraints::only_movable
     {
         struct temporary_state;
 

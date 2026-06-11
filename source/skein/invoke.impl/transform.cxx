@@ -1,11 +1,11 @@
 #include "../../lib/glm/op/transform.hxx"
 #include "../../lib/std/any.hxx"
 #include "../../math/direction.hxx"
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../../swing/op/transform.hxx"
 #include "../op.hxx"
 #include "model.hxx"
-#include "util.hxx"
+#include "tool.hxx"
 #include <utility>      // for std::move
 
 namespace hegem::skein::op::invoke_impl
@@ -29,7 +29,7 @@ namespace hegem::skein::op::invoke_impl
         }
     }
 
-    auto invoke(op_fields_transform_move const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_transform_move const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
@@ -43,7 +43,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(m);
     }
 
-    auto invoke(op_fields_transform_scale const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_transform_scale const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 
@@ -59,7 +59,7 @@ namespace hegem::skein::op::invoke_impl
         return std::move(m);
     }
 
-    auto invoke(op_fields_transform_rotate const& fields, util::span<lib::any> args) -> lib::any
+    auto invoke(op_fields_transform_rotate const& fields, tool::span<lib::any> args) -> lib::any
     {
         auto m = extract_or_croak<model>(args[0], "Argument must be a model.");
 

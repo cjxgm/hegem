@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace hegem::util
+namespace hegem::tool
 {
     namespace types
     {

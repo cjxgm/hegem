@@ -1,6 +1,6 @@
 #pragma once
 // basic shapes creation
-#include "../../util/span.hxx"
+#include "../../tool/span.hxx"
 #include "../hemesh.fwd.hxx"
 #include "../primitive.fwd.hxx"
 #include "../type.hxx"
@@ -24,7 +24,7 @@ namespace hegem::swing
                 //      Make a polygon ring inside f
                 //      with another ring inside cf,
                 //      so that the 2 new rings become a hole in f and cf.
-                hege_type* make_polygon(hemesh & m, util::const_span<position_type> points, face_type* outer_face=nullptr, face_type* counter_face=nullptr);
+                hege_type* make_polygon(hemesh & m, tool::const_span<position_type> points, face_type* outer_face=nullptr, face_type* counter_face=nullptr);
                 hege_type* make_polygon_disk(hemesh & m, int ngon, float radius, face_type* outer_face=nullptr, face_type* counter_face=nullptr);
             }
 

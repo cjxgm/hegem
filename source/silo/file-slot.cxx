@@ -1,4 +1,4 @@
-#include "../util/file-dialog.hxx"
+#include "../tool/file-dialog.hxx"
 #include "../lib/glm/op/common.hxx"
 #include "../lib/imgui.hxx"
 #include "file-slot.hxx"
@@ -7,7 +7,7 @@ namespace hegem::silo
 {
     struct file_slot::temporary_state
     {
-        util::file_dialog dialog;
+        tool::file_dialog dialog;
         std::string filename;
         std::string empty_string;
     };
@@ -29,7 +29,7 @@ namespace hegem::silo
         } else {
             if (ImGui::Button("Load")) {
                 tmp->dialog.open(
-                    util::file_dialog::action::open,
+                    tool::file_dialog::action::open,
                     title,
                     directory);
             }

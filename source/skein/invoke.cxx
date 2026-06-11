@@ -1,6 +1,6 @@
 #include "invoke.hxx"
 #include "invoke.impl/all.pull"
-#include "../util/unreachable.macro.hxx"
+#include "../tool/unreachable.macro.hxx"
 
 namespace hegem::skein
 {
@@ -9,11 +9,11 @@ namespace hegem::skein
         namespace invoke_impl
         {
             #define OP(KIND, ID, ...) \
-                auto invoke(op_fields_##KIND##_##ID const& fields, util::span<lib::any> args) -> lib::any;
+                auto invoke(op_fields_##KIND##_##ID const& fields, tool::span<lib::any> args) -> lib::any;
             #include "op.inl"
         }
 
-        auto invoke(op_instance const& instance, util::span<lib::any> arguments) -> lib::any
+        auto invoke(op_instance const& instance, tool::span<lib::any> arguments) -> lib::any
         {
             switch (instance.id) {
                 #define OP(KIND, ID, ...) \

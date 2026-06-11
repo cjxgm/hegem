@@ -16,7 +16,7 @@
 #include <numeric>
 #include <iostream>     // DEBUG TODO: use journal?
 
-namespace hegem::util
+namespace hegem::tool
 {
     namespace bvh_details
     {
