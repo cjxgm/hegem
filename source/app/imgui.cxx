@@ -213,7 +213,7 @@ namespace hegem::app::imgui
         context::instance();
     }
 
-    void on_char(GLFWwindow* /*win*/, unsigned int codepoint)
+    void on_char(GLFWwindow* win, unsigned int codepoint)
     {
         if (codepoint == 0) return;
 
@@ -225,7 +225,7 @@ namespace hegem::app::imgui
         }
     }
 
-    void on_key(GLFWwindow* /*win*/, int key, bool down)
+    void on_key(GLFWwindow* win, int key, bool down)
     {
         auto& io = ImGui::GetIO();
         io.KeysDown[key] = down;
@@ -244,13 +244,13 @@ namespace hegem::app::imgui
             io.KeysDown[GLFW_KEY_RIGHT_SUPER];
     }
 
-    void on_scroll(GLFWwindow* /*win*/, float /*x*/, float y)
+    void on_scroll(GLFWwindow* win, float x, float y)
     {
         auto& ctx = context::instance();
         ctx.mouse_scroll_y += y;
     }
 
-    void on_mouse_button(GLFWwindow* /*win*/, int button, bool down)
+    void on_mouse_button(GLFWwindow* win, int button, bool down)
     {
         auto& ctx = context::instance();
         if (button < 0) throw std::runtime_error{"WTF? You have an odd mouse!"};
@@ -258,7 +258,7 @@ namespace hegem::app::imgui
         if (down) ctx.mouse_once_down[button] = true;
     }
 
-    void on_framebuffer_resized(GLFWwindow* /*win*/, int w, int h, int fbw, int fbh)
+    void on_framebuffer_resized(GLFWwindow* win, int w, int h, int fbw, int fbh)
     {
         auto& ctx = context::instance();
 
@@ -315,7 +315,7 @@ namespace hegem::app::imgui
         ImGui::NewFrame();
     }
 
-    void on_frame_end(GLFWwindow* /*win*/)
+    void on_frame_end(GLFWwindow* win)
     {
         ImGui::Render();
 

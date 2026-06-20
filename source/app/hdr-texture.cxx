@@ -19,12 +19,12 @@ namespace hegem::app
         float const black[4]{0.0f, 0.0f, 0.0f, 1.0f};
         float const transparent[4]{0.0f, 0.0f, 0.0f, 0.0f};
 
-        void general_mode(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* /*pcmd*/)
+        void general_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
         {
             gl::uniform1i(2, 0);                        // general mode
         }
 
-        void hdr_mode(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* pcmd)
+        void hdr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
         {
             auto hdr = static_cast<hdr_texture*>(pcmd->UserCallbackData);
             gl::uniform1i(2, 1);                        // HDR mode
@@ -34,7 +34,7 @@ namespace hegem::app
             gl::uniform1f(6, hdr->dither_amount);       // dither amount
         }
 
-        void ldr_mode(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* pcmd)
+        void ldr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
         {
             gl::uniform1i(2, 2);                        // LDR mode
         }

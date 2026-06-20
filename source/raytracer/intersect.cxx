@@ -35,7 +35,7 @@ namespace hegem::raytracer
 
         inline namespace intersect_shape_details
         {
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::sphere const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::sphere const& shape, optional_mesh_bvh_type const& opt_bvh)
             {
                 hits::point_type position;
                 glm::vec3 normal;
@@ -57,7 +57,7 @@ namespace hegem::raytracer
                 }
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::plane const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::plane const& shape, optional_mesh_bvh_type const& opt_bvh)
             {
                 auto p = ray.origin - *shape.normal * shape.offset;
                 auto pn = dot( p      , *shape.normal);
@@ -77,7 +77,7 @@ namespace hegem::raytracer
                 }
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& /*shape*/, optional_mesh_bvh_type const& opt_bvh)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::mesh const& shape, optional_mesh_bvh_type const& opt_bvh)
             {
                 if (!opt_bvh) {
                     std::cerr << "logic error: BVH not available\n";
@@ -86,17 +86,17 @@ namespace hegem::raytracer
                 return opt_bvh->intersect(ray);
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::voxel const& shape, optional_mesh_bvh_type const& /*opt_bvh*/)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::voxel const& shape, optional_mesh_bvh_type const& opt_bvh)
             {
                 return shape.voxelized.intersect(ray);
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::hemesh const& /*shape*/, optional_mesh_bvh_type const& /*opt_bvh*/)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::hemesh const& shape, optional_mesh_bvh_type const& opt_bvh)
             {
                 throw std::logic_error{"hemeshes should have been converted into meshes."};
             }
 
-            shape_hit_type intersect_shape(ray_type const& ray, shapes::spark_system const& /*shape*/, optional_mesh_bvh_type const& /*opt_bvh*/)
+            shape_hit_type intersect_shape(ray_type const& ray, shapes::spark_system const& shape, optional_mesh_bvh_type const& opt_bvh)
             {
                 // Sparks are invisible to raytracers/pathtracers
                 return hits::missed{ray};

@@ -9,12 +9,12 @@ namespace hegem::silo
 {
     namespace
     {
-        void general_mode(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* /*pcmd*/)
+        void general_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
         {
             gl::uniform1i(2, 0);                        // 0 = general mode
         }
 
-        void ldr_mode(ImDrawList const* /*pdraw_list*/, ImDrawCmd const* /*pcmd*/)
+        void ldr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
         {
             gl::uniform1i(2, 2);                        // 2 = LDR mode
         }

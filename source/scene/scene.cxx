@@ -10,7 +10,7 @@ namespace hegem::scene::scene_details
         {
             loadable_scene& loadable;
 
-            void operator () (scene_type const& /*scene*/) const
+            void operator () (scene_type const& scene) const
             {
                 // do nothing intentionally
             }

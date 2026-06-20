@@ -13,7 +13,7 @@ namespace hegem::swing
 {
     void cpp_serializer::declare_structure(
         char const* type,
-        char const* /*name*/,
+        char const* name,
         void const* ptr)
     {
         if (counters.find(type) == end(counters))
@@ -23,7 +23,7 @@ namespace hegem::swing
 
     void cpp_serializer::begin_structure(
         char const* type,
-        char const* /*name*/,
+        char const* name,
         void const* ptr)
     {
         std::cerr << "new (" << pointer_ids[ptr] << ") " << type << " {\n";
@@ -62,7 +62,7 @@ namespace hegem::swing
     }
 
     void dump_serializer::begin_structure(
-        char const* /*type*/,
+        char const* type,
         char const* name,
         void const* ptr)
     {

@@ -117,7 +117,7 @@ namespace hegem::rasterizer::sort_details
                     sg.voxels.emplace_back(shape, material_id, model_to_world, world_to_model);
                 }
 
-                void operator () (shapes::hemesh const& /*shape*/)
+                void operator () (shapes::hemesh const& shape)
                 {
                     throw std::logic_error{"hemeshes should have been converted into meshes."};
                 }

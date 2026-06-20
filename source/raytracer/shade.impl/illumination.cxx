@@ -36,7 +36,7 @@ namespace hegem::raytracer::shading_details
             }
 
         private:
-            color_type impl(materials::solid_color const& /*mat*/) const
+            color_type impl(materials::solid_color const& mat) const
             {
                 return diffuse;
             }

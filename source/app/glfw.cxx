@@ -35,9 +35,9 @@ namespace hegem::app::glfw
                     gl::enum_type type,
                     gl::uint_type id,
                     gl::enum_type severity,
-                    gl::sizei_type /*length*/,
+                    gl::sizei_type length,
                     gl::char_type const* msg,
-                    void const* /*userdata*/)
+                    void const* userdata)
             {
                 if (id == 131185) return;
                 if (id == 131169) return;
@@ -71,7 +71,7 @@ namespace hegem::app::glfw
                 imgui::on_char(win, codepoint);
             }
 
-            void on_key(GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/)
+            void on_key(GLFWwindow* win, int key, int scancode, int action, int mods)
             {
                 switch (action) {
                     case GLFW_PRESS:
@@ -92,7 +92,7 @@ namespace hegem::app::glfw
                 imgui::on_scroll(win, x, y);
             }
 
-            void on_mouse_button(GLFWwindow* win, int button, int action, int /*mods*/)
+            void on_mouse_button(GLFWwindow* win, int button, int action, int mods)
             {
                 switch (action) {
                     case GLFW_PRESS:
@@ -105,11 +105,11 @@ namespace hegem::app::glfw
                 }
             }
 
-            void on_framebuffer_resized(GLFWwindow* win, int /*fbw*/, int /*fbh*/)
+            void on_framebuffer_resized(GLFWwindow* win, int fbw, int fbh)
             {
-                int w, h, fbw, fbh;
+                int w, h;
                 glfwGetWindowSize(win, &w, &h);
-                glfwGetFramebufferSize(win, &fbw, &fbh);
+                glfwGetFramebufferSize(win, &fbw, &fbh);  // Reread the framebuffer size, ignoring values from the arguments.
                 imgui::on_framebuffer_resized(win, w, h, fbw, fbh);
             }
 
