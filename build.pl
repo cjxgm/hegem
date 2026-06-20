@@ -15,7 +15,6 @@ $base_dir__source = "source";
     'tinyobjloader',            # single header library for loading wavefront obj file
     'variant/include',          # variant, optional, and reference wrapper. The reference wrapper is a must, and that's why we don't use std::variant.
     'earcut/include',           # polygon triangulation
-    'observer-ptr/include',     # observer_ptr<T>
     'cxxpool/src',              # thread pool
     'cpptoml/include',          # TOML parser
 );
