@@ -34,9 +34,9 @@ namespace hegem::scene
             face_soup_type faces;
         };
 
-        void extend(mesh & dst, mesh const& src);
-        void write_obj(mesh const& m, std::ostream & out);
-        void write_obj(mesh const& m, char const* path);
+        auto extend(mesh & dst, mesh const& src) -> void;
+        auto write_obj(mesh const& m, std::ostream & out) -> void;
+        auto write_obj(mesh const& m, char const* path) -> void;
     }
 }
 

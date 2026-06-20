@@ -6,7 +6,7 @@ namespace hegem::tool
         : pool{std::make_unique<cxxpool::thread_pool>(thread_count)}
     {}
 
-    void pool_scheduler::push(std::function<void()> f)
+    auto pool_scheduler::push(std::function<void()> f) -> void
     {
         pool->push(f);
     }

@@ -34,7 +34,7 @@ namespace hegem::raytracer
             std::vector<glm::vec3> pivot_cache;
             std::vector<std::tuple<glm::vec3, glm::vec3>> minmax_cache;
 
-            void build_cache(int face_count);
+            auto build_cache(int face_count) -> void;
         };
     }
 }

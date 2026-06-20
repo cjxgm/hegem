@@ -12,10 +12,10 @@ namespace hegem::skein
         {
             struct instance: tool::non_transferable
             {
-                void value(char const* var, float x);
-                void value(char const* var, int x);
-                void value(char const* var, bool x);
-                void value(char const* var, op::float3 x);
+                auto value(char const* var, float x) -> void;
+                auto value(char const* var, int x) -> void;
+                auto value(char const* var, bool x) -> void;
+                auto value(char const* var, op::float3 x) -> void;
 
                 ~instance();
 

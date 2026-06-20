@@ -6,12 +6,12 @@ namespace hegem::swing
 {
     struct cpp_serializer final: serializer
     {
-        void declare_structure(char const* type, char const* name, void const* ptr) override;
+        auto declare_structure(char const* type, char const* name, void const* ptr) -> void override;
 
-        void begin_structure(char const* type, char const* name, void const* ptr) override;
-        void end_structure() override;
-        void field_ptr_from_slab(char const* type, char const* name, void const* ptr) override;
-        void field(char const* type, char const* name, position_type pos) override;
+        auto begin_structure(char const* type, char const* name, void const* ptr) -> void override;
+        auto end_structure() -> void override;
+        auto field_ptr_from_slab(char const* type, char const* name, void const* ptr) -> void override;
+        auto field(char const* type, char const* name, position_type pos) -> void override;
 
     private:
         std::unordered_map<char const*, int> counters;
@@ -20,12 +20,12 @@ namespace hegem::swing
 
     struct dump_serializer final: serializer
     {
-        void declare_structure(char const* type, char const* name, void const* ptr) override;
+        auto declare_structure(char const* type, char const* name, void const* ptr) -> void override;
 
-        void begin_structure(char const* type, char const* name, void const* ptr) override;
-        void end_structure() override;
-        void field_ptr_from_slab(char const* type, char const* name, void const* ptr) override;
-        void field(char const* type, char const* name, position_type pos) override;
+        auto begin_structure(char const* type, char const* name, void const* ptr) -> void override;
+        auto end_structure() -> void override;
+        auto field_ptr_from_slab(char const* type, char const* name, void const* ptr) -> void override;
+        auto field(char const* type, char const* name, position_type pos) -> void override;
 
     private:
         std::unordered_map<char const*, int> counters;
@@ -33,10 +33,10 @@ namespace hegem::swing
         std::unordered_map<char const*, char const*> type_names;
     };
 
-    void dump(hemesh const& m, bool starts_with_newline=true);
-    void dump_cpp(hemesh const& m, bool starts_with_newline=true);
-    void dump_pretty(hemesh const& m, bool starts_with_newline=true);
-    void dump_pointer(hemesh const& m, void const* ptr);    // this is slow
-    void dump_memory_usage_map(hemesh const& m);
+    auto dump(hemesh const& m, bool starts_with_newline=true) -> void;
+    auto dump_cpp(hemesh const& m, bool starts_with_newline=true) -> void;
+    auto dump_pretty(hemesh const& m, bool starts_with_newline=true) -> void;
+    auto dump_pointer(hemesh const& m, void const* ptr) -> void;    // this is slow
+    auto dump_memory_usage_map(hemesh const& m) -> void;
 }
 

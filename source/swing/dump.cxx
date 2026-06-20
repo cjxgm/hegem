@@ -11,30 +11,32 @@
 
 namespace hegem::swing
 {
-    void cpp_serializer::declare_structure(
+    auto cpp_serializer::declare_structure(
         char const* type,
         char const* name,
-        void const* ptr)
+        void const* ptr
+    ) -> void
     {
         if (counters.find(type) == end(counters))
             counters.emplace(type, 0);
         pointer_ids[ptr] = ++counters[type];
     }
 
-    void cpp_serializer::begin_structure(
+    auto cpp_serializer::begin_structure(
         char const* type,
         char const* name,
-        void const* ptr)
+        void const* ptr
+    ) -> void
     {
         std::cerr << "new (" << pointer_ids[ptr] << ") " << type << " {\n";
     }
 
-    void cpp_serializer::end_structure()
+    auto cpp_serializer::end_structure() -> void
     {
         std::cerr << "};\n";
     }
 
-    void cpp_serializer::field_ptr_from_slab(char const* type, char const* name, void const* ptr)
+    auto cpp_serializer::field_ptr_from_slab(char const* type, char const* name, void const* ptr) -> void
     {
         std::cerr
             << "    ." << name << " = (" << type << "*)"
@@ -42,7 +44,7 @@ namespace hegem::swing
             << ",\n";
     }
 
-    void cpp_serializer::field(char const* type, char const* name, position_type pos)
+    auto cpp_serializer::field(char const* type, char const* name, position_type pos) -> void
     {
         std::cerr << "    ." << name << " = position_type{" << pos.x << ", " << pos.y << ", " << pos.z << "},\n";
     }
@@ -50,10 +52,11 @@ namespace hegem::swing
 
 namespace hegem::swing
 {
-    void dump_serializer::declare_structure(
+    auto dump_serializer::declare_structure(
         char const* type,
         char const* name,
-        void const* ptr)
+        void const* ptr
+    ) -> void
     {
         if (counters.find(name) == end(counters))
             counters.emplace(name, 0);
@@ -61,19 +64,20 @@ namespace hegem::swing
         type_names[type] = name;
     }
 
-    void dump_serializer::begin_structure(
+    auto dump_serializer::begin_structure(
         char const* type,
         char const* name,
-        void const* ptr)
+        void const* ptr
+    ) -> void
     {
         std::cerr << "- " << name << "." << pointer_ids[ptr] << "\n";
     }
 
-    void dump_serializer::end_structure()
+    auto dump_serializer::end_structure() -> void
     {
     }
 
-    void dump_serializer::field_ptr_from_slab(char const* type, char const* name, void const* ptr)
+    auto dump_serializer::field_ptr_from_slab(char const* type, char const* name, void const* ptr) -> void
     {
         std::cerr
             << "    " << name << " " << type_names[type]
@@ -81,7 +85,7 @@ namespace hegem::swing
             << "\n";
     }
 
-    void dump_serializer::field(char const* type, char const* name, position_type pos)
+    auto dump_serializer::field(char const* type, char const* name, position_type pos) -> void
     {
         std::cerr << "    " << name << " " << pos.x << " " << pos.y << " " << pos.z << "\n";
     }
@@ -89,13 +93,13 @@ namespace hegem::swing
 
 namespace hegem::swing
 {
-    void dump(hemesh const& m, bool starts_with_newline)
+    auto dump(hemesh const& m, bool starts_with_newline) -> void
     {
         if (starts_with_newline) std::cerr << "\n";
         serialize<dump_serializer>(m);
     }
 
-    void dump_cpp(hemesh const& m, bool starts_with_newline)
+    auto dump_cpp(hemesh const& m, bool starts_with_newline) -> void
     {
         if (starts_with_newline) std::cerr << "\n";
         serialize<cpp_serializer>(m);
@@ -120,7 +124,7 @@ namespace hegem::swing
         return it->second;
     }
 
-    void dump_pretty(hemesh const& m, bool starts_with_newline)
+    auto dump_pretty(hemesh const& m, bool starts_with_newline) -> void
     {
         using list::iterate;
 
@@ -165,7 +169,7 @@ namespace hegem::swing
         }
     }
 
-    void dump_pointer(hemesh const& m, void const* ptr)
+    auto dump_pointer(hemesh const& m, void const* ptr) -> void
     {
         std::cerr << pointer_name(build_pointer_name_map(m), ptr) << "\n";
     }
@@ -173,7 +177,7 @@ namespace hegem::swing
 
 namespace hegem::swing
 {
-    void dump_memory_usage_map(hemesh const& m)
+    auto dump_memory_usage_map(hemesh const& m) -> void
     {
         constexpr auto line_width = 76;
         auto frees = build_free_pointer_set(m);

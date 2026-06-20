@@ -32,7 +32,7 @@ namespace hegem::image::image_impl
         return dst;
     }
 
-    void write(image<srgb> const& src, tool::as_czstring output_path)
+    auto write(image<srgb> const& src, tool::as_czstring output_path) -> void
     {
         std::ofstream file{output_path.data()};
         auto size = src.size();
@@ -83,7 +83,7 @@ namespace hegem::image::image_impl
     {
         struct stb_image_deleter
         {
-            void operator () (void* p)
+            auto operator () (void* p) -> void
             {
                 if (p) stbi_image_free(p);
             }

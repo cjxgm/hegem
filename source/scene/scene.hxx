@@ -26,7 +26,7 @@ namespace hegem::scene
             material_id_type environment;
             scene_cache cache;
 
-            void rebuild_cache();
+            auto rebuild_cache() -> void;
         };
 
         using filename_type = std::string;

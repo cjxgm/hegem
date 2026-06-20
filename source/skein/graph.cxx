@@ -118,7 +118,7 @@ namespace hegem::skein
         return result;
     }
 
-    void graph::collect_garbage()
+    auto graph::collect_garbage() -> void
     {
         nodes.erase(
             std::remove_if(

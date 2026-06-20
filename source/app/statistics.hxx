@@ -4,7 +4,7 @@ namespace hegem::app
 {
     namespace view
     {
-        void statistics(char const* id);
+        auto statistics(char const* id) -> void;
     }
 }
 

@@ -11,9 +11,9 @@ namespace hegem::glu
         template <class T>
         struct resource_traits;
         // using id_type = ...;
-        // static void bulk_allocate(int n, id_type* xs);
-        // static void bulk_delete(int n, id_type* xs);
-        // static void recycle(id_type& x);
+        // static auto bulk_allocate(int n, id_type* xs) -> void;
+        // static auto bulk_delete(int n, id_type* xs) -> void;
+        // static auto recycle(id_type& x) -> void;
         // static constexpr auto prefered_bulk_allocation_size();
         // static constexpr auto name();
 
@@ -31,14 +31,14 @@ namespace hegem::glu
             friend struct resource_pool;
 
             // should be called every frame
-            void try_recycle();
+            auto try_recycle() -> void;
             static resource_recycler& instance();
 
         private:
             std::vector<std::function<void()>> fs;
 
             template <class F>
-            void register_try_recycle_fn(F&& f)
+            auto register_try_recycle_fn(F&& f) -> void
             {
                 fs.emplace_back(std::forward<F>(f));
             }
@@ -51,7 +51,7 @@ namespace hegem::glu
             using traits = resource_traits<T>;
             static constexpr auto preferred_bulk_allocation_size() { return 8; }
 
-            static void recycle(id_type& x)
+            static auto recycle(id_type& x) -> void
             {
                 traits::bulk_delete(1, &x);
                 traits::bulk_allocate(1, &x);
@@ -75,8 +75,8 @@ namespace hegem::glu
             { \
                 using id_type = typename make_resource_traits<TYPE TEMPLATE_ARGS ## TEMPLATED TARG>::id_type; \
                 static constexpr auto name() { return #TYPE; } \
-                static void bulk_allocate(int n, id_type* xs) { KP ALLOC } \
-                static void bulk_delete(int n, id_type* xs) { KP DEALLOC } \
+                static auto bulk_allocate(int n, id_type* xs) -> void { KP ALLOC } \
+                static auto bulk_delete(int n, id_type* xs) -> void { KP DEALLOC } \
             }; \
             TEMPLATE_TYPE ## TEMPLATED TPARAM \
             using TYPE ## _pool = resource_pool<TYPE TEMPLATE_ARGS ## TEMPLATED TARG>; \
@@ -122,7 +122,7 @@ namespace hegem::glu
                 shader,
                 gl::create_shader, gl::delete_shader);
 
-        void init_all_resource_pools_once();
+        auto init_all_resource_pools_once() -> void;
 
 
         #undef DEFINE_RESOURCE_TEMPLATED_NON_BULK

@@ -17,11 +17,11 @@ namespace hegem::swing
             // In contrary to triangulation, The algorithm tries its best
             // to reduce the amount of polygons, that is, maximize
             // the number of vertices of each polygon.
-            void convexify(hemesh& m);
+            auto convexify(hemesh& m) -> void;
 
             // ASSUMPTIONS:
             //   m contains only simple polygons (no holes, no concaves)
-            void subdivide_catmull_clark(hemesh& m);
+            auto subdivide_catmull_clark(hemesh& m) -> void;
         }
     }
 }

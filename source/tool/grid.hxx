@@ -53,7 +53,7 @@ namespace hegem::tool
             }
 
             template <class F>
-            void each(F&& f) const
+            auto each(F&& f) const -> void
             {
                 glm::ivec3 cell_pos{};
                 for (auto& cell: cells) {
@@ -115,12 +115,12 @@ namespace hegem::tool
                 };
             }
 
-            void populate_cells(face_soup_type faces)
+            auto populate_cells(face_soup_type faces) -> void
             {
                 for (auto face: faces) add_face(face);
             }
 
-            void add_face(face_id_type face)
+            auto add_face(face_id_type face) -> void
             {
                 auto [min_pos, max_pos] = face_minmax(face);
                 auto cell_from = world_pos_to_cell_pos(min_pos);

@@ -19,35 +19,35 @@ namespace hegem::app::visualization_details
         }
     }
 
-    void visualization::reset_raytracing_task_io()
+    auto visualization::reset_raytracing_task_io() -> void
     {
         if (raytracing_task_io)
             raytracing_task_io->cancel();
         raytracing_task_io.reset();
     }
 
-    void visualization::reset_raytracing_task_io(tool::task_io io)
+    auto visualization::reset_raytracing_task_io(tool::task_io io) -> void
     {
         if (raytracing_task_io)
             raytracing_task_io->cancel();
         raytracing_task_io = std::move(io);
     }
 
-    void visualization::reset_swrast_task_io()
+    auto visualization::reset_swrast_task_io() -> void
     {
         if (swrast_task_io)
             swrast_task_io->cancel();
         swrast_task_io.reset();
     }
 
-    void visualization::reset_swrast_task_io(tool::task_io io)
+    auto visualization::reset_swrast_task_io(tool::task_io io) -> void
     {
         if (swrast_task_io)
             swrast_task_io->cancel();
         swrast_task_io = std::move(io);
     }
 
-    void visualization::update_rasterization_state()
+    auto visualization::update_rasterization_state() -> void
     {
         s.update_geometry();
     }

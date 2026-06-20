@@ -9,12 +9,13 @@ namespace hegem::skein
         namespace
         {
             template <class Slab, class T=typename Slab::value_type>
-            void select(
+            auto select(
                 std::unordered_set<T*>& selection,
                 bool exclusive,
                 Slab& slab,
                 bool inverse,
-                tool::span<T*> propose)
+                tool::span<T*> propose
+            ) -> void
             {
                 if (exclusive) {
                     if (inverse) {
@@ -37,12 +38,12 @@ namespace hegem::skein
             }
         }
 
-        void select_faces(model& m, bool exclusive, tool::span<swing::face_type*> faces, bool inverse)
+        auto select_faces(model& m, bool exclusive, tool::span<swing::face_type*> faces, bool inverse) -> void
         {
             select(m.face_selection, exclusive, m.hmesh.faces, inverse, faces);
         }
 
-        void select_verts(model& m, bool exclusive, tool::span<swing::vert_type*> verts, bool inverse)
+        auto select_verts(model& m, bool exclusive, tool::span<swing::vert_type*> verts, bool inverse) -> void
         {
             select(m.vert_selection, exclusive, m.hmesh.verts, inverse, verts);
         }

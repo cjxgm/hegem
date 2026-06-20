@@ -54,7 +54,7 @@ namespace hegem::silo
         }
     }
 
-    void extend_morphing_cache(polar_path_cache const& src, polar_path_cache const& interpolated, polar_path_cache const& dst, morphing_cache& cache)
+    auto extend_morphing_cache(polar_path_cache const& src, polar_path_cache const& interpolated, polar_path_cache const& dst, morphing_cache& cache) -> void
     {
         if (src.size() != dst.size() || src.size() != interpolated.size())
             throw std::logic_error{"cache must have same size"};

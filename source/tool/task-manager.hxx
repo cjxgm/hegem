@@ -15,7 +15,7 @@ namespace hegem::tool
 
     struct task_io
     {
-        void cancel() { canceled->store(true); }
+        auto cancel() -> void { canceled->store(true); }
 
     private:
         shared_canceled_type canceled;
@@ -73,8 +73,8 @@ namespace hegem::tool
         {}
 
         bool canceled() const { return shared_canceled->load(); }
-        void run_blindly() const { fn(); }
-        void run() const { if (!canceled()) run_blindly(); }
+        auto run_blindly() const -> void { fn(); }
+        auto run() const -> void { if (!canceled()) run_blindly(); }
 
     private:
         shared_canceled_type shared_canceled;

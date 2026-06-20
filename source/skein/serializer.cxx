@@ -46,22 +46,22 @@ namespace hegem::skein::serializer
         ofs << "\n";
     }
 
-    void toml::instance::value(char const* var, float x)
+    auto toml::instance::value(char const* var, float x) -> void
     {
         ofs << boost::format("%|| = %||\n") % var % format_float(x);
     }
 
-    void toml::instance::value(char const* var, int x)
+    auto toml::instance::value(char const* var, int x) -> void
     {
         ofs << boost::format("%|| = %||\n") % var % x;
     }
 
-    void toml::instance::value(char const* var, bool x)
+    auto toml::instance::value(char const* var, bool x) -> void
     {
         ofs << boost::format("%|| = %||\n") % var % boost::io::group(std::boolalpha, x);
     }
 
-    void toml::instance::value(char const* var, op::float3 x)
+    auto toml::instance::value(char const* var, op::float3 x) -> void
     {
         ofs << boost::format("%|| = [%||, %||, %||]\n")
             % var

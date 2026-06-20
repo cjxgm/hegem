@@ -9,12 +9,12 @@ namespace hegem::silo
 {
     namespace
     {
-        void general_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
+        auto general_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd) -> void
         {
             gl::uniform1i(2, 0);                        // 0 = general mode
         }
 
-        void ldr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
+        auto ldr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd) -> void
         {
             gl::uniform1i(2, 2);                        // 2 = LDR mode
         }
@@ -35,7 +35,7 @@ namespace hegem::silo
         return (tmp->tex != 0);
     }
 
-    void image_viewer::draw(float scale)
+    auto image_viewer::draw(float scale) -> void
     {
         if (!drawable()) return;
 
@@ -47,7 +47,7 @@ namespace hegem::silo
         cmd_list.AddCallback(general_mode, nullptr);
     }
 
-    void image_viewer::clear(image::color::linear_rgb color)
+    auto image_viewer::clear(image::color::linear_rgb color) -> void
     {
         if (!drawable()) return;
 
@@ -55,7 +55,7 @@ namespace hegem::silo
         gl::clear_tex_image(tmp->tex, 0, gl::rgba, gl::float_, &rgba[0]);
     }
 
-    void image_viewer::resize(int w, int h)
+    auto image_viewer::resize(int w, int h) -> void
     {
         if (w > 0 && h > 0) {
             auto& tex = tmp->tex;

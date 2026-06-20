@@ -11,7 +11,7 @@ namespace hegem::glu::shader_factory
     {
         auto j() { return tool::journal{"FACTORY"} << "\e[0;36m[SHADER]\e[0m "; }
 
-        void check_shader_error(gl::uint_type id, tool::as_czstring path)
+        auto check_shader_error(gl::uint_type id, tool::as_czstring path) -> void
         {
             gl::int_type ok;
             gl::get_shaderiv(id, gl::compile_status, &ok);
@@ -30,7 +30,7 @@ namespace hegem::glu::shader_factory
             throw std::runtime_error{err};
         }
 
-        void check_program_error(gl::uint_type id, tool::as_czstring name)
+        auto check_program_error(gl::uint_type id, tool::as_czstring name) -> void
         {
             gl::int_type ok;
             gl::get_programiv(id, gl::link_status, &ok);
@@ -76,7 +76,7 @@ namespace hegem::glu::shader_factory
         }
 
         template <gl::enum_type Type>
-        void attach_available_shader(gl::uint_type prog, tool::as_czstring name, std::string const& injection)
+        auto attach_available_shader(gl::uint_type prog, tool::as_czstring name, std::string const& injection) -> void
         {
             if (auto maybe_shader = maybe_shader_from_name<Type>(name, injection)) {
                 gl::attach_shader(prog, *maybe_shader);
@@ -84,16 +84,17 @@ namespace hegem::glu::shader_factory
         }
 
         template <gl::enum_type ...Types>
-        void attach_available_shaders(
+        auto attach_available_shaders(
             gl::uint_type prog,
             tool::as_czstring name,
             std::string const& injection,
-            traits::gl_enum_sequence<Types...>)
+            traits::gl_enum_sequence<Types...>
+        ) -> void
         {
             (attach_available_shader<Types>(prog, name, injection), ...);
         }
 
-        void attach_all_available_shaders(gl::uint_type prog, tool::as_czstring name, std::string const& injection)
+        auto attach_all_available_shaders(gl::uint_type prog, tool::as_czstring name, std::string const& injection) -> void
         {
             attach_available_shaders(prog, name, injection, traits::shader_types{});
         }

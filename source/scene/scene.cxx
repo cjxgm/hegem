@@ -10,12 +10,12 @@ namespace hegem::scene::scene_details
         {
             loadable_scene& loadable;
 
-            void operator () (scene_type const& scene) const
+            auto operator () (scene_type const& scene) const -> void
             {
                 // do nothing intentionally
             }
 
-            void operator () (filename_type const& path) const
+            auto operator () (filename_type const& path) const -> void
             {
                 loadable = scene::from_path(path);
             }
@@ -51,7 +51,7 @@ namespace hegem::scene::scene_details
         return apply_visitor(get_name{}, loadable);
     }
 
-    void scene_type::rebuild_cache()
+    auto scene_type::rebuild_cache() -> void
     {
         cache = build_scene_cache(*this);
     }

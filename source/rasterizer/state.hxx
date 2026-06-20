@@ -71,7 +71,7 @@ namespace hegem::rasterizer
             glu::shared_vertex_array vao_sphere;
 
             state(scene_type const& scene, view_type view, glu::shared_framebuffer output);
-            void update_geometry();
+            auto update_geometry() -> void;
         };
     }
 

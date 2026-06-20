@@ -30,7 +30,7 @@ namespace hegem::silo
             return result;
         }
 
-        void rotate_in_place(float a)
+        auto rotate_in_place(float a) -> void
         {
             angle += a;
             angle = math::modulus(angle + math::pi, 2.0f * math::pi) - math::pi;
@@ -52,10 +52,10 @@ namespace hegem::silo
     using polar_path = std::vector<polar_vertex>;
     using polar_path_cache = std::vector<polar_path_cache_entry>;
 
-    void update_polar_path_cache(polar_path const& path, polar_path_cache& cache);
-    void update_polar_path_interpolation(polar_path const& src0, polar_path const& src1, float x, polar_path& dst);
-    void move_polar_vertex_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos);
-    void move_polar_vertex_locally_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos);
+    auto update_polar_path_cache(polar_path const& path, polar_path_cache& cache) -> void;
+    auto update_polar_path_interpolation(polar_path const& src0, polar_path const& src1, float x, polar_path& dst) -> void;
+    auto move_polar_vertex_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos) -> void;
+    auto move_polar_vertex_locally_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos) -> void;
     auto edit_polar_path(polar_path& path, polar_path_cache const& cartesian_cache, bool active, bool readonly, glm::vec2 origin, float scaling, int* hovered_vertex_index=nullptr) -> bool;
 }
 

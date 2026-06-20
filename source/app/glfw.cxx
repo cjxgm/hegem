@@ -30,14 +30,15 @@ namespace hegem::app::glfw
 
         inline namespace callbacks
         {
-            void on_gl_debug(
-                    gl::enum_type source,
-                    gl::enum_type type,
-                    gl::uint_type id,
-                    gl::enum_type severity,
-                    gl::sizei_type length,
-                    gl::char_type const* msg,
-                    void const* userdata)
+            auto on_gl_debug(
+                gl::enum_type source,
+                gl::enum_type type,
+                gl::uint_type id,
+                gl::enum_type severity,
+                gl::sizei_type length,
+                gl::char_type const* msg,
+                void const* userdata
+            ) -> void
             {
                 if (id == 131185) return;
                 if (id == 131169) return;
@@ -61,17 +62,17 @@ namespace hegem::app::glfw
                 if (type == gl::debug_type_performance) return;
             }
 
-            void on_error(int err, char const* desc)
+            auto on_error(int err, char const* desc) -> void
             {
                 throw std::runtime_error{"[WSI] glfw: error " + std::to_string(err) + ": " + desc};
             }
 
-            void on_char(GLFWwindow* win, unsigned int codepoint)
+            auto on_char(GLFWwindow* win, unsigned int codepoint) -> void
             {
                 imgui::on_char(win, codepoint);
             }
 
-            void on_key(GLFWwindow* win, int key, int scancode, int action, int mods)
+            auto on_key(GLFWwindow* win, int key, int scancode, int action, int mods) -> void
             {
                 switch (action) {
                     case GLFW_PRESS:
@@ -87,12 +88,12 @@ namespace hegem::app::glfw
                 }
             }
 
-            void on_scroll(GLFWwindow* win, double x, double y)
+            auto on_scroll(GLFWwindow* win, double x, double y) -> void
             {
                 imgui::on_scroll(win, x, y);
             }
 
-            void on_mouse_button(GLFWwindow* win, int button, int action, int mods)
+            auto on_mouse_button(GLFWwindow* win, int button, int action, int mods) -> void
             {
                 switch (action) {
                     case GLFW_PRESS:
@@ -105,7 +106,7 @@ namespace hegem::app::glfw
                 }
             }
 
-            void on_framebuffer_resized(GLFWwindow* win, int fbw, int fbh)
+            auto on_framebuffer_resized(GLFWwindow* win, int fbw, int fbh) -> void
             {
                 int w, h;
                 glfwGetWindowSize(win, &w, &h);
@@ -113,12 +114,12 @@ namespace hegem::app::glfw
                 imgui::on_framebuffer_resized(win, w, h, fbw, fbh);
             }
 
-            void on_frame_begin(GLFWwindow* win)
+            auto on_frame_begin(GLFWwindow* win) -> void
             {
                 imgui::on_frame_begin(win);
             }
 
-            void on_frame_end(GLFWwindow* win)
+            auto on_frame_end(GLFWwindow* win) -> void
             {
                 imgui::on_frame_end(win);
             }
@@ -206,12 +207,12 @@ namespace hegem::app::glfw
         };
     }
 
-    void init_once(tool::as_czstring title)
+    auto init_once(tool::as_czstring title) -> void
     {
         static context _{title};
     }
 
-    void mainloop_once(std::function<void()> render)
+    auto mainloop_once(std::function<void()> render) -> void
     {
         static context_mainloop _{std::move(render)};
     }

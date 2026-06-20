@@ -27,22 +27,23 @@ namespace hegem::app
 
         hdr_texture(int w, int h);
 
-        void mark(tool::tile tile);
-        void unmark(tool::tile tile);
+        auto mark(tool::tile tile) -> void;
+        auto unmark(tool::tile tile) -> void;
 
     private:
         glu::shared_framebuffer fbo;
     };
 
-    void imgui_hdr_texture(hdr_texture* hdr, char const* drag_receiver="drag receiver");
-    void imgui_hdr_color(
-            char const* color_label,
-            char const* intensity_label,
-            glm::vec3* color,
-            float intensity_speed=1,
-            float intensity_min=0,
-            float intensity_max=1000,
-            char const* intensity_format="%.3f",
-            float intensity_power = 10);
+    auto imgui_hdr_texture(hdr_texture* hdr, char const* drag_receiver="drag receiver") -> void;
+    auto imgui_hdr_color(
+        char const* color_label,
+        char const* intensity_label,
+        glm::vec3* color,
+        float intensity_speed=1,
+        float intensity_min=0,
+        float intensity_max=1000,
+        char const* intensity_format="%.3f",
+        float intensity_power = 10
+    ) -> void;
 }
 

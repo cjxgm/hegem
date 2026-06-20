@@ -11,7 +11,7 @@ namespace hegem::rasterizer
         float const initial_depth = 1;
     }
 
-    void rasterize(state const& s, bool wireframed, float time)
+    auto rasterize(state const& s, bool wireframed, float time) -> void
     {
         auto& sm = glu::states_manager::instance();
         float aspect_ratio = float(s.view.size.x) / s.view.size.y;

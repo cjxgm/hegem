@@ -4,7 +4,7 @@ namespace hegem::global::counter_details
 {
     aggregation_type counter;
 
-    void aggregation_type::reset()
+    auto aggregation_type::reset() -> void
     {
         pixel = 0;
         ray = 0;

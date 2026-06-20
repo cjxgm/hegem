@@ -4,7 +4,7 @@
 
 namespace hegem::swing
 {
-    void serialize(hemesh const& m, serializer& sr)
+    auto serialize(hemesh const& m, serializer& sr) -> void
     {
         auto frees = build_free_pointer_set(m);
 

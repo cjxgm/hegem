@@ -174,7 +174,7 @@ namespace hegem::rasterizer::state_details
         static_elements_buffer = ctx.static_elements_buffer;
     }
 
-    void state::update_geometry()
+    auto state::update_geometry() -> void
     {
         geometry = sort_geometry(scene);
     }

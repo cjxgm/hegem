@@ -16,7 +16,7 @@ namespace hegem::swing
         {
             namespace
             {
-                void extrude_ring(hemesh & m, ring_type* ring, offset_type offset)
+                auto extrude_ring(hemesh & m, ring_type* ring, offset_type offset) -> void
                 {
                     auto first = ring->any_hege;
 
@@ -28,7 +28,7 @@ namespace hegem::swing
                 }
             }
 
-            void extrude(hemesh & m, face_type* face, offset_type offset)
+            auto extrude(hemesh & m, face_type* face, offset_type offset) -> void
             {
                 for (auto& r: list::iterate(face->boundary))
                     extrude_ring(m, &r, offset);

@@ -6,7 +6,7 @@ namespace hegem::skein
 {
     namespace engine
     {
-        void sanity_check(graph& g0);
+        auto sanity_check(graph& g0) -> void;
         auto execute(graph& g, node* entry) -> lib::any;
     }
 }

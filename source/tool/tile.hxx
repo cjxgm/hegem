@@ -39,7 +39,7 @@ namespace hegem::tool
 
             bool is_end_iterator() const { return tile_w < 0; }
             bool iteration_end() const;
-            void next();
+            auto next() -> void;
         };
     }
 

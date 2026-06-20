@@ -5,7 +5,7 @@
 namespace hegem::skein
 {
     template <class Serializer>
-    void serialize(Serializer& s, graph& g, node_id_type previewing_node)
+    auto serialize(Serializer& s, graph& g, node_id_type previewing_node) -> void
     {
         g.collect_garbage();
 

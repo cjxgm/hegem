@@ -8,7 +8,7 @@ namespace hegem::tool
     struct pool_scheduler
     {
         pool_scheduler(int thread_count);
-        void push(std::function<void()> f);
+        auto push(std::function<void()> f) -> void;
 
     private:
         std::unique_ptr<cxxpool::thread_pool> pool;

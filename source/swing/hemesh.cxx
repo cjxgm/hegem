@@ -9,12 +9,12 @@
 // misc
 namespace hegem::swing
 {
-    void hemesh::extend(hemesh const& m)
+    auto hemesh::extend(hemesh const& m) -> void
     {
         meta::extend(m, *this);
     }
 
-    void hemesh::diagnose(char const* situation) const
+    auto hemesh::diagnose(char const* situation) const -> void
     {
         dump_memory_usage_map(*this);
         if (fsck_all(*this)) {
@@ -106,7 +106,7 @@ namespace hegem::swing
     // v
     //
     // assert: start(h1) == end(h0)
-    void hemesh::close_hege(hege_type* h0, hege_type* h1)
+    auto hemesh::close_hege(hege_type* h0, hege_type* h1) -> void
     {
         if (h0->twin->start != h1->start) {
             throw std::logic_error{

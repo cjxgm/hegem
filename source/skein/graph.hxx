@@ -25,7 +25,7 @@ namespace hegem::skein
         auto node_range() { return tool::range{begin(nodes), end(nodes)}; }
         auto op_metadata_range() { return tool::range{begin(reg.ops), end(reg.ops)}; }
 
-        void collect_garbage();
+        auto collect_garbage() -> void;
 
     private:
         op_registry reg;

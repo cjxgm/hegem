@@ -49,7 +49,7 @@ namespace hegem::tool
                 return ds;
             }
 
-            void send(dialog_command cmd) { tx.send(std::move(cmd)); }
+            auto send(dialog_command cmd) -> void { tx.send(std::move(cmd)); }
 
             ~dialog_system()
             {
@@ -94,7 +94,7 @@ namespace hegem::tool
         };
     }
 
-    void file_dialog::open(action act, std::string title, lib::optional<std::string> directory)
+    auto file_dialog::open(action act, std::string title, lib::optional<std::string> directory) -> void
     {
         if (opened()) {
             throw std::logic_error{

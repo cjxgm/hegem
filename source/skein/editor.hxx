@@ -21,10 +21,10 @@ namespace hegem::skein
 
             // Returns true if changed
             bool draw(bool with_gizmo);
-            void force_execute(bool with_gizmo);
+            auto force_execute(bool with_gizmo) -> void;
 
-            void save_toml(std::string const& path);
-            void load_toml(std::string const& path, bool with_gizmo);
+            auto save_toml(std::string const& path) -> void;
+            auto load_toml(std::string const& path, bool with_gizmo) -> void;
 
         private:
             graph g;

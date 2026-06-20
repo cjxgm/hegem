@@ -123,7 +123,7 @@ namespace hegem::skein
             };
         }
 
-        void sanity_check(graph& g)
+        auto sanity_check(graph& g) -> void
         {
             for (auto& node: g.node_range()) {
                 auto& error = node.sanity_error;

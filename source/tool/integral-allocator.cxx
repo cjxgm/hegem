@@ -14,7 +14,7 @@ namespace hegem::tool
         return x;
     }
 
-    void integral_allocator::deallocate(value_type x)
+    auto integral_allocator::deallocate(value_type x) -> void
     {
         if (x == -1) return;
         assert(x >= 0);

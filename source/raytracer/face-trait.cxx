@@ -46,7 +46,7 @@ namespace hegem::raytracer::face_trait
         }
     }
 
-    void mesh::build_cache(int face_count)
+    auto mesh::build_cache(int face_count) -> void
     {
         pivot_cache.reserve(face_count);
         minmax_cache.reserve(face_count);

@@ -15,7 +15,7 @@ namespace hegem::tool::tile_details
         next();
     }
 
-    void tile_iterator::next()
+    auto tile_iterator::next() -> void
     {
         if (iteration_end()) return;
         i++;

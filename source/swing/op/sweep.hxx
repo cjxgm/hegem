@@ -9,7 +9,7 @@ namespace hegem::swing
     {
         inline namespace sweep
         {
-            void extrude(hemesh & m, face_type* face, offset_type offset);
+            auto extrude(hemesh & m, face_type* face, offset_type offset) -> void;
         }
     }
 }

@@ -19,12 +19,12 @@ namespace hegem::app
         float const black[4]{0.0f, 0.0f, 0.0f, 1.0f};
         float const transparent[4]{0.0f, 0.0f, 0.0f, 0.0f};
 
-        void general_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
+        auto general_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd) -> void
         {
             gl::uniform1i(2, 0);                        // general mode
         }
 
-        void hdr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
+        auto hdr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd) -> void
         {
             auto hdr = static_cast<hdr_texture*>(pcmd->UserCallbackData);
             gl::uniform1i(2, 1);                        // HDR mode
@@ -34,7 +34,7 @@ namespace hegem::app
             gl::uniform1f(6, hdr->dither_amount);       // dither amount
         }
 
-        void ldr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd)
+        auto ldr_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd) -> void
         {
             gl::uniform1i(2, 2);                        // LDR mode
         }
@@ -59,7 +59,7 @@ namespace hegem::app
         };
     }
 
-    void imgui_hdr_texture(hdr_texture* hdr, char const* drag_receiver)
+    auto imgui_hdr_texture(hdr_texture* hdr, char const* drag_receiver) -> void
     {
         auto& io = ImGui::GetIO();
         auto& cmd_list = *ImGui::GetWindowDrawList();
@@ -97,15 +97,16 @@ namespace hegem::app
         }
     }
 
-    void imgui_hdr_color(
-            char const* color_label,
-            char const* intensity_label,
-            glm::vec3* color,
-            float intensity_speed,
-            float intensity_min,
-            float intensity_max,
-            char const* intensity_format,
-            float intensity_power)
+    auto imgui_hdr_color(
+        char const* color_label,
+        char const* intensity_label,
+        glm::vec3* color,
+        float intensity_speed,
+        float intensity_min,
+        float intensity_max,
+        char const* intensity_format,
+        float intensity_power
+    ) -> void
     {
         auto base = abs(*color);
         auto len = glm::max(base.x, glm::max(base.y, base.z));
@@ -153,7 +154,7 @@ namespace hegem::app
         gl::named_framebuffer_texture(fbo, gl::color_attachment0, markers, 0);
     }
 
-    void hdr_texture::mark(tool::tile tile)
+    auto hdr_texture::mark(tool::tile tile) -> void
     {
         auto& ctx = context::instance();
         gl::funcs::viewport(tile.x, tile.y, tile.w, tile.h);
@@ -165,7 +166,7 @@ namespace hegem::app
         gl::draw_arrays(gl::points, 0, 1);
     }
 
-    void hdr_texture::unmark(tool::tile tile)
+    auto hdr_texture::unmark(tool::tile tile) -> void
     {
         gl::clear_tex_sub_image(
             markers,

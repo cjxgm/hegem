@@ -20,7 +20,7 @@ namespace hegem::tool
             save,
         };
 
-        void open(action act, std::string title, lib::optional<std::string> directory={});
+        auto open(action act, std::string title, lib::optional<std::string> directory={}) -> void;
         auto opened() const -> bool { return opt_path.has_value(); }
         auto get() -> lib::optional<std::string>;
 

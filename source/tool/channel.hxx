@@ -35,9 +35,9 @@ namespace hegem::tool
             friend struct receiver<message_type>;
             friend struct transmitter<message_type>;
             template <class M>
-            friend void proxy(receiver<M> rx, std::function<void (M)> fn);
+            friend auto proxy(receiver<M> rx, std::function<void (M)> fn) -> void;
 
-            void send(message_type msg)
+            auto send(message_type msg) -> void
             {
                 auto lock = std::lock_guard{channel_mutex};
                 if (proxy_fn) {
@@ -78,13 +78,13 @@ namespace hegem::tool
                 , shared_blocked{std::make_shared<std::atomic_bool>()}
             {}
 
-            void send(message_type msg)
+            auto send(message_type msg) -> void
             {
                 if (shared_blocked->load()) return;
                 shared_channel->send(std::move(msg));
             }
 
-            void block() { shared_blocked->store(true); }
+            auto block() -> void { shared_blocked->store(true); }
             bool blocked() const { return shared_blocked->load(); }
             transmitter clone() const { return {shared_channel}; }
             transmitter clone(std::shared_ptr<std::atomic_bool> blocked) const
@@ -125,17 +125,17 @@ namespace hegem::tool
 
             friend struct transmitter<message_type>;
             template <class M>
-            friend void proxy(receiver<M> rx, std::function<void (M)> fn);
+            friend auto proxy(receiver<M> rx, std::function<void (M)> fn) -> void;
         };
 
         template <class Message>
-        void proxy(receiver<Message> rx, std::function<void (Message)> fn)
+        auto proxy(receiver<Message> rx, std::function<void (Message)> fn) -> void
         {
             rx.shared_channel->proxy_fn = fn;
         }
 
         template <class Message>
-        void bridge(receiver<Message> rx, transmitter<Message> tx)
+        auto bridge(receiver<Message> rx, transmitter<Message> tx) -> void
         {
             proxy<Message>(std::move(rx), [tx = std::move(tx)] (Message message) mutable {
                 tx.send(std::move(message));
@@ -143,7 +143,7 @@ namespace hegem::tool
         }
 
         template <class Message>
-        void repeat(receiver<Message> rx, std::vector<transmitter<Message>> txs)
+        auto repeat(receiver<Message> rx, std::vector<transmitter<Message>> txs) -> void
         {
             proxy<Message>(std::move(rx), [txs = std::move(txs)] (Message message) mutable {
                 for (auto& tx: txs) tx.send(message);

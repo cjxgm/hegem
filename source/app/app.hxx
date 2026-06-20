@@ -7,7 +7,7 @@ namespace hegem::app
     using task_type = tool::task_type<tool::possibly_canceled_job>;
     using task_group_type = std::vector<task_type>;
 
-    void run_once(options opts);
+    auto run_once(options opts) -> void;
     auto schedule_tasks(task_group_type tasks) -> tool::task_io;
 }
 

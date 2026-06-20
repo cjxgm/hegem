@@ -34,30 +34,31 @@ namespace hegem::image
                 , pixels(size.x * size.y)
             {}
 
-            void put_repeat(position_type const& pos, color_type color)
+            auto put_repeat(position_type const& pos, color_type color) -> void
             {
                 put_bounded(wrap_around(pos), std::move(color));
             }
 
-            void put_clamp(position_type const& pos, color_type color)
+            auto put_clamp(position_type const& pos, color_type color) -> void
             {
                 if (in_bounds(pos)) put_bounded(pos, std::move(color));
             }
 
             auto& size() const { return size_; }
 
-            friend image<srgb> to_srgb(image<linear_rgb> const& src);
-            friend void write(image<srgb> const& src, tool::as_czstring output_path);
-            friend image<linear_rgb> half(image<linear_rgb> const& src);
-            friend image<linear_rgb> tonemap(
-                    image<linear_rgb> const& src,
-                    linear_rgb const& black,
-                    linear_rgb const& white);
+            friend auto to_srgb(image<linear_rgb> const& src) -> image<srgb>;
+            friend auto write(image<srgb> const& src, tool::as_czstring output_path) -> void;
+            friend auto half(image<linear_rgb> const& src) -> image<linear_rgb>;
+            friend auto tonemap(
+                image<linear_rgb> const& src,
+                linear_rgb const& black,
+                linear_rgb const& white
+            ) -> image<linear_rgb>;
 
             #include "../tool/const-helper.macro.hxx"
             CONST_HELPER(
                 template <class F>
-                void each(F&& f) CONST
+                auto each(F&& f) CONST -> void
                 {
                     auto w = size_.x;
                     int i = 0;
@@ -90,7 +91,7 @@ namespace hegem::image
             dimension_type size_;
             std::vector<color_type> pixels;
 
-            void put_bounded(position_type const& pos, color_type color)
+            auto put_bounded(position_type const& pos, color_type color) -> void
             {
                 // assert(in_bounds(pos));
                 pixels[index_from_bounded_pos(pos)] = std::move(color);

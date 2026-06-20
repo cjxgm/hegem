@@ -98,7 +98,7 @@ namespace hegem::app
                 image_rgb image;
                 tool::tile tile;
 
-                void operator () () const
+                auto operator () () const -> void
                 {
                     gl::texture_sub_image2d(
                             hdr.tex,
@@ -115,7 +115,7 @@ namespace hegem::app
                 hdr_texture& hdr;
                 tool::tile tile;
 
-                void operator () () const
+                auto operator () () const -> void
                 {
                     hdr.mark(tile);
                 }
@@ -233,7 +233,7 @@ namespace hegem::app
 
                 partial_result(int w, int h): result{{w, h}} {}
 
-                void combine(image_rgb const& img, int img_samples)
+                auto combine(image_rgb const& img, int img_samples) -> void
                 {
                     auto old_samples = samples;
                     samples += img_samples;
@@ -355,7 +355,7 @@ namespace hegem::app
             return tman.group(ctx.rx_gl.tx(), std::move(tasks));
         }
 
-        void update_sk_visualization()
+        auto update_sk_visualization() -> void
         {
             auto& ctx = context::instance();
             auto& vi = *ctx.skein_visualization;
@@ -366,7 +366,7 @@ namespace hegem::app
             vi.suppress_swrast = 1;
         }
 
-        void process_pending_gl_jobs()
+        auto process_pending_gl_jobs() -> void
         {
             auto& ctx = context::instance();
             auto& rx = ctx.rx_gl;
@@ -380,7 +380,7 @@ namespace hegem::app
             }
         }
 
-        void process_pending_dialog_jobs()
+        auto process_pending_dialog_jobs() -> void
         {
             auto& ctx = context::instance();
 
@@ -398,7 +398,7 @@ namespace hegem::app
             }
         }
 
-        void process_pending_jobs()
+        auto process_pending_jobs() -> void
         {
             process_pending_gl_jobs();
             process_pending_dialog_jobs();
@@ -406,7 +406,7 @@ namespace hegem::app
 
         namespace gui
         {
-            void adjustable_hdr_texture(hdr_texture& image, char const* label="adjustable hdr texture")
+            auto adjustable_hdr_texture(hdr_texture& image, char const* label="adjustable hdr texture") -> void
             {
                 ImGui::PushID(label);
                 ImGui::PushItemWidth(-100);
@@ -421,7 +421,7 @@ namespace hegem::app
                 ImGui::PopID();
             }
 
-            void visualizer(visualization& vi)
+            auto visualizer(visualization& vi) -> void
             {
                 auto& ctx = context::instance();
 
@@ -529,7 +529,7 @@ namespace hegem::app
                     rasterizer::rasterize(vi.s, vi.wireframed, ImGui::GetTime());
             }
 
-            void hdr_viewer(int* selected)
+            auto hdr_viewer(int* selected) -> void
             {
                 auto& ctx = context::instance();
                 auto& images = ctx.images;
@@ -667,7 +667,7 @@ namespace hegem::app
                 return render_invoked;
             }
 
-            void framerates()
+            auto framerates() -> void
             {
                 auto& ctx = context::instance();
                 auto avg_fps = ImGui::GetIO().Framerate;
@@ -685,7 +685,7 @@ namespace hegem::app
             }
 
             template <class SceneList>
-            void main(SceneList& scenes)
+            auto main(SceneList& scenes) -> void
             {
                 auto& ctx = context::instance();
                 auto& images = ctx.images;
@@ -837,7 +837,7 @@ namespace hegem::app
         }
     }
 
-    void run_once(options opts)
+    auto run_once(options opts) -> void
     {
         j() << "run\n";
         glfw::init_once("Hegem");

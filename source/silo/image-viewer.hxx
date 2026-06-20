@@ -22,9 +22,9 @@ namespace hegem::silo
         auto width() const -> int;
         auto height() const -> int;
 
-        void draw(float scale=1.0f);
-        void clear(image::color::linear_rgb color);
-        void resize(int w, int h);
+        auto draw(float scale=1.0f) -> void;
+        auto clear(image::color::linear_rgb color) -> void;
+        auto resize(int w, int h) -> void;
 
         auto operator () (float scale=1.0f) { return draw(scale); }
 

@@ -24,7 +24,7 @@ namespace hegem::silo
             polar_path path;
             polar_path_cache cache;
 
-            void update_cache() { update_polar_path_cache(path, cache); }
+            auto update_cache() -> void { update_polar_path_cache(path, cache); }
         };
 
         auto scaling_factor(float& scaling_level) -> float
@@ -82,7 +82,7 @@ namespace hegem::silo
             features1.emplace_back();
         }
 
-        void update_interpolated_features()
+        auto update_interpolated_features() -> void
         {
             features_tmp.resize(features0.size());
             auto it = features_tmp.begin();
@@ -98,7 +98,7 @@ namespace hegem::silo
             }
         }
 
-        void add_feature_point(glm::vec2 pos)
+        auto add_feature_point(glm::vec2 pos) -> void
         {
             auto&  active = (morphing_progress == 0 ? features0 : features1).back();
             auto& passive = (morphing_progress == 0 ? features1 : features0).back();
@@ -120,7 +120,7 @@ namespace hegem::silo
             passive.update_cache();
         }
 
-        void move_last_polar_vertex_to(glm::vec2 pos)
+        auto move_last_polar_vertex_to(glm::vec2 pos) -> void
         {
             auto&  active = (morphing_progress == 0 ? features0 : features1).back();
             auto& passive = (morphing_progress == 0 ? features1 : features0).back();
@@ -134,7 +134,7 @@ namespace hegem::silo
             passive.update_cache();
         }
 
-        void commit_feature_path()
+        auto commit_feature_path() -> void
         {
             if (features0.back().path.size() > 1) {
                 features0.emplace_back();
@@ -147,7 +147,7 @@ namespace hegem::silo
             }
         }
 
-        void re_edit_polar_path_after_vertex(int polar_path_index, int vertex_index)
+        auto re_edit_polar_path_after_vertex(int polar_path_index, int vertex_index) -> void
         {
             commit_feature_path();
             if (polar_path_index == int(features0.size())) return;
@@ -326,7 +326,7 @@ namespace hegem::silo
             return changed;
         }
 
-        void update_morphing(editor::temporary_state& tmp, bool low_quality)
+        auto update_morphing(editor::temporary_state& tmp, bool low_quality) -> void
         {
             constexpr auto quality_threshold_level = 35;
             constexpr auto quality_threshold = (quality_threshold_level*16) * (quality_threshold_level*9);
@@ -405,7 +405,7 @@ namespace hegem::silo
     editor::editor(int (&tile_size)[2]): tmp{std::make_unique<temporary_state>(tile_size)} {}
     editor::~editor() = default;
 
-    void editor::draw()
+    auto editor::draw() -> void
     {
         if (auto& filename = tmp->file0("morphing source", "/usr/share/swing/support/morphing"); !filename.empty()) {
             tmp->image0 = std::make_shared<image::image_rgb>(image::load(filename));

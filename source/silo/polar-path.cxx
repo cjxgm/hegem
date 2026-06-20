@@ -4,7 +4,7 @@
 
 namespace hegem::silo
 {
-    void update_polar_path_cache(polar_path const& path, polar_path_cache& cache)
+    auto update_polar_path_cache(polar_path const& path, polar_path_cache& cache) -> void
     {
         cache.clear();
         cache.reserve(path.size());
@@ -26,11 +26,12 @@ namespace hegem::silo
         }
     }
 
-    void update_polar_path_interpolation(
+    auto update_polar_path_interpolation(
         polar_path const& src0,
         polar_path const& src1,
         float x,
-        polar_path& dst)
+        polar_path& dst
+    ) -> void
     {
         dst.clear();
         if (src0.empty()) return;
@@ -54,7 +55,7 @@ namespace hegem::silo
         }
     }
 
-    void move_polar_vertex_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos)
+    auto move_polar_vertex_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos) -> void
     {
         auto base_pos = (vertex_idx == 0 ? polar_vertex::cartesian_type{0.0f, 0.0f} : cache[vertex_idx-1].pos);
         auto base_angle = (vertex_idx == 0 ? 0.0f : cache[vertex_idx-1].angle_sum_so_far);
@@ -62,7 +63,7 @@ namespace hegem::silo
         path[vertex_idx] = polar_vertex{offset, -base_angle};
     }
 
-    void move_polar_vertex_locally_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos)
+    auto move_polar_vertex_locally_to(polar_path& path, polar_path_cache const& cache, int vertex_idx, polar_vertex::cartesian_type pos) -> void
     {
         move_polar_vertex_to(path, cache, vertex_idx, pos);
         if (vertex_idx+1 < int(path.size())) {

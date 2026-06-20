@@ -9,7 +9,7 @@ namespace hegem::app::view
         using global::counter;
     }
 
-    void statistics(char const* id)
+    auto statistics(char const* id) -> void
     {
         ImGui::Columns(4, id);
         if (ImGui::Button("Reset")) counter.reset();

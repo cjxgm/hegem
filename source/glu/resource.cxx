@@ -8,7 +8,7 @@ namespace hegem::glu
         namespace
         {
             template <gl::enum_type ...Types>
-            void init_shader_pools(traits::gl_enum_sequence<Types...>)
+            auto init_shader_pools(traits::gl_enum_sequence<Types...>) -> void
             {
                 (shader_pool<Types>::instance(), ...);
             }
@@ -16,7 +16,7 @@ namespace hegem::glu
 
         int resource_pool_count{};
 
-        void resource_recycler::try_recycle()
+        auto resource_recycler::try_recycle() -> void
         {
             for (auto& f: fs) f();
         }
@@ -27,7 +27,7 @@ namespace hegem::glu
             return rr;
         }
 
-        void init_all_resource_pools_once()
+        auto init_all_resource_pools_once() -> void
         {
             vertex_array_pool::instance();
             buffer_pool::instance();

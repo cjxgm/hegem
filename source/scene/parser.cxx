@@ -55,14 +55,14 @@ namespace hegem::scene
         inline namespace expect_details
         {
             template <class T>
-            void expect(std::istream & ist, T&& x, std::string const& name)
+            auto expect(std::istream & ist, T&& x, std::string const& name) -> void
             {
                 T v;
                 if ((ist >> v) && v == x) return;
                 throw std::runtime_error{"literal " + literal_to_string(x) + " expected for " + name};
             }
 
-            void expect(std::istream & ist, char const* x, std::string const& name)
+            auto expect(std::istream & ist, char const* x, std::string const& name) -> void
             {
                 expect<std::string>(ist, x, name);
             }

@@ -37,7 +37,7 @@ namespace hegem::tool
         // Guranteed Outcome:
         // - The freed value is value-initialized (zeroed out)
         //   after successfully put into the free list.
-        void free(value_type* x)
+        auto free(value_type* x) -> void
         {
             frees.emplace_back(x);
             *x = value_type{};

@@ -62,7 +62,7 @@ namespace hegem::tool
                 return intersect(root, ray);
             }
 
-            void debug() const { debug(root, 0); }
+            auto debug() const -> void { debug(root, 0); }
 
         private:
             face_trait face_trait_state;
@@ -197,7 +197,7 @@ namespace hegem::tool
                 return face_trait_state.intersect(face, ray);
             }
 
-            void debug(node const& n, int indent) const
+            auto debug(node const& n, int indent) const -> void
             {
                 indent += 4;
                 n.storage.match(

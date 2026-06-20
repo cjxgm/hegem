@@ -55,7 +55,7 @@ namespace hegem::glu
             }
 
             // can be called every frame in gl thread
-            void try_recycle()
+            auto try_recycle() -> void
             {
                 // TODO: recycle for every frame currently,
                 // maybe a bottleneck, should profile though.
@@ -111,7 +111,7 @@ namespace hegem::glu
             }
 
             // may be called from any thread
-            void unref(name_type name)
+            auto unref(name_type name) -> void
             {
                 name--;
                 std::lock_guard<std::mutex> _{m};
@@ -120,7 +120,7 @@ namespace hegem::glu
                     recycling_pending_names.emplace_back(name);
             }
 
-            void recycle()
+            auto recycle() -> void
             {
                 std::vector<name_type> names;
                 {
@@ -193,7 +193,7 @@ namespace hegem::glu
             name_type name;
             resource_id_type id;
 
-            friend void swap(shared_resource& a, shared_resource& b)
+            friend auto swap(shared_resource& a, shared_resource& b) -> void
             {
                 std::swap(a.p, b.p);
                 std::swap(a.name, b.name);

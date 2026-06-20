@@ -13,7 +13,7 @@ namespace hegem::silo
         editor(int (&tile_size)[2]);
         ~editor(); // = default in implementation
 
-        void draw();
+        auto draw() -> void;
 
         auto operator () () { return draw(); }
 

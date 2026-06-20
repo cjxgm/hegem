@@ -25,8 +25,8 @@ namespace hegem::swing
         }
 
     public: // misc
-        void extend(hemesh const& m);
-        void diagnose(char const* situation="at random location") const;
+        auto extend(hemesh const& m) -> void;
+        auto diagnose(char const* situation="at random location") const -> void;
 
     public: // makers establishes internal data structures.
         body_type* make_body();
@@ -36,7 +36,7 @@ namespace hegem::swing
         hege_type* make_hege_twin(ring_type* ring, vert_type* vert);
         hege_type* make_hege_twin(hege_type* hege, vert_type* vert);
         edge_type* make_edge(hege_type* hege);
-        void close_hege(hege_type* h0, hege_type* h1);
+        auto close_hege(hege_type* h0, hege_type* h1) -> void;
 
     public: // free(T*)
         #define STRUCT(NAME, VAR) void free(NAME* VAR) { VAR ## s.free(VAR); }

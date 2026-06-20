@@ -6,7 +6,7 @@ namespace hegem::scene
 {
     namespace shapes
     {
-        void extend(mesh & dst, mesh const& src)
+        auto extend(mesh & dst, mesh const& src) -> void
         {
             dst.verts.reserve(dst.verts.size() + src.verts.size());
             dst.faces.reserve(src.faces.size() + dst.faces.size());
@@ -22,7 +22,7 @@ namespace hegem::scene
             }
         }
 
-        void write_obj(mesh const& m, std::ostream & out)
+        auto write_obj(mesh const& m, std::ostream & out) -> void
         {
             auto fmt_vert = boost::format("v %+.5f %+.5f %+.5f\n");
             auto fmt_normal = boost::format("vn %+.5f %+.5f %+.5f\n");
@@ -42,7 +42,7 @@ namespace hegem::scene
             }
         }
 
-        void write_obj(mesh const& m, char const* path)
+        auto write_obj(mesh const& m, char const* path) -> void
         {
             std::ofstream out{path};
             write_obj(m, out);

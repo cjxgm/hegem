@@ -10,7 +10,7 @@ namespace hegem::tool
         using value_type = int;
 
         value_type allocate();
-        void deallocate(value_type x);
+        auto deallocate(value_type x) -> void;
 
     private:
         std::vector<value_type> next{};

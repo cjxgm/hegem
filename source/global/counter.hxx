@@ -22,7 +22,7 @@ namespace hegem::global
             counter_type ix_grid;               // Number of intersection tests performed on grid
             counter_type ix_grid_face;          // Number of intersection tests against faces performed on grid
 
-            void reset();
+            auto reset() -> void;
         };
 
         extern aggregation_type counter;

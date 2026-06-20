@@ -48,7 +48,7 @@ namespace hegem::rasterizer::sort_details
                     [] (materials::physically_based m) { return m; });
             }
 
-            void sort(scene_type const& scene, sorted_geometry& sg)
+            auto sort(scene_type const& scene, sorted_geometry& sg) -> void
             {
                 sg.sky = scene.materials[scene.environment].template get<materials::solid_color>();
                 std::transform(
@@ -64,7 +64,7 @@ namespace hegem::rasterizer::sort_details
             {
                 sorted_geometry& sg;
 
-                void operator () (lamps::sun lamp)
+                auto operator () (lamps::sun lamp) -> void
                 {
                     if (sg.sun_lamp.colors.size() == sun_lamp_capacity) {
                         j() << "WARNING: sun lamp amount is capped at " << sun_lamp_capacity << "\n";
@@ -74,7 +74,7 @@ namespace hegem::rasterizer::sort_details
                     sg.sun_lamp.colors.emplace_back(lamp.color);
                 }
 
-                void operator () (lamps::omni lamp)
+                auto operator () (lamps::omni lamp) -> void
                 {
                     if (sg.omni_lamp.colors.size() == omni_lamp_capacity) {
                         j() << "WARNING: omni lamp amount is capped at " << omni_lamp_capacity << "\n";
@@ -85,7 +85,7 @@ namespace hegem::rasterizer::sort_details
                 }
             };
 
-            void sort(scene_type const& scene, sorted_geometry& sg)
+            auto sort(scene_type const& scene, sorted_geometry& sg) -> void
             {
                 lamp_sorter sorter{sg};
                 for (auto lamp: scene.lamps)
@@ -102,27 +102,27 @@ namespace hegem::rasterizer::sort_details
                 glm::mat4 const& model_to_world;
                 glm::mat4 const& world_to_model;
 
-                void operator () (shapes::sphere shape)
+                auto operator () (shapes::sphere shape) -> void
                 {
                     sg.spheres.emplace_back(shape, material_id, model_to_world, world_to_model);
                 }
 
-                void operator () (shapes::plane shape)
+                auto operator () (shapes::plane shape) -> void
                 {
                     sg.planes.emplace_back(shape, material_id, model_to_world, world_to_model);
                 }
 
-                void operator () (shapes::voxel shape)
+                auto operator () (shapes::voxel shape) -> void
                 {
                     sg.voxels.emplace_back(shape, material_id, model_to_world, world_to_model);
                 }
 
-                void operator () (shapes::hemesh const& shape)
+                auto operator () (shapes::hemesh const& shape) -> void
                 {
                     throw std::logic_error{"hemeshes should have been converted into meshes."};
                 }
 
-                void operator () (shapes::spark_system const& shape)
+                auto operator () (shapes::spark_system const& shape) -> void
                 {
                     auto params = std::string{};
                     params += "#define KUL_SPARK\n";
@@ -151,7 +151,7 @@ namespace hegem::rasterizer::sort_details
                     }, material_id, model_to_world, world_to_model);
                 }
 
-                void operator () (shapes::mesh shape)
+                auto operator () (shapes::mesh shape) -> void
                 {
                     auto& vao_pool = glu::vertex_array_pool::instance();
                     auto& buf_pool = glu::buffer_pool::instance();
@@ -193,7 +193,7 @@ namespace hegem::rasterizer::sort_details
                 }
             };
 
-            void sort(scene_type const& scene, sorted_geometry& sg)
+            auto sort(scene_type const& scene, sorted_geometry& sg) -> void
             {
                 for (auto& obj: scene.cache.objects) {
                     shape_sorter sorter{sg, obj.material_id, obj.model_to_world, obj.world_to_model};

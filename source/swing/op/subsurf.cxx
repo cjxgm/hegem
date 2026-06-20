@@ -52,7 +52,7 @@ namespace hegem::swing
                     hemesh result;
                 };
 
-                void triangulate(triangulation_cache& ca, face_type* face)
+                auto triangulate(triangulation_cache& ca, face_type* face) -> void
                 {
                     std::vector<vert_type*> verts;
                     earcut_polygon_type polygon;
@@ -149,13 +149,13 @@ namespace hegem::swing
                 return std::move(ca.result);
             }
 
-            void convexify(hemesh& m)
+            auto convexify(hemesh& m) -> void
             {
                 // TODO: unimplemented
                 throw std::logic_error{"unimplemented"};
             }
 
-            void subdivide_catmull_clark(hemesh& m)
+            auto subdivide_catmull_clark(hemesh& m) -> void
             {
                 for (auto& ring: m.rings.nodes) {
                     if (ring.any_hege == nullptr) continue;

@@ -35,11 +35,11 @@ namespace hegem::app
             bool show{true};
 
             visualization(std::string name, scene_type& scene, view_type& view, bool trace);
-            void reset_raytracing_task_io();
-            void reset_raytracing_task_io(tool::task_io io);
-            void reset_swrast_task_io();
-            void reset_swrast_task_io(tool::task_io io);
-            void update_rasterization_state();
+            auto reset_raytracing_task_io() -> void;
+            auto reset_raytracing_task_io(tool::task_io io) -> void;
+            auto reset_swrast_task_io() -> void;
+            auto reset_swrast_task_io(tool::task_io io) -> void;
+            auto update_rasterization_state() -> void;
         };
     }
 

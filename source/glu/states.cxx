@@ -13,7 +13,7 @@ namespace hegem::glu
             gl::enums::cull_face,
         };
 
-        void enable(gl::enum_type what, bool enabled)
+        auto enable(gl::enum_type what, bool enabled) -> void
         {
             if (enabled) gl::enable(what);
             else gl::disable(what);
@@ -26,7 +26,7 @@ namespace hegem::glu
         return sm;
     }
 
-    void states_manager::enable_only(std::unordered_set<gl::enum_type> enabled)
+    auto states_manager::enable_only(std::unordered_set<gl::enum_type> enabled) -> void
     {
         for (auto t: known_toggles) {
             auto now = enabled.count(t);

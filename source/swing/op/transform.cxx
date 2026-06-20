@@ -10,13 +10,13 @@ namespace hegem::swing
     {
         inline namespace transform
         {
-            void affine_transform_all(body_type* any_body, glm::mat4 m)
+            auto affine_transform_all(body_type* any_body, glm::mat4 m) -> void
             {
                 for (auto& b: list::iterate(any_body))
                     affine_transform(&b, m);
             }
 
-            void affine_transform(body_type* b, glm::mat4 m)
+            auto affine_transform(body_type* b, glm::mat4 m) -> void
             {
                 // Since a vertex may be shared by multiple faces,
                 // We cannot simply:
@@ -34,19 +34,19 @@ namespace hegem::swing
                 for (auto v: verts) affine_transform(v, m);
             }
 
-            void affine_transform(face_type* f, glm::mat4 m)
+            auto affine_transform(face_type* f, glm::mat4 m) -> void
             {
                 for (auto& r: list::iterate(f->boundary))
                     affine_transform(&r, m);
             }
 
-            void affine_transform(ring_type* r, glm::mat4 m)
+            auto affine_transform(ring_type* r, glm::mat4 m) -> void
             {
                 for (auto& h: list::iterate(r->any_hege))
                     affine_transform(h.start, m);
             }
 
-            void affine_transform(edge_type* e, glm::mat4 m)
+            auto affine_transform(edge_type* e, glm::mat4 m) -> void
             {
                 auto h0 = e->any_hege;
                 auto h1 = h0->twin;
@@ -54,7 +54,7 @@ namespace hegem::swing
                 affine_transform(h1->start, m);
             }
 
-            void affine_transform(vert_type* v, glm::mat4 m)
+            auto affine_transform(vert_type* v, glm::mat4 m) -> void
             {
                 v->pos = glm::vec3{m * glm::vec4{v->pos, 1.0f}};
             }

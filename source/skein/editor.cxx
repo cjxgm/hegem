@@ -546,7 +546,7 @@ namespace hegem::skein
             }
         }
 
-        void update_preview(scene::scene_type& s, lib::any result, bool with_gizmo)
+        auto update_preview(scene::scene_type& s, lib::any result, bool with_gizmo) -> void
         {
             auto& nodes = s.root.get<scene::nodes::group>().nodes;
             nodes.clear();
@@ -673,7 +673,7 @@ namespace hegem::skein
             return changed;
         }
 
-        void editor::force_execute(bool with_gizmo)
+        auto editor::force_execute(bool with_gizmo) -> void
         {
             g.collect_garbage();
             engine::sanity_check(g);
@@ -683,13 +683,13 @@ namespace hegem::skein
             update_preview(scene, std::move(result), with_gizmo);
         }
 
-        void editor::save_toml(std::string const& path)
+        auto editor::save_toml(std::string const& path) -> void
         {
             skein::serializer::toml sr{path};
             skein::serialize(sr, g, previewing_node);
         }
 
-        void editor::load_toml(std::string const& path, bool with_gizmo)
+        auto editor::load_toml(std::string const& path, bool with_gizmo) -> void
         {
             auto [g, preview] = skein::parse(path.data());
             this->g = std::move(g);

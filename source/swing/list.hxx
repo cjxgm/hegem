@@ -8,14 +8,14 @@ namespace hegem::swing
     namespace list
     {
         template <class T>
-        void connect(T* from, T* to)
+        auto connect(T* from, T* to) -> void
         {
             if (from) from->next = to;
             if (to)     to->prev = from;
         }
 
         template <class T>
-        void remove(T* x)
+        auto remove(T* x) -> void
         {
             connect(x->prev, x->next);
         }
@@ -44,7 +44,7 @@ namespace hegem::swing
         }
 
         template <class T>
-        void extend(T*& first, T* x)
+        auto extend(T*& first, T* x) -> void
         {
             if (first) {
                 auto a = first;

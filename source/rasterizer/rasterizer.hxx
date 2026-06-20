@@ -5,6 +5,6 @@
 
 namespace hegem::rasterizer
 {
-    void rasterize(state const& s, bool wireframed, float time);
+    auto rasterize(state const& s, bool wireframed, float time) -> void;
 }
 

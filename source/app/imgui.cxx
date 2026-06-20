@@ -23,7 +23,7 @@ namespace hegem::app::imgui
 
         struct glfw_cursor_deleter
         {
-            void operator () (GLFWcursor* cursor)
+            auto operator () (GLFWcursor* cursor) -> void
             {
                 if (cursor) glfwDestroyCursor(cursor);
             }
@@ -71,14 +71,14 @@ namespace hegem::app::imgui
             }
 
         private:
-            void compile_shader()
+            auto compile_shader() -> void
             {
                 j() << "compiling shader\n";
                 program = glu::shader_factory::program_from_name("imgui");
                 gl::program_uniform1i(program, 1, 0);      // bind "tex" to unit 0
             }
 
-            void upload_font()
+            auto upload_font() -> void
             {
                 auto& io = ImGui::GetIO();
 
@@ -109,7 +109,7 @@ namespace hegem::app::imgui
                 io.Fonts->TexID = glu::cast::id_to_ptr(tex_font);
             }
 
-            void prepare_input()
+            auto prepare_input() -> void
             {
                 j() << "creating vertex array and buffers\n";
                 auto& vao_pool = glu::vertex_array_pool::instance();
@@ -143,7 +143,7 @@ namespace hegem::app::imgui
                 gl::vertex_array_attrib_binding(vao, 2, 0);
             }
 
-            void setup_style()
+            auto setup_style() -> void
             {
                 ImGui::StyleColorsDark();
                 auto& style = ImGui::GetStyle();
@@ -159,7 +159,7 @@ namespace hegem::app::imgui
                 style.GrabRounding        = 1;
             }
 
-            void setup_keymap()
+            auto setup_keymap() -> void
             {
                 auto& io = ImGui::GetIO();
 
@@ -187,7 +187,7 @@ namespace hegem::app::imgui
                 io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
             }
 
-            void setup_cursors()
+            auto setup_cursors() -> void
             {
                 cursors.resize(int(ImGuiMouseCursor_COUNT));
                 cursors[int(ImGuiMouseCursor_Arrow)].reset(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
@@ -199,7 +199,7 @@ namespace hegem::app::imgui
                 cursors[int(ImGuiMouseCursor_ResizeNWSE)].reset(glfwCreateStandardCursor(GLFW_HAND_CURSOR));
             }
 
-            void disable_file_writing()
+            auto disable_file_writing() -> void
             {
                 auto& io = ImGui::GetIO();
                 io.IniFilename = nullptr;
@@ -208,12 +208,12 @@ namespace hegem::app::imgui
         };
     }
 
-    void init_once()
+    auto init_once() -> void
     {
         context::instance();
     }
 
-    void on_char(GLFWwindow* win, unsigned int codepoint)
+    auto on_char(GLFWwindow* win, unsigned int codepoint) -> void
     {
         if (codepoint == 0) return;
 
@@ -225,7 +225,7 @@ namespace hegem::app::imgui
         }
     }
 
-    void on_key(GLFWwindow* win, int key, bool down)
+    auto on_key(GLFWwindow* win, int key, bool down) -> void
     {
         auto& io = ImGui::GetIO();
         io.KeysDown[key] = down;
@@ -244,13 +244,13 @@ namespace hegem::app::imgui
             io.KeysDown[GLFW_KEY_RIGHT_SUPER];
     }
 
-    void on_scroll(GLFWwindow* win, float x, float y)
+    auto on_scroll(GLFWwindow* win, float x, float y) -> void
     {
         auto& ctx = context::instance();
         ctx.mouse_scroll_y += y;
     }
 
-    void on_mouse_button(GLFWwindow* win, int button, bool down)
+    auto on_mouse_button(GLFWwindow* win, int button, bool down) -> void
     {
         auto& ctx = context::instance();
         if (button < 0) throw std::runtime_error{"WTF? You have an odd mouse!"};
@@ -258,7 +258,7 @@ namespace hegem::app::imgui
         if (down) ctx.mouse_once_down[button] = true;
     }
 
-    void on_framebuffer_resized(GLFWwindow* win, int w, int h, int fbw, int fbh)
+    auto on_framebuffer_resized(GLFWwindow* win, int w, int h, int fbw, int fbh) -> void
     {
         auto& ctx = context::instance();
 
@@ -277,7 +277,7 @@ namespace hegem::app::imgui
         gl::program_uniform_matrix4fv(ctx.program, 0, 1, false, proj);
     }
 
-    void on_frame_begin(GLFWwindow* win)
+    auto on_frame_begin(GLFWwindow* win) -> void
     {
         auto& ctx = context::instance();
         auto& io = ImGui::GetIO();
@@ -315,7 +315,7 @@ namespace hegem::app::imgui
         ImGui::NewFrame();
     }
 
-    void on_frame_end(GLFWwindow* win)
+    auto on_frame_end(GLFWwindow* win) -> void
     {
         ImGui::Render();
 

@@ -51,7 +51,7 @@ namespace hegem::tool
             char_type const* data_;
             size_type size_;
 
-            void ensure_z() const
+            auto ensure_z() const -> void
             {
                 if (data_[size_] != 0)
                     throw std::logic_error{"String passed to as_czstring must be zero terminated."};

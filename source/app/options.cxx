@@ -15,7 +15,7 @@ namespace hegem::app
 
         journal j() { return {"OPT"}; }
 
-        void populate_scenes(options& opts)
+        auto populate_scenes(options& opts) -> void
         {
             j() << "scanning scenes\n";
             std::vector<std::string> filenames;

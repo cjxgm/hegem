@@ -112,7 +112,7 @@ namespace hegem::swing
             return pmap;
         }
 
-        void reconstruct_pointers(pointer_map_type const& pmap, pointer_list_type const& ptrs)
+        auto reconstruct_pointers(pointer_map_type const& pmap, pointer_list_type const& ptrs) -> void
         {
             for (auto p: ptrs) {
                 if (p == nullptr) continue;
@@ -125,7 +125,7 @@ namespace hegem::swing
             }
         }
 
-        void extend(hemesh const& old, hemesh & now)
+        auto extend(hemesh const& old, hemesh & now) -> void
         {
             if (old.any_body == nullptr)
                 return;
