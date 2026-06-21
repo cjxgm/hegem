@@ -19,7 +19,7 @@ $base_dir__source = "source";
     'cpptoml/include',          # TOML parser
 );
 @library__pkg_config = qw{
-    gtkmm-3.0
+    libsystemd
     glfw3
     gl
 };
