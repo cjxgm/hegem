@@ -115,7 +115,7 @@ namespace hegem::skein
                             FIELDS \
                         } break;
                     #define SECTION(ID, ...) \
-                        case op_id::section_##ID##_##ID: RT_UNREACHABLE();
+                        case op_id::section_##ID##_##ID: HEGEM_UNREACHABLE();
                     #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP) \
                         ImGui::PushItemWidth(-100); \
                         ImGui::PushID(#VAR); \

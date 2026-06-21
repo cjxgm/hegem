@@ -194,7 +194,7 @@ namespace hegem::skein
                                 FIELDS \
                             } break;
                         #define SECTION(ID, ...) \
-                            case op_id::section_##ID##_##ID: RT_UNREACHABLE();
+                            case op_id::section_##ID##_##ID: HEGEM_UNREACHABLE();
                         #define FIELD(TYPE, VAR, INITIAL, WIDGET, ...) \
                             fields.VAR = parse_toml::read::WIDGET<TYPE>(*cfg_instance, #VAR);
                         #include "op.inl"

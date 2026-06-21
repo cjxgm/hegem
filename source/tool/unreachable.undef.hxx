@@ -1,3 +1,3 @@
 // no #pragma once intentionally
-#undef RT_UNREACHABLE
+#undef HEGEM_UNREACHABLE
 

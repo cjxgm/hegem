@@ -51,7 +51,7 @@ namespace hegem::raytracer::shading_details
         private:
             color_type impl(materials::solid_color const& mat) const
             {
-                RT_UNREACHABLE();
+                HEGEM_UNREACHABLE();
             }
 
             // Blinn-phong

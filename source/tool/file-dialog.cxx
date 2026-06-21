@@ -29,7 +29,7 @@ namespace hegem::tool
                     return d;
                 }
 
-                default: RT_UNREACHABLE();
+                default: HEGEM_UNREACHABLE();
             }
         }
 
@@ -83,7 +83,7 @@ namespace hegem::tool
                                 case gtk::response::cancel:
                                     cmd.result_tx.send("");
                                     break;
-                                default: RT_UNREACHABLE();
+                                default: HEGEM_UNREACHABLE();
                             }
                         }
 

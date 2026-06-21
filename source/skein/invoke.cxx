@@ -20,7 +20,7 @@ namespace hegem::skein
                     case op_id::KIND##_##ID: \
                         return invoke_impl::invoke(instance.fields.KIND##_##ID, arguments);
                 #define SECTION(ID, ...) \
-                    case op_id::section_##ID##_##ID: RT_UNREACHABLE();
+                    case op_id::section_##ID##_##ID: HEGEM_UNREACHABLE();
                 #include "op.inl"
             }
             return {};

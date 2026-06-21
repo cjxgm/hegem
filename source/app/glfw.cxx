@@ -24,7 +24,7 @@ namespace hegem::app::glfw
                 case gl::debug_severity_low: return "\e[0;33m";
                 case gl::debug_severity_medium: return "\e[0;35m";
                 case gl::debug_severity_high: return "\e[1;31m";
-                default: RT_UNREACHABLE();
+                default: HEGEM_UNREACHABLE();
             }
         }
 
@@ -84,7 +84,7 @@ namespace hegem::app::glfw
                     case GLFW_REPEAT:
                         // ignored intentionally
                         break;
-                    default: RT_UNREACHABLE();
+                    default: HEGEM_UNREACHABLE();
                 }
             }
 
@@ -102,7 +102,7 @@ namespace hegem::app::glfw
                     case GLFW_RELEASE:
                         imgui::on_mouse_button(win, button, false);
                         break;
-                    default: RT_UNREACHABLE();
+                    default: HEGEM_UNREACHABLE();
                 }
             }
 
