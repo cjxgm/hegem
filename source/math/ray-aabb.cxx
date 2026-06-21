@@ -4,7 +4,7 @@
 
 namespace hegem::math::ray_aabb_details
 {
-    namespace
+    inline namespace
     {
         using math::inf;
     }

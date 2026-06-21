@@ -10,7 +10,7 @@
 
 namespace hegem::app::glfw
 {
-    namespace
+    inline namespace
     {
         using hegem::tool::journal;
         journal j() { return {"WSI"}; }

@@ -5,7 +5,7 @@ namespace hegem::tool
 {
     inline namespace journal_details
     {
-        namespace
+        inline namespace
         {
             template <class T>
             journal write(journal j, T&& x)

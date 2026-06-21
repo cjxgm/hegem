@@ -5,7 +5,7 @@ namespace hegem::skein
 {
     namespace palette_details
     {
-        namespace
+        inline namespace
         {
             color_type color_from_hcl(float h, float c, float l)
             {

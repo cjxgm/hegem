@@ -12,7 +12,7 @@ namespace hegem::skein
 {
     namespace engine
     {
-        namespace
+        inline namespace
         {
             auto build_output_counts(graph& g, node const* entry)
             {

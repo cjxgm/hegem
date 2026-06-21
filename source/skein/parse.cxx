@@ -10,7 +10,7 @@
 
 namespace hegem::skein
 {
-    namespace
+    inline namespace
     {
         tool::journal j() { return {"SK.PARSE"}; }
 
@@ -27,7 +27,7 @@ namespace hegem::skein
 
     namespace parse_toml
     {
-        namespace
+        inline namespace
         {
             namespace get_or_die_details
             {

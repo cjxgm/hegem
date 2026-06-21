@@ -5,7 +5,7 @@ namespace hegem::glu
 {
     inline namespace resource_details
     {
-        namespace
+        inline namespace
         {
             template <gl::enum_type ...Types>
             auto init_shader_pools(traits::gl_enum_sequence<Types...>) -> void

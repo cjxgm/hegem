@@ -9,7 +9,7 @@
 
 namespace hegem::raytracer
 {
-    namespace
+    inline namespace
     {
         using namespace scene;
         using math::direction_type;

@@ -6,7 +6,7 @@ namespace hegem::skein
 {
     namespace op::invoke_impl
     {
-        namespace
+        inline namespace
         {
             template <class Slab, class T=typename Slab::value_type>
             auto select(

@@ -13,7 +13,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    namespace
+    inline namespace
     {
         auto in_sphere(glm::vec3 pos, glm::vec3 center, float radius) -> bool
         {

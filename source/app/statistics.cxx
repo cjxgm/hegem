@@ -4,7 +4,7 @@
 
 namespace hegem::app::view
 {
-    namespace
+    inline namespace
     {
         using global::counter;
     }

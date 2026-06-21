@@ -16,7 +16,7 @@
 
 namespace hegem::app::imgui
 {
-    namespace
+    inline namespace
     {
         using hegem::tool::journal;
         journal j() { return {"IMGUI"}; }

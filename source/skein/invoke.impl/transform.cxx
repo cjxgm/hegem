@@ -10,7 +10,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    namespace
+    inline namespace
     {
         auto median_or_custom(model const& m, float3 custom, bool use_median) -> glm::vec3
         {

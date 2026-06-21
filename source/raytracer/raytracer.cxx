@@ -14,7 +14,7 @@
 
 namespace hegem::raytracer::raytracer_details
 {
-    namespace
+    inline namespace
     {
         using global::counter;
         using math::direction_type;

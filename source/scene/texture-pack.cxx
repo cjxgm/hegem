@@ -6,7 +6,7 @@
 
 namespace hegem::scene::texture_packs
 {
-    namespace
+    inline namespace
     {
         auto checkerboard_pattern(glm::vec3 pos, float size) -> float
         {

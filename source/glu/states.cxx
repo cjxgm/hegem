@@ -3,7 +3,7 @@
 
 namespace hegem::glu
 {
-    namespace
+    inline namespace
     {
         static constexpr gl::enum_type known_toggles[] = {
             gl::depth_test,

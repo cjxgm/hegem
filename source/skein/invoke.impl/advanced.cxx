@@ -15,7 +15,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    namespace
+    inline namespace
     {
         auto is_double_sided(swing::face_type* f) -> bool
         {

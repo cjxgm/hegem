@@ -9,7 +9,7 @@
 
 namespace hegem::tool
 {
-    namespace
+    inline namespace
     {
         auto make_file_dialog(file_dialog::action act, std::string title) -> gtk::file_dialog
         {

@@ -22,7 +22,7 @@
 
 namespace hegem::scene
 {
-    namespace
+    inline namespace
     {
         using material_container_type = scene_type::material_container_type;
         using lamp_container_type = scene_type::lamp_container_type;

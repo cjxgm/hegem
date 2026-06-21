@@ -10,7 +10,7 @@
 
 namespace hegem::pathtracer::pathtracer_details
 {
-    namespace
+    inline namespace
     {
         using global::counter;
         using color_type = image_type::color_type;

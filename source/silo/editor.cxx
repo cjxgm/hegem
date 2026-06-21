@@ -185,7 +185,7 @@ namespace hegem::silo
         }
     };
 
-    namespace
+    inline namespace
     {
         auto edit_feature_paths(
             editor::temporary_state& tmp,

@@ -5,7 +5,7 @@
 
 namespace hegem::skein::serializer
 {
-    namespace
+    inline namespace
     {
         // format_float(1.234f)         => "1.234"
         // format_float(1.0f)           => "1.0"

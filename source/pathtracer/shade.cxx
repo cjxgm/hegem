@@ -10,7 +10,7 @@
 
 namespace hegem::pathtracer::shading_details
 {
-    namespace
+    inline namespace
     {
         namespace hits = raytracer::hits;
         namespace materials = scene::materials;

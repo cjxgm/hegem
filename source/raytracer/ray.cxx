@@ -5,7 +5,7 @@
 
 namespace hegem::raytracer::ray_details
 {
-    namespace
+    inline namespace
     {
         namespace cameras = scene::cameras;
 

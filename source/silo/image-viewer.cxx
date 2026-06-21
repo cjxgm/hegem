@@ -7,7 +7,7 @@
 
 namespace hegem::silo
 {
-    namespace
+    inline namespace
     {
         auto general_mode(ImDrawList const* pdraw_list, ImDrawCmd const* pcmd) -> void
         {

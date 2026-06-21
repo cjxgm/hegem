@@ -7,7 +7,7 @@
 
 namespace hegem::raytracer::shading_details
 {
-    namespace
+    inline namespace
     {
         namespace materials = scene::materials;
         namespace lamps = scene::lamps;

@@ -8,7 +8,7 @@
 
 namespace hegem::app
 {
-    namespace
+    inline namespace
     {
         using tool::journal;
         namespace fs = lib::filesystem;

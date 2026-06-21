@@ -10,7 +10,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    namespace
+    inline namespace
     {
         auto kul_mod(float a, float b) noexcept -> float
         {

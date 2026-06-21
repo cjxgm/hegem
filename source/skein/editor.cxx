@@ -39,7 +39,7 @@ namespace hegem::skein
             bool showing_new_node_popup{};
         };
 
-        namespace
+        inline namespace
         {
             auto to_glm(ImVec2 a) { return glm::vec2{a.x, a.y}; }
             auto to_imgui(glm::vec2 a) { return ImVec2{std::round(a.x), std::round(a.y)}; }

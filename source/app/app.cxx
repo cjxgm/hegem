@@ -33,7 +33,7 @@
 
 namespace hegem::app
 {
-    namespace
+    inline namespace
     {
         using tool::journal;
         using image::image_rgb;

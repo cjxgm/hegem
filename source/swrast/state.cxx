@@ -4,7 +4,7 @@
 
 namespace hegem::swrast::state_details
 {
-    namespace
+    inline namespace
     {
         using triangle_type = std::array<point_type, 3>;
         using triangle_mesh_type = std::vector<triangle_type>;
@@ -118,7 +118,7 @@ namespace hegem::swrast::state_details
 
 namespace hegem::swrast::state_details
 {
-    namespace
+    inline namespace
     {
         auto yzx(point_type a) { return point_type{a.y, a.z, a.x}; }
 

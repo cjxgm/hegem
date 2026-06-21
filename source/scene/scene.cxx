@@ -4,7 +4,7 @@
 
 namespace hegem::scene::scene_details
 {
-    namespace
+    inline namespace
     {
         struct load_loadable
         {

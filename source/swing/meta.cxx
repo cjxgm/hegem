@@ -8,7 +8,7 @@ namespace hegem::swing
 {
     inline namespace meta
     {
-        namespace
+        inline namespace
         {
             template <class T>
             auto make_relocatable_pointer(T*& ptr)

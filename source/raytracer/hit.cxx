@@ -3,7 +3,7 @@
 
 namespace hegem::raytracer::hits
 {
-    namespace
+    inline namespace
     {
         using math::inf;
     }
