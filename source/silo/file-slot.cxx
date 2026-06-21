@@ -1,4 +1,3 @@
-#include "../tool/file-dialog.hxx"
 #include "../lib/glm/op/common.hxx"
 #include "../lib/imgui.hxx"
 #include "file-slot.hxx"
@@ -7,12 +6,16 @@ namespace hegem::silo
 {
     struct file_slot::temporary_state
     {
-        tool::file_dialog dialog;
-        std::string filename;
-        std::string empty_string;
+        tool::desktop_subsystem* desktop{};
+        tool::receiver<tool::chosen_file_message> file_dialog_rx{};
+        std::string filename{};
+        std::string empty_string{};
+        bool showing_file_dialog{};
+
+        temporary_state(tool::desktop_subsystem* desktop): desktop{desktop} {}
     };
 
-    file_slot::file_slot(): tmp{std::make_unique<temporary_state>()} {}
+    file_slot::file_slot(tool::desktop_subsystem* desktop): tmp{std::make_unique<temporary_state>(desktop)} {}
     file_slot::~file_slot() = default;
 
     auto file_slot::draw(char const* title, char const* directory) -> std::string const&
@@ -23,15 +26,13 @@ namespace hegem::silo
         ImGui::PushID(title);
         ImGui::Columns(2, title, false);
         ImGui::SetColumnWidth(0, btn_width);
-        if (tmp->dialog) {
+        if (tmp->showing_file_dialog) {
             ImGui::AlignTextToFramePadding();
             ImGui::TextDisabled("%s", "    ...");
         } else {
             if (ImGui::Button("Load")) {
-                tmp->dialog.open(
-                    tool::file_dialog::action::open,
-                    title,
-                    directory);
+                tmp->showing_file_dialog = true;
+                tool::show_open_file_dialog(tmp->desktop, tmp->file_dialog_rx.tx(), 0u, title, directory);
             }
         }
         ImGui::NextColumn();
@@ -44,8 +45,9 @@ namespace hegem::silo
         ImGui::Columns();
         ImGui::PopID();
 
-        if (auto opt_filename = tmp->dialog()) {
-            tmp->filename = std::move(*opt_filename);
+        if (auto filename = tmp->file_dialog_rx.try_recv()) {
+            tmp->showing_file_dialog = false;
+            tmp->filename = std::move(filename->maybe_path);
             return tmp->filename;
         } else {
             return tmp->empty_string;

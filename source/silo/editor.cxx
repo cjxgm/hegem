@@ -51,6 +51,8 @@ namespace hegem::silo
 
     struct editor::temporary_state
     {
+        tool::desktop_subsystem* desktop{};
+
         int morphing_progress{};
         bool interpolated_features_needs_update{};
         bool morphing_needs_update{};
@@ -65,8 +67,8 @@ namespace hegem::silo
         image_viewer preview;
         lib::optional<tool::task_io> preview_high_quality_io;
         int preview_high_quality_countdown = -1;
-        file_slot file0;
-        file_slot file1;
+        file_slot file0{desktop};
+        file_slot file1{desktop};
         std::shared_ptr<image::image_rgb> image0;
         std::shared_ptr<image::image_rgb> image1;
 
@@ -75,8 +77,9 @@ namespace hegem::silo
         float decay = 1.0f;
         float length_influence = 0.1f;
 
-        temporary_state(int (&tile_size)[2])
-            : tile_size{tile_size}
+        temporary_state(tool::desktop_subsystem* desktop, int (&tile_size)[2])
+        : desktop{desktop}
+        , tile_size{tile_size}
         {
             features0.emplace_back();
             features1.emplace_back();
@@ -402,7 +405,7 @@ namespace hegem::silo
         }
     }
 
-    editor::editor(int (&tile_size)[2]): tmp{std::make_unique<temporary_state>(tile_size)} {}
+    editor::editor(tool::desktop_subsystem* desktop, int (&tile_size)[2]): tmp{std::make_unique<temporary_state>(desktop, tile_size)} {}
     editor::~editor() = default;
 
     auto editor::draw() -> void
