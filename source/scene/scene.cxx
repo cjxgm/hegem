@@ -1,0 +1,59 @@
+#include "scene.hxx"
+#include "parser.hxx"
+#include <stdexcept>
+
+namespace hegem::scene::scene_details
+{
+    namespace
+    {
+        struct load_loadable
+        {
+            loadable_scene& loadable;
+
+            auto operator () (scene_type const& scene) const -> void
+            {
+                // do nothing intentionally
+            }
+
+            auto operator () (filename_type const& path) const -> void
+            {
+                loadable = scene::from_path(path);
+            }
+        };
+
+        struct get_name
+        {
+            std::string const& operator () (scene_type const& scene) const
+            {
+                return scene.name;
+            }
+
+            std::string const& operator () (filename_type const& path) const
+            {
+                return path;
+            }
+        };
+    }
+
+    bool loaded(loadable_scene const& loadable)
+    {
+        return loadable.is<scene_type>();
+    }
+
+    scene_type& get_or_load(loadable_scene& loadable)
+    {
+        apply_visitor(load_loadable{loadable}, loadable);
+        return loadable.get<scene_type>();
+    }
+
+    std::string const& name(loadable_scene const& loadable)
+    {
+        return apply_visitor(get_name{}, loadable);
+    }
+
+    auto scene_type::rebuild_cache() -> void
+    {
+        cache = build_scene_cache(*this);
+    }
+}
+

@@ -10,9 +10,9 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "../../src/lib/glm/vec2.hh"
-#include "../../src/lib/glm/vec3.hh"
-#include "../../src/lib/glm/vec4.hh"
+#include "../../source/lib/glm/vec2.hxx"
+#include "../../source/lib/glm/vec3.hxx"
+#include "../../source/lib/glm/vec4.hxx"
 
 //---- Define assertion handler. Defaults to calling assert().
 //#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)

@@ -5,15 +5,16 @@ my %opt;
 @opt{@ARGV} = ();
 $::sanitize = exists $opt{"-s"};
 
+$base_dir__source = "source";
+
 @include_dir__third_party = (
     'sanity-check',             # compiler sanity checks
     'gsl/include',              # guideline support library
     'glm',                      # opengl mathematics
     'stb',                      # single header libraries for game-dev
     'tinyobjloader',            # single header library for loading wavefront obj file
-    'variant/include',          # variant and optional
+    'variant/include',          # variant, optional, and reference wrapper. The reference wrapper is a must, and that's why we don't use std::variant.
     'earcut/include',           # polygon triangulation
-    'observer-ptr/include',     # observer_ptr<T>
     'cxxpool/src',              # thread pool
     'cpptoml/include',          # TOML parser
 );
@@ -26,6 +27,7 @@ $::sanitize = exists $opt{"-s"};
 $compiler__bin = "clang++";
 $loader__bin = $compiler__bin;
 $build__output_bin = "hegem";
+$build__main_impl = "main.cxx";
 
 &output__variable__bool('::sanitize');
 @compiler__sanitizers = qw[undefined address] if $::sanitize;
