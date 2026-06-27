@@ -1,5 +1,6 @@
-#include "../lib/std/filesystem.hxx"
 #include "../tool/journal.hxx"
+#include "../tool/invoke.hxx"
+#include "../tool/filesystem.hxx"
 #include "../swing/example.hxx"
 #include "options.hxx"
 #include <vector>
@@ -11,22 +12,26 @@ namespace hegem::app
     inline namespace
     {
         using tool::journal;
-        namespace fs = lib::filesystem;
 
         journal j() { return {"OPT"}; }
 
         auto populate_scenes(options& opts) -> void
         {
             j() << "scanning scenes\n";
-            std::vector<std::string> filenames;
-            for (auto& entry: fs::recursive_directory_iterator{opts.scene_basedir}) {
-                if (is_regular_file(entry.path())) {
-                    j() << "discovered scene " << entry.path().u8string() << "\n";
-                    filenames.emplace_back(entry.path().u8string());
+            tool::thunk_invoke(
+                &tool::search_folder,
+                tool::string::from_owner(&opts.scene_basedir),
+                [&] (tool::string filename, tool::file_kind kind) -> bool {
+                    if (kind == tool::file_kind::plain) {
+                        auto path = opts.scene_basedir;  // Copy intentionally.
+                        path += '/';
+                        path.append(filename.data, filename.length);
+                        j() << "discovered scene " << path << "\n";
+                        opts.scenes.emplace_back(std::move(path));
+                    }
+                    return false;
                 }
-            }
-            std::sort(begin(filenames), end(filenames));
-            std::move(begin(filenames), end(filenames), std::back_inserter(opts.scenes));
+            );
         }
     }
 
