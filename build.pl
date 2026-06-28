@@ -31,7 +31,7 @@ $build__main_impl = "main.cxx";
 
 &output__variable__bool('::sanitize');
 @compiler__sanitizers = qw[undefined address] if $::sanitize;
-$compiler__flags__standard = "c++17";
+$compiler__flags__standard = "c++20";
 $compiler__flags__optimization_level = "0" if exists $opt{"-g"};
 $compiler__flags__architecture = "ivybridge";
 @compiler__flags__extra = qw[-Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter -ggdb -Wno-missing-braces];

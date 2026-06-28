@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <new>
 
 namespace mapbox {
 
@@ -105,7 +106,7 @@ private:
                 currentIndex = 0;
             }
             T* object = &currentBlock[currentIndex++];
-            alloc.construct(object, std::forward<Args>(args)...);
+            ::new ((void*) object) T(std::forward<Args>(args)...);
             return object;
         }
         void reset(std::size_t newBlockSize) {
