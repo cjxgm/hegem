@@ -200,6 +200,14 @@ namespace hegem::app::glfw
                 }
                 j() << "glfw mainloop: exited\n";
 
+                glfwHideWindow(win);
+                for (int i = 0; i < 128; i++) {
+                    // For Wayland, due to acknowledgement requirements, it may take some turns before the window disappears.
+                    // The number 128 is arbitrary.
+                    glfwPollEvents();
+                }
+                // Post-condition: the window is invisible, even if you while (true) {} here.
+
                 glfwDestroyWindow(win);
                 win = nullptr;
                 j() << "glfw: window destroyed.\n";
