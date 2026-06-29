@@ -1,5 +1,4 @@
 #pragma once
-#include <utility>  // for std::forward
 
 namespace hegem::tool
 {
@@ -9,9 +8,9 @@ namespace hegem::tool
         Drop drop;
 
         ~guard() { drop(); }
+        guard(guard const&) = delete;
 
-        template <typename Argument>
-        guard(Argument&& drop): drop{std::forward<Argument>(drop)} {}
+        guard(auto&& drop): drop{static_cast<decltype(drop)&&>(drop)} {}
     };
 
     template <typename Drop>

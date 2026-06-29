@@ -22,7 +22,7 @@ namespace hegem::tool
         static constexpr auto from_last(usize length, char const* last) -> string;
         static constexpr auto from_interval(char const* first, char const* last) -> string;
         static constexpr auto from_sentinel(char const* data) -> string;
-        template <typename Owner> static constexpr auto from_owner(Owner const* owner) -> string;
+        static constexpr auto from_owner(auto const* owner) -> string requires requires { owner->data(); owner->size(); };
 
         /// Bounding.
         constexpr auto bound(usize count) -> usize;  // Bound the count within this->length.
@@ -46,7 +46,7 @@ namespace hegem::tool
         constexpr auto zero() -> string;  // -> written_part. That is, the entire this[0].
         constexpr auto fill(char source) -> string;  // -> written_part. That is, the entire this[0].
         constexpr auto ingest(string source) -> string;  // -> written_part.
-        template <typename Owner> constexpr auto into_owner() -> Owner;
+        template <typename Owner> constexpr auto into_owner() -> Owner requires requires (char* data, usize length) { Owner{data, length}; };
 
         /// Complying iteration_protocol.
         constexpr auto begin() -> char*;
@@ -100,8 +100,8 @@ namespace hegem::tool
         return self::from(data, __builtin_strlen(data));
     }
 
-    template <typename Owner>
-    inline constexpr auto string::from_owner(Owner const* owner) -> string
+    inline constexpr auto string::from_owner(auto const* owner) -> string
+    requires requires { owner->data(); owner->size(); }
     {
         return self::from(owner->data(), owner->size());
     }
@@ -226,6 +226,7 @@ namespace hegem::tool
 
     template <typename Owner>
     inline constexpr auto string::into_owner() -> Owner
+    requires requires (char* data, usize length) { Owner{data, length}; }
     {
         return Owner{this->data, this->length};
     }
