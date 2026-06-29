@@ -4,7 +4,7 @@
 
 namespace hegem::raytracer::shading_details::unified_lamp_details
 {
-    namespace
+    inline namespace
     {
         namespace lamps = scene::lamps;
         using math::inf;

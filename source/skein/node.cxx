@@ -2,7 +2,7 @@
 
 namespace hegem::skein
 {
-    namespace
+    inline namespace
     {
         // Returns true if [a0, a1] ∩  [b0, b1] != ∅
         bool overlaps(int a0, int a1, int b0, int b1)

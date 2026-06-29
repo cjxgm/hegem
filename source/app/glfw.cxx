@@ -10,7 +10,7 @@
 
 namespace hegem::app::glfw
 {
-    namespace
+    inline namespace
     {
         using hegem::tool::journal;
         journal j() { return {"WSI"}; }
@@ -24,7 +24,7 @@ namespace hegem::app::glfw
                 case gl::debug_severity_low: return "\e[0;33m";
                 case gl::debug_severity_medium: return "\e[0;35m";
                 case gl::debug_severity_high: return "\e[1;31m";
-                default: RT_UNREACHABLE();
+                default: HEGEM_UNREACHABLE();
             }
         }
 
@@ -84,7 +84,7 @@ namespace hegem::app::glfw
                     case GLFW_REPEAT:
                         // ignored intentionally
                         break;
-                    default: RT_UNREACHABLE();
+                    default: HEGEM_UNREACHABLE();
                 }
             }
 
@@ -102,7 +102,7 @@ namespace hegem::app::glfw
                     case GLFW_RELEASE:
                         imgui::on_mouse_button(win, button, false);
                         break;
-                    default: RT_UNREACHABLE();
+                    default: HEGEM_UNREACHABLE();
                 }
             }
 
@@ -199,6 +199,14 @@ namespace hegem::app::glfw
                     glfwSwapBuffers(win);
                 }
                 j() << "glfw mainloop: exited\n";
+
+                glfwHideWindow(win);
+                for (int i = 0; i < 128; i++) {
+                    // For Wayland, due to acknowledgement requirements, it may take some turns before the window disappears.
+                    // The number 128 is arbitrary.
+                    glfwPollEvents();
+                }
+                // Post-condition: the window is invisible, even if you while (true) {} here.
 
                 glfwDestroyWindow(win);
                 win = nullptr;

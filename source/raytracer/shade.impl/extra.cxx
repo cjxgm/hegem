@@ -8,7 +8,7 @@
 
 namespace hegem::raytracer::shading_details
 {
-    namespace
+    inline namespace
     {
         using math::direction_type;
         using math::inf;

@@ -10,7 +10,7 @@
 
 namespace hegem::app
 {
-    namespace
+    inline namespace
     {
         static constexpr auto eps = 1e-3f;
         static_assert(eps < 1.0f / 255.0f, "Epsilon is not small enough.");

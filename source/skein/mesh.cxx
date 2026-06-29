@@ -12,7 +12,7 @@ namespace hegem::skein
 {
     inline namespace mesh
     {
-        namespace
+        inline namespace
         {
             auto barycenter_of(swing::hege_type* first) -> glm::vec3
             {

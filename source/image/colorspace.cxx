@@ -6,7 +6,7 @@
 namespace hegem::image::colorspace
 {
     // Adapted from https://gist.github.com/stepheneb/3019585
-    namespace
+    inline namespace
     {
         // h ranging from [0, 1] means [0°, 360°], for convenience sake
         auto lch_lab(color_type lch) -> color_type

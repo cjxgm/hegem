@@ -7,7 +7,7 @@
 
 namespace hegem::swrast
 {
-    namespace
+    inline namespace
     {
         template <int N>
         auto generate_color_palette() -> std::array<image_type::color_type, N>

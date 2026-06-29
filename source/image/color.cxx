@@ -9,7 +9,7 @@
 
 namespace hegem::image::color
 {
-    namespace
+    inline namespace
     {
         unsigned char from_hex_digit(char hex)
         {

@@ -79,7 +79,7 @@ namespace hegem::image::image_impl
         return dst;
     }
 
-    namespace
+    inline namespace
     {
         struct stb_image_deleter
         {

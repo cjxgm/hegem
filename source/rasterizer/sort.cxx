@@ -10,7 +10,7 @@
 
 namespace hegem::rasterizer::sort_details
 {
-    namespace
+    inline namespace
     {
         using scene::material_type;
         namespace nodes = scene::nodes;

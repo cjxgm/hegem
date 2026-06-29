@@ -6,7 +6,7 @@
 
 namespace hegem::rasterizer::state_details
 {
-    namespace
+    inline namespace
     {
         using math::inf;
 

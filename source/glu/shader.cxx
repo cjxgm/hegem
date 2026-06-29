@@ -7,7 +7,7 @@
 
 namespace hegem::glu::shader_factory
 {
-    namespace
+    inline namespace
     {
         auto j() { return tool::journal{"FACTORY"} << "\e[0;36m[SHADER]\e[0m "; }
 

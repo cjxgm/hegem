@@ -9,7 +9,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    namespace
+    inline namespace
     {
         using pack_content_type = std::vector<lib::any>;
         using pack_type = std::shared_ptr<pack_content_type>;

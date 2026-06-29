@@ -5,7 +5,7 @@
 #include "../tool/journal.hxx"
 #include "../tool/tile.hxx"
 #include "../tool/scheduler.hxx"
-#include "../tool/file-dialog.hxx"
+#include "../tool/desktop.hxx"
 #include "../glu/states.hxx"
 #include "../raytracer/raytracer.hxx"
 #include "../raytracer/shade.hxx"
@@ -20,6 +20,7 @@
 #include "hdr-texture.hxx"
 #include "visualization.hxx"
 #include "statistics.hxx"
+#include "../tool/unreachable.macro.hxx"
 #include <map>
 #include <list>
 #include <deque>
@@ -33,7 +34,7 @@
 
 namespace hegem::app
 {
-    namespace
+    inline namespace
     {
         using tool::journal;
         using image::image_rgb;
@@ -61,11 +62,16 @@ namespace hegem::app
             int frame_task_capacity = 64;
             std::array<float, framerate_history_size> framerate_history{};
             int framerate_history_offset{};
+            tool::desktop_subsystem desktop{};
             skein::editor skein_editor;
-            silo::editor silo_editor{morphing_tile_size};
+            silo::editor silo_editor{&desktop, morphing_tile_size};
             visualization* skein_visualization{};
-            tool::file_dialog skein_file_open_dialog;
-            tool::file_dialog skein_file_save_dialog;
+            tool::receiver<tool::chosen_file_message> skein_file_dialog_rx;
+            bool skein_showing_open_file_dialog{};
+            bool skein_showing_save_file_dialog{};
+
+            static constexpr auto skein_file_dialog_open_serial = (tool::u64) 0;
+            static constexpr auto skein_file_dialog_save_serial = (tool::u64) 1;
 
             static context& instance()
             {
@@ -81,12 +87,17 @@ namespace hegem::app
                     vi.reset_raytracing_task_io();
                     vi.reset_swrast_task_io();
                 }
+
+                j() << "closing desktop subsystem...\n";
+                tool::defer_close_desktop_subsystem(&desktop);
+                while (tool::poll_desktop_subsystem(&desktop)) {}
             }
 
         private:
             context()
             {
                 j() << "context: (ctor)\n";
+                tool::open_desktop_subsystem(&desktop);
             }
         };
 
@@ -384,17 +395,34 @@ namespace hegem::app
         {
             auto& ctx = context::instance();
 
-            if (auto opt_path = ctx.skein_file_save_dialog()) {
-                auto path = std::move(*opt_path);
-                if (path.size() < 5 || path.substr(path.size() - 5) != ".toml")
-                    path += ".toml";
-                ctx.skein_editor.save_toml(path);
-            }
+            while (auto message = ctx.skein_file_dialog_rx.try_recv()) {
+                switch (message->serial) {
+                    default: HEGEM_UNREACHABLE();
+                    case context::skein_file_dialog_open_serial: ctx.skein_showing_open_file_dialog = false; break;
+                    case context::skein_file_dialog_save_serial: ctx.skein_showing_save_file_dialog = false; break;
+                };
 
-            if (auto opt_path = ctx.skein_file_open_dialog()) {
-                auto path = std::move(*opt_path);
-                ctx.skein_editor.load_toml(path, ctx.skein_visualization->with_gizmo);
-                update_sk_visualization();
+                if (auto path = std::move(message->maybe_path); !path.empty()) {
+                    switch (message->serial) {
+                        default: HEGEM_UNREACHABLE();
+
+                        case context::skein_file_dialog_open_serial: {
+                            ctx.skein_editor.load_toml(path, ctx.skein_visualization->with_gizmo);
+                            update_sk_visualization();
+                            break;
+                        }
+
+                        case context::skein_file_dialog_save_serial: {
+                            if (path.size() < 5 || path.substr(path.size() - 5) != ".toml") {
+                                path += ".toml";
+                            }
+                            ctx.skein_editor.save_toml(path);
+                            break;
+                        }
+                    };
+                } else {
+                    // User canceled. We carry out no action.
+                }
             }
         }
 
@@ -723,25 +751,22 @@ namespace hegem::app
                     ImGui::PopItemWidth();
                 }
                 if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
-                    if (ctx.skein_file_open_dialog) {
+                    if (ctx.skein_showing_open_file_dialog) {
                         ImGui::AlignTextToFramePadding();
                         ImGui::TextDisabled("Open");
                     } else {
                         if (ImGui::Button("Open")) {
-                            ctx.skein_file_open_dialog.open(
-                                tool::file_dialog::action::open,
-                                "Open stack graph",
-                                "/usr/share/hegem/support/graph");
+                            ctx.skein_showing_open_file_dialog = true;
+                            tool::show_open_file_dialog(&ctx.desktop, ctx.skein_file_dialog_rx.tx(), context::skein_file_dialog_open_serial, "Open skein graph", "/usr/share/hegem/support/graph");
                         }
                     }
                     ImGui::SameLine();
-                    if (ctx.skein_file_save_dialog) {
+                    if (ctx.skein_showing_save_file_dialog) {
                         ImGui::TextDisabled("Save");
                     } else {
                         if (ImGui::Button("Save")) {
-                            ctx.skein_file_save_dialog.open(
-                                tool::file_dialog::action::save,
-                                "Save stack graph");
+                            ctx.skein_showing_save_file_dialog = true;
+                            tool::show_save_file_dialog(&ctx.desktop, ctx.skein_file_dialog_rx.tx(), context::skein_file_dialog_save_serial, "Save skein graph");
                         }
                     }
                 }

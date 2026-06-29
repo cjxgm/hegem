@@ -21,7 +21,7 @@ namespace hegem::swing
     {
         inline namespace subsurf
         {
-            namespace
+            inline namespace
             {
                 using list::iterate;
                 using earcut_point_type = std::array<float, 2>;

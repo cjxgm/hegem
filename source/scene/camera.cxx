@@ -8,7 +8,7 @@
 
 namespace hegem::scene::cameras
 {
-    namespace
+    inline namespace
     {
         // Compensate a graphical environment that does not have
         // abstractions over camera lenses.

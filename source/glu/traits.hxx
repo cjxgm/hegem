@@ -8,10 +8,10 @@ namespace hegem::glu
     namespace traits
     {
         template <gl::enum_type e>
-        using gl_enum = std::integral_constant<gl::enum_type, e>;
+        struct gl_enum { static constexpr auto value = e; };
 
         template <gl::enum_type ...es>
-        using gl_enum_sequence = std::integer_sequence<gl::enum_type, es...>;
+        struct gl_enum_sequence {};
 
         namespace equiv_unsigned_type_enum_details
         {

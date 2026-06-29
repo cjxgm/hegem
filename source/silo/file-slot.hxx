@@ -1,5 +1,6 @@
 #pragma once
 #include "../tool/constraints.hxx"
+#include "../tool/desktop.hxx"
 #include <memory>
 
 namespace hegem::silo
@@ -8,7 +9,7 @@ namespace hegem::silo
     {
         struct temporary_state;
 
-        file_slot();
+        file_slot(tool::desktop_subsystem* desktop);
         ~file_slot(); // = default in implementation
 
         // If the user selected a file, returns a non-empty string of the filename.

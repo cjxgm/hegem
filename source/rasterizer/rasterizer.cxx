@@ -6,7 +6,7 @@
 
 namespace hegem::rasterizer
 {
-    namespace
+    inline namespace
     {
         float const initial_depth = 1;
     }

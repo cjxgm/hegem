@@ -10,7 +10,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    namespace
+    inline namespace
     {
         // Calculate f1(t) / f2(t).
         // When f2(t) == 0, returns approximation of lim_{x -> t} {f1(x) / f2(x)}

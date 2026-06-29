@@ -13,7 +13,7 @@
 
 namespace hegem::raytracer::shading_details
 {
-    namespace
+    inline namespace
     {
         using global::counter;
         using math::direction_type;
@@ -51,7 +51,7 @@ namespace hegem::raytracer::shading_details
         private:
             color_type impl(materials::solid_color const& mat) const
             {
-                RT_UNREACHABLE();
+                HEGEM_UNREACHABLE();
             }
 
             // Blinn-phong

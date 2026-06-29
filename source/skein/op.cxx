@@ -18,7 +18,7 @@ namespace hegem::skein
                 #define FIELD(TYPE, VAR, INITIAL, ...) fields.VAR = INITIAL;
                 #include "op.inl"
 
-                default: RT_UNREACHABLE();
+                default: HEGEM_UNREACHABLE();
             }
         }
     }

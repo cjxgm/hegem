@@ -7,7 +7,7 @@
 
 namespace hegem::silo
 {
-    namespace
+    inline namespace
     {
         auto line_space_to_image_space(glm::vec2 origin, float y_angle, float y_scale) -> glm::mat3
         {

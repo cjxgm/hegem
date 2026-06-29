@@ -11,7 +11,7 @@
 
 namespace hegem::swing
 {
-    namespace
+    inline namespace
     {
         using list::iterate;
         using earcut_point_type = std::array<float, 2>;

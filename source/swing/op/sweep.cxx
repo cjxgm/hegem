@@ -14,7 +14,7 @@ namespace hegem::swing
     {
         inline namespace sweep
         {
-            namespace
+            inline namespace
             {
                 auto extrude_ring(hemesh & m, ring_type* ring, offset_type offset) -> void
                 {

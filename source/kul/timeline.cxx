@@ -3,7 +3,7 @@
 
 namespace hegem::kul
 {
-    namespace
+    inline namespace
     {
         auto zero_expr() noexcept -> independent_expression
         {

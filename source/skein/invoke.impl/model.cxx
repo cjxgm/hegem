@@ -5,7 +5,7 @@ namespace hegem::skein
 {
     namespace op::invoke_impl
     {
-        namespace
+        inline namespace
         {
             template <class Slab, class T=typename Slab::value_type>
             auto migrate_pointers(Slab const& old_slab, Slab& new_slab, std::unordered_set<T*> const& ptrs)

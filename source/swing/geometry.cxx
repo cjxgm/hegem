@@ -7,7 +7,7 @@ namespace hegem::swing
 {
     inline namespace geometry_operator
     {
-        namespace
+        inline namespace
         {
             position_type yzx(position_type a) { return { a.y, a.z, a.x }; }
         }

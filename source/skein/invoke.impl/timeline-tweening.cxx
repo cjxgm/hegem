@@ -9,7 +9,7 @@
 
 namespace hegem::skein::op::invoke_impl
 {
-    namespace
+    inline namespace
     {
         auto easeout(float t, float target, float steepness) noexcept -> float
         {

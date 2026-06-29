@@ -8,7 +8,7 @@
 
 namespace hegem::raytracer::shading_details
 {
-    namespace
+    inline namespace
     {
         namespace materials = scene::materials;
         using math::direction_type;

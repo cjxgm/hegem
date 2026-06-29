@@ -39,7 +39,7 @@ namespace hegem::skein
             bool showing_new_node_popup{};
         };
 
-        namespace
+        inline namespace
         {
             auto to_glm(ImVec2 a) { return glm::vec2{a.x, a.y}; }
             auto to_imgui(glm::vec2 a) { return ImVec2{std::round(a.x), std::round(a.y)}; }
@@ -115,7 +115,7 @@ namespace hegem::skein
                             FIELDS \
                         } break;
                     #define SECTION(ID, ...) \
-                        case op_id::section_##ID##_##ID: RT_UNREACHABLE();
+                        case op_id::section_##ID##_##ID: HEGEM_UNREACHABLE();
                     #define FIELD(TYPE, VAR, INITIAL, EDITING_WIDGET, NAME, TOOLTIP) \
                         ImGui::PushItemWidth(-100); \
                         ImGui::PushID(#VAR); \
