@@ -603,8 +603,9 @@ namespace hegem::app
                 if (first_time) {
                     first_time = false;
                     ImGui::SetColumnWidth(0, 300);
-                    ImGui::SetColumnWidth(3, 100);
-                    ImGui::SetColumnWidth(4, 100);
+                    ImGui::SetColumnWidth(2, 130);
+                    ImGui::SetColumnWidth(3, 80);
+                    ImGui::SetColumnWidth(4, 80);
                 }
                 ImGui::Text("Scene"); ImGui::NextColumn();
                 ImGui::Text("View"); ImGui::NextColumn();
@@ -649,15 +650,21 @@ namespace hegem::app
                             ImGui::PopItemWidth();
                             ImGui::NextColumn();
 
-                            if (ImGui::Button("Render")) {
+                            if (ImGui::Button("Raytrace Channels")) {
                                 render_view(loaded_scene, view);
                                 render_invoked = true;
                             }
-                            ImGui::SameLine();
-                            if (ImGui::Button("Visualize")) {
+                            ImGui::SameLine(0.0f, 16.0f);
+                            ImGui::TextUnformatted("Interactive");
+                            ImGui::SameLine(0.0f, 4.0f);
+                            if (ImGui::Button("Show")) {
                                 vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, false);
                             }
-                            ImGui::SameLine();
+                            ImGui::SameLine(0.0f, 2.0f);
+                            if (ImGui::Button("Raytrace")) {
+                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
+                            }
+                            ImGui::SameLine(0.0f, 2.0f);
                             if (ImGui::Button("Pathtrace")) {
                                 auto& vi = vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
                                 vi.trace_path = true;
