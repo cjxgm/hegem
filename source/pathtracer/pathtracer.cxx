@@ -1,6 +1,7 @@
 #include "../lib/std/optional.hxx"
 #include "../lib/glm/vec2.hxx"
 #include "../lib/glm/vec3.hxx"
+#include "../global/counter.hxx"
 #include "../math/sampler.hxx"
 #include "../raytracer/intersect.hxx"
 #include "../raytracer/ray.hxx"
@@ -28,7 +29,6 @@ namespace hegem::pathtracer::pathtracer_details
 
                 while (remaining_bounces-- > 0 && viewing) {
                     counter.ray++;
-
                     auto hit = raytracer::intersect(scene.cache, *viewing);
                     auto shading_point = shade(scene, hit, canonical_sampler);
 
@@ -57,6 +57,7 @@ namespace hegem::pathtracer::pathtracer_details
 
         for (int sample=0; sample<max_samples; sample++) {
             img.each([&] (auto& color, auto pos) {
+                counter.pixel++;
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
                 screen_pos.x += pixel_jitter();
                 screen_pos.y += pixel_jitter();

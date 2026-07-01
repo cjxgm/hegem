@@ -1,6 +1,7 @@
 #include "../lib/glm/vec3.hxx"
 #include "../lib/glm/op/geom.hxx"
 #include "../lib/glm/op/common.hxx"
+#include "../global/counter.hxx"
 #include "../raytracer/shade.hxx"
 #include "../scene/material.hxx"
 #include "../math/direction.hxx"
@@ -14,6 +15,7 @@ namespace hegem::pathtracer::shading_details
     {
         namespace hits = raytracer::hits;
         namespace materials = scene::materials;
+        using global::counter;
         using math::direction_type;
 
         float fresnel_schlick(float ior, direction_type const& viewing, direction_type const& normal)
@@ -108,6 +110,8 @@ namespace hegem::pathtracer::shading_details
                 auto into = (cosnv < 0.0f);
                 if (into) {
                     if (canonical_sampler() <= fresnel) {     // reflection
+                        counter.ray_refl++;
+
                         auto o = reflect(*shape.viewing.dir, *m);
                         auto shape_info_for_biasing = shape;
                         shape_info_for_biasing.normal = *m;
@@ -125,6 +129,8 @@ namespace hegem::pathtracer::shading_details
                         };
                     } else {    // transmission (including diffuse)
                         if (canonical_sampler() > mat.opacity) {    // refraction
+                            counter.ray_refr++;
+
                             auto eta = 1.0f / mat.ior;
                             auto o = refract(*shape.viewing.dir, *m, eta);
                             auto shape_info_for_biasing = shape;
@@ -142,6 +148,7 @@ namespace hegem::pathtracer::shading_details
                                 mat.emission,
                             };
                         } else {    // diffuse
+                            counter.ray_refl++;
                             auto o = math::sample_hemisphere(canonical_sampler, shape.normal);
                             auto next_ray = biased_ray(ray_type{
                                 shape.hit_point,
@@ -160,10 +167,12 @@ namespace hegem::pathtracer::shading_details
                     auto o = refract(*shape.viewing.dir, -*shape.normal, eta);
                     auto shape_info_for_biasing = shape;
 
-                    // total internal reflection
-                    if (std::isnan(o.x)) {
+                    if (std::isnan(o.x)) {  // total internal reflection
+                        counter.ray_refl++;
                         o = reflect(*shape.viewing.dir, -*shape.normal);
                         shape_info_for_biasing.normal = -*shape.normal;
+                    } else {
+                        counter.ray_refr++;
                     }
 
                     auto next_ray = biased_ray(ray_type{
