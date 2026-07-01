@@ -1,4 +1,5 @@
 #include "../lib/imgui.hxx"
+#include "../global/counter.hxx"
 #include "../scene/parser.hxx"
 #include "../scene/view.hxx"
 #include "../image/image.hxx"
@@ -36,6 +37,7 @@ namespace hegem::app
 {
     inline namespace
     {
+        using global::counter;
         using tool::journal;
         using image::image_rgb;
         using image::color::linear_rgb;
@@ -871,6 +873,18 @@ namespace hegem::app
                 ImGui::Begin("Silo - The Morphing Editor");
                 ctx.silo_editor();
                 ImGui::End();
+
+                // Busy status.
+                {
+                    auto task_started = counter.task_started.load(std::memory_order::relaxed);
+                    auto task_stopped = counter.task_stopped.load(std::memory_order::relaxed);
+                    if (task_started > task_stopped) {  // Don't compare by !=, as they are loaded relaxed and we cannot be sure who will be bigger.
+                        ImGui::SetNextWindowPos(ImVec2{10.0f, ImGui::GetIO().DisplaySize.y - 10.0f}, ImGuiCond_Always, ImVec2{0.0f, 1.0f});
+                        ImGui::BeginTooltip();
+                        ImGui::Text("Busy on %ld tasks...", task_started - task_stopped);
+                        ImGui::EndTooltip();
+                    }
+                }
 
                 process_pending_jobs();
             }

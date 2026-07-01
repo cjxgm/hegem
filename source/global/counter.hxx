@@ -21,6 +21,8 @@ namespace hegem::global
             counter_type ix_bvh_face;           // Number of intersection tests against faces performed on BVH leaf nodes
             counter_type ix_grid;               // Number of intersection tests performed on grid
             counter_type ix_grid_face;          // Number of intersection tests against faces performed on grid
+            counter_type task_started;          // Number of tasks started
+            counter_type task_stopped;          // Number of tasks stopped, no matter due to success or failure
 
             auto reset() -> void;
         };

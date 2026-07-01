@@ -18,6 +18,8 @@ namespace hegem::global::counter_details
         ix_bvh_face.store(0, std::memory_order::relaxed);
         ix_grid.store(0, std::memory_order::relaxed);
         ix_grid_face.store(0, std::memory_order::relaxed);
+        task_started.store(0, std::memory_order::relaxed);
+        task_stopped.store(0, std::memory_order::relaxed);
     }
 }
 
