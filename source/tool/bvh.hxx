@@ -58,7 +58,7 @@ namespace hegem::tool
 
             shape_hit_type intersect(ray_type const& ray) const
             {
-                counter.ray_bvh_incoming++;
+                counter.ray_bvh_incoming.fetch_add(1, std::memory_order::relaxed);
                 return intersect(root, ray);
             }
 
@@ -171,14 +171,14 @@ namespace hegem::tool
 
                 n.storage.match(
                     [] (face_soup_type const& faces) {
-                        counter.ix += faces.size();
-                        counter.ix_bvh += faces.size();
-                        counter.ix_bvh_face += faces.size();
+                        counter.ix.fetch_add(faces.size(), std::memory_order::relaxed);
+                        counter.ix_bvh.fetch_add(faces.size(), std::memory_order::relaxed);
+                        counter.ix_bvh_face.fetch_add(faces.size(), std::memory_order::relaxed);
                     },
                     [&] (node_soup_type const& nodes) {
-                        counter.ix += nodes.size();
-                        counter.ix_bvh += nodes.size();
-                        counter.ix_bvh_bound += nodes.size();
+                        counter.ix.fetch_add(nodes.size(), std::memory_order::relaxed);
+                        counter.ix_bvh.fetch_add(nodes.size(), std::memory_order::relaxed);
+                        counter.ix_bvh_bound.fetch_add(nodes.size(), std::memory_order::relaxed);
                     });
 
                 return n.storage.match(

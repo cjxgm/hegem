@@ -71,7 +71,7 @@ namespace hegem::tool
 
             shape_hit_type intersect(ray_type const& ray) const
             {
-                counter.ix_grid++;
+                counter.ix_grid.fetch_add(1, std::memory_order::relaxed);
                 auto extent = math::ray_intersect_aabb_from_far(ray, bound.min, bound.max);
                 if (extent < inf) {
                     return intersect(ray, extent);
@@ -218,7 +218,7 @@ namespace hegem::tool
 
             shape_hit_type intersect(face_soup_type const& faces, ray_type const& ray) const
             {
-                counter.ix_grid_face += faces.size();
+                counter.ix_grid_face.fetch_add(faces.size(), std::memory_order::relaxed);
                 return std::accumulate(
                     begin(faces), end(faces),
                     shape_hit_type{hits::missed{ray}},

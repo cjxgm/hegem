@@ -110,7 +110,7 @@ namespace hegem::pathtracer::shading_details
                 auto into = (cosnv < 0.0f);
                 if (into) {
                     if (canonical_sampler() <= fresnel) {     // reflection
-                        counter.ray_refl++;
+                        counter.ray_refl.fetch_add(1, std::memory_order::relaxed);
 
                         auto o = reflect(*shape.viewing.dir, *m);
                         auto shape_info_for_biasing = shape;
@@ -129,7 +129,7 @@ namespace hegem::pathtracer::shading_details
                         };
                     } else {    // transmission (including diffuse)
                         if (canonical_sampler() > mat.opacity) {    // refraction
-                            counter.ray_refr++;
+                            counter.ray_refr.fetch_add(1, std::memory_order::relaxed);
 
                             auto eta = 1.0f / mat.ior;
                             auto o = refract(*shape.viewing.dir, *m, eta);
@@ -148,7 +148,7 @@ namespace hegem::pathtracer::shading_details
                                 mat.emission,
                             };
                         } else {    // diffuse
-                            counter.ray_refl++;
+                            counter.ray_refl.fetch_add(1, std::memory_order::relaxed);
                             auto o = math::sample_hemisphere(canonical_sampler, shape.normal);
                             auto next_ray = biased_ray(ray_type{
                                 shape.hit_point,
@@ -168,11 +168,11 @@ namespace hegem::pathtracer::shading_details
                     auto shape_info_for_biasing = shape;
 
                     if (std::isnan(o.x)) {  // total internal reflection
-                        counter.ray_refl++;
+                        counter.ray_refl.fetch_add(1, std::memory_order::relaxed);
                         o = reflect(*shape.viewing.dir, -*shape.normal);
                         shape_info_for_biasing.normal = -*shape.normal;
                     } else {
-                        counter.ray_refr++;
+                        counter.ray_refr.fetch_add(1, std::memory_order::relaxed);
                     }
 
                     auto next_ray = biased_ray(ray_type{

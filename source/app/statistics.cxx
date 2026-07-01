@@ -23,10 +23,9 @@ namespace hegem::app::view
         auto ray_count = counter.ray.load();
 
         auto row = [pixel_count, ray_count] (char const* name, auto& atomic_count, char const* tip={}) {
-            auto count = atomic_count.load();
+            auto count = atomic_count.load(std::memory_order::relaxed);
             if (count < 0) {
                 count = 0;
-                atomic_count = 0;
             }
 
             ImGui::PushID(name);

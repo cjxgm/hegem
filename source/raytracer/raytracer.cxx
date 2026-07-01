@@ -100,7 +100,7 @@ namespace hegem::raytracer::raytracer_details
                 ray_type const& ray,
                 int remaining_bounces)
             {
-                counter.ray++;
+                counter.ray.fetch_add(1, std::memory_order::relaxed);
                 if (remaining_bounces < 0)
                     return spp.push(hits::missed{ ray });
                 remaining_bounces--;
@@ -127,7 +127,7 @@ namespace hegem::raytracer::raytracer_details
                                 dir_sample,
                             }, shape_info_for_biasing);
 
-                            counter.ray_refl++;
+                            counter.ray_refl.fetch_add(1, std::memory_order::relaxed);
                             reflection = trace_ray(refl, remaining_bounces);
                         }
                         if (refractive(mat)) {
@@ -147,7 +147,7 @@ namespace hegem::raytracer::raytracer_details
                                     dir_sample,
                                 }, shape_info_for_biasing);
 
-                                counter.ray_refr++;
+                                counter.ray_refr.fetch_add(1, std::memory_order::relaxed);
                                 refraction = trace_ray(refr, remaining_bounces);
                             }
                         }
@@ -242,7 +242,7 @@ namespace hegem::raytracer::raytracer_details
         shading_point_roots.each([&] (auto& sp_ids, auto pos) {
             for (int i=0; i<max_samples; i++) {
                 if (shared_canceled->load()) return;  // Tracing only one sample on one pixel is slow enough to justify the cancelation check.
-                counter.pixel++;
+                counter.pixel.fetch_add(1, std::memory_order::relaxed);
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
                 screen_pos.x += impl.nsamp();
                 screen_pos.y += impl.nsamp();
@@ -270,7 +270,7 @@ namespace hegem::raytracer::raytracer_details
 
     auto raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos) -> ray_visualizations
     {
-        counter.pixel++;
+        counter.pixel.fetch_add(1, std::memory_order::relaxed);
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
         auto p = s2cp * glm::vec3{screen_pos, 1.0f};

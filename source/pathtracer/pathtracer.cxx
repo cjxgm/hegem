@@ -28,7 +28,7 @@ namespace hegem::pathtracer::pathtracer_details
                 color_type filter{1.0f};
 
                 while (remaining_bounces-- > 0 && viewing) {
-                    counter.ray++;
+                    counter.ray.fetch_add(1, std::memory_order::relaxed);
                     auto hit = raytracer::intersect(scene.cache, *viewing);
                     auto shading_point = shade(scene, hit, canonical_sampler);
 
@@ -57,7 +57,7 @@ namespace hegem::pathtracer::pathtracer_details
 
         for (int sample=0; sample<max_samples; sample++) {
             img.each([&] (auto& color, auto pos) {
-                counter.pixel++;
+                counter.pixel.fetch_add(1, std::memory_order::relaxed);
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
                 screen_pos.x += pixel_jitter();
                 screen_pos.y += pixel_jitter();
