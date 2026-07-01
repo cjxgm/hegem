@@ -8,6 +8,8 @@
 #include "hit.hxx"
 #include "ray.hxx"
 #include <tuple>
+#include <memory>
+#include <atomic>
 
 namespace hegem::raytracer
 {
@@ -16,6 +18,7 @@ namespace hegem::raytracer
         using image_type = image::image_rgb;
         using color_type = image::color::linear_rgb;
         using raytracing_result_type = std::tuple<image_type, hit_buffer_type>;
+        using shared_canceled_type = std::shared_ptr<std::atomic_bool>;
         using scene::scene_type;
         using scene::view_type;
 
@@ -31,8 +34,8 @@ namespace hegem::raytracer
         };
         using ray_visualizations = std::vector<ray_visualization>;
 
-        raytracing_result_type raytrace(scene_type const& scene, view_type const& view, tool::tile const& tile);
-        ray_visualizations raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos);
+        auto raytrace(shared_canceled_type shared_canceled, scene_type const& scene, view_type const& view, tool::tile const& tile) -> raytracing_result_type;
+        auto raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos) -> ray_visualizations;
     }
 
     using raytracer_details::raytrace;

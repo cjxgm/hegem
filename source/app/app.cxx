@@ -53,6 +53,7 @@ namespace hegem::app
         struct context
         {
             std::deque<hdr_texture> images;
+            std::deque<tool::task_io> images_io;
             std::list<visualization> visualizations;
             tool::receiver<gl_job> rx_gl;
             tool::task_manager<tool::pool_scheduler> tman{tool::pool_scheduler{(int) std::max(4u, std::thread::hardware_concurrency())}};
@@ -83,6 +84,10 @@ namespace hegem::app
             {
                 j() << "context: (dtor)\n";
                 j() << "canceling raytracing and swrast process...\n";
+                for (auto& io: images_io) {
+                    io.cancel();
+                }
+                images_io.clear();
                 for (auto& vi: visualizations) {
                     vi.reset_raytracing_task_io();
                     vi.reset_swrast_task_io();
@@ -133,11 +138,12 @@ namespace hegem::app
             };
         }
 
-        tool::task_io render_view(scene_type const& scene, view_type view)
+        auto render_view(scene_type const& scene, view_type view) -> void
         {
             using task_type = tool::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& images = ctx.images;
+            auto& images_io = ctx.images_io;
             auto& tman = ctx.tman;
             auto name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
 
@@ -169,16 +175,16 @@ namespace hegem::app
                     send_job(job::mark_as_working_tile{ hdr_depth, tile });
                     send_job(job::mark_as_working_tile{ hdr_normal, tile });
 
-                    auto result = raytracer::raytrace(scene, view, tile);
-                    auto& image = std::get<0>(result);
-                    auto& buf = std::get<1>(result);
-
+                    auto [image, buf] = raytracer::raytrace(shared_canceled, scene, view, tile);
+                    if (shared_canceled->load()) return;
                     send_job(job::upload{ hdr_combined, std::move(image), tile });
 
                     auto depth = raytracer::shade_depth(buf, view);
+                    if (shared_canceled->load()) return;
                     send_job(job::upload{ hdr_depth, std::move(depth), tile });
 
                     auto normal = raytracer::shade_normal(buf, view);
+                    if (shared_canceled->load()) return;
                     send_job(job::upload{ hdr_normal, std::move(normal), tile });
                 };
             };
@@ -189,7 +195,7 @@ namespace hegem::app
                 tasks.emplace_back(make_task(view, tile));
             }
 
-            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
+            images_io.emplace_back(tman.group(ctx.rx_gl.tx(), std::move(tasks)));
         }
 
         tool::task_io raytrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
@@ -210,7 +216,7 @@ namespace hegem::app
                         });
                     }
 
-                    auto [image, _] = raytracer::raytrace(*shared_scene, view, tile);
+                    auto [image, _] = raytracer::raytrace(shared_canceled, *shared_scene, view, tile);
                     (void) _;
 
                     tx.send(gl_job{
@@ -285,6 +291,7 @@ namespace hegem::app
                     });
 
                     pathtracer::pathtrace(
+                        shared_canceled,
                         *shared_scene,
                         view,
                         tile,
@@ -298,7 +305,8 @@ namespace hegem::app
                                 shared_canceled,
                                 job::mark_as_working_tile{ hdr, tile },
                             });
-                        });
+                        }
+                    );
 
                     tx.send(gl_job{
                         shared_canceled,

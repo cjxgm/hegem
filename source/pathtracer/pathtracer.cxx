@@ -44,7 +44,7 @@ namespace hegem::pathtracer::pathtracer_details
         };
     }
 
-    auto pathtrace(scene_type const& scene, view_type const& view, tool::tile const& tile, update_fn update) -> image_type
+    auto pathtrace(shared_canceled_type shared_canceled, scene_type const& scene, view_type const& view, tool::tile const& tile, update_fn update) -> image_type
     {
         math::normal_sampler pixel_jitter{0, 0.2};
         pathtracer_impl impl{scene};
@@ -53,8 +53,8 @@ namespace hegem::pathtracer::pathtracer_details
 
         image_type img{{tile.w, tile.h}};
         image_type img_per_sample{{tile.w, tile.h}};
+        const auto max_samples = int(view.samples > 0 ? view.samples : 1);
 
-        const int max_samples = view.samples > 0 ? view.samples : 1;
         for (int sample=0; sample<max_samples; sample++) {
             img.each([&] (auto& color, auto pos) {
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
@@ -69,6 +69,7 @@ namespace hegem::pathtracer::pathtracer_details
                 color += sample_color;
                 color /= float(sample + 1);
             });
+            if (shared_canceled->load()) break;
 
             if (update) update(img_per_sample);
         }
