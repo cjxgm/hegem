@@ -54,6 +54,8 @@ namespace hegem::app
 
         struct context
         {
+            using self = context;
+
             std::deque<hdr_texture> images;
             std::deque<tool::task_io> images_io;
             std::list<visualization> visualizations;
@@ -76,16 +78,28 @@ namespace hegem::app
             static constexpr auto skein_file_dialog_open_serial = (tool::u64) 0;
             static constexpr auto skein_file_dialog_save_serial = (tool::u64) 1;
 
-            static context& instance()
+            static auto try_instance() -> self*&
             {
-                static context ctx;
-                return ctx;
+                static auto active_instance = (self*) nullptr;
+                return active_instance;
+            }
+
+            static auto instance() -> self&
+            {
+                if (auto active_instance = try_instance()) {
+                    return active_instance[0];
+                } else {
+                    j() << "no context\n";
+                    HEGEM_UNREACHABLE();
+                }
             }
 
             ~context()
             {
                 j() << "context: (dtor)\n";
-                j() << "canceling raytracing and swrast process...\n";
+                try_instance() = {};
+
+                j() << "context: canceling raytracing and swrast process...\n";
                 for (auto& io: images_io) {
                     io.cancel();
                 }
@@ -95,15 +109,24 @@ namespace hegem::app
                     vi.reset_swrast_task_io();
                 }
 
-                j() << "closing desktop subsystem...\n";
+                j() << "context: closing desktop subsystem...\n";
                 tool::defer_close_desktop_subsystem(&desktop);
                 while (tool::poll_desktop_subsystem(&desktop)) {}
+
+                j() << "context: waiting tasks to complete...\n";
+                // Implicitly by dtor of task_manager.
             }
 
-        private:
             context()
             {
                 j() << "context: (ctor)\n";
+
+                if (auto& active_instance = try_instance()) {
+                    j() << "context: too many instance\n";
+                    HEGEM_UNREACHABLE();
+                } else {
+                    active_instance = this;
+                }
                 tool::open_desktop_subsystem(&desktop);
             }
         };
@@ -897,12 +920,15 @@ namespace hegem::app
         glfw::init_once("Hegem");
         glu::init_all_resource_pools_once();
 
+        auto ctx = context{};
+
         glfw::mainloop_once([&] () {
             glu::states_manager::instance().enable_only({});
             gl::clear_bufferfv(gl::color, 0, background);
             gui::main(opts.scenes);
             glu::resource_recycler::instance().try_recycle();
         });
+        j() << "exiting...\n";
     }
 
     auto schedule_tasks(task_group_type tasks) -> tool::task_io
