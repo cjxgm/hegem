@@ -18,11 +18,11 @@ namespace hegem::tool
         usize length;
 
         /// Creating.
-        static constexpr auto from(char const* data, usize length) -> string;
-        static constexpr auto from_last(usize length, char const* last) -> string;
-        static constexpr auto from_interval(char const* first, char const* last) -> string;
-        static constexpr auto from_sentinel(char const* data) -> string;
-        static constexpr auto from_owner(auto const* owner) -> string requires requires { owner->data(); owner->size(); };
+        static constexpr auto borrow(char const* data, usize length) -> string;
+        static constexpr auto borrow_last(usize length, char const* last) -> string;
+        static constexpr auto borrow_interval(char const* first, char const* last) -> string;
+        static constexpr auto borrow_sentinel(char const* data) -> string;
+        static constexpr auto borrow_owner(auto const* owner) -> string requires requires { owner->data(); owner->size(); };
 
         /// Bounding.
         constexpr auto bound(usize count) -> usize;  // Bound the count within this->length.
@@ -39,14 +39,14 @@ namespace hegem::tool
         /// Searching.
         template <char... Needles> constexpr auto find_first_any_of() -> usize;  // -> unmatching_length. this->find_first_any_of<>() always return this->length, because every byte is outside the empty set.
         template <char... Needles> constexpr auto find_first_not_in() -> usize;  // -> unmatching_length. this->find_first_not_in<>() always return 0, because the first byte is not inside the empty set.
-        template <char... Needles> constexpr auto find_last_any_of() -> usize;   // -> unmatching_length. Search and count unmatching length from end() towards begin().
-        template <char... Needles> constexpr auto find_last_not_in() -> usize;   // -> unmatching_length. Search and count unmatching length from end() towards begin().
+        template <char... Needles> constexpr auto find_last_any_of() -> usize;   // -> unmatching_length. Search and count unmatching length from end() backwards towards begin().
+        template <char... Needles> constexpr auto find_last_not_in() -> usize;   // -> unmatching_length. Search and count unmatching length from end() backwards towards begin().
 
         /// Copying.
         constexpr auto zero() -> string;  // -> written_part. That is, the entire this[0].
         constexpr auto fill(char source) -> string;  // -> written_part. That is, the entire this[0].
         constexpr auto ingest(string source) -> string;  // -> written_part.
-        template <typename Owner> constexpr auto into_owner() -> Owner requires requires (char* data, usize length) { Owner{data, length}; };
+        template <typename Owner> constexpr auto clone_as() -> Owner requires requires (char* data, usize length) { Owner{data, length}; };
 
         /// Complying iteration_protocol.
         constexpr auto begin() -> char*;
@@ -78,32 +78,32 @@ namespace hegem
 
 namespace hegem::tool
 {
-    inline constexpr auto string::from(char const* data, usize length) -> string
+    inline constexpr auto string::borrow(char const* data, usize length) -> string
     {
         // Preserve the data pointer.
         return {(char*) data, length};
     }
 
-    inline constexpr auto string::from_last(usize length, char const* last) -> string
+    inline constexpr auto string::borrow_last(usize length, char const* last) -> string
     {
-        return self::from(last - length, length);
+        return self::borrow(last - length, length);
     }
 
-    inline constexpr auto string::from_interval(char const* first, char const* last) -> string
+    inline constexpr auto string::borrow_interval(char const* first, char const* last) -> string
     {
         // Preserve the first pointer.
-        return self::from(first, (usize) (last >= first ? last - first : 0));
+        return self::borrow(first, (usize) (last >= first ? last - first : 0));
     }
 
-    inline constexpr auto string::from_sentinel(char const* data) -> string
+    inline constexpr auto string::borrow_sentinel(char const* data) -> string
     {
-        return self::from(data, __builtin_strlen(data));
+        return self::borrow(data, __builtin_strlen(data));
     }
 
-    inline constexpr auto string::from_owner(auto const* owner) -> string
+    inline constexpr auto string::borrow_owner(auto const* owner) -> string
     requires requires { owner->data(); owner->size(); }
     {
-        return self::from(owner->data(), owner->size());
+        return self::borrow(owner->data(), owner->size());
     }
 
     inline constexpr auto string::bound(usize count) -> usize
@@ -118,22 +118,22 @@ namespace hegem::tool
 
     inline constexpr auto string::prefix(usize prefix_length) -> string
     {
-        return self::from(this->begin(), this->bound(prefix_length));
+        return self::borrow(this->begin(), this->bound(prefix_length));
     }
 
     inline constexpr auto string::chop(usize count) -> string
     {
-        return self::from(this->begin(), this->monus(count));
+        return self::borrow(this->begin(), this->monus(count));
     }
 
     inline constexpr auto string::suffix(usize suffix_length) -> string
     {
-        return self::from_last(this->bound(suffix_length), this->end());
+        return self::borrow_last(this->bound(suffix_length), this->end());
     }
 
     inline constexpr auto string::skip(usize count) -> string
     {
-        return self::from_last(this->monus(count), this->end());
+        return self::borrow_last(this->monus(count), this->end());
     }
 
     inline constexpr auto string::starts_with(string needle) -> bool
@@ -225,7 +225,7 @@ namespace hegem::tool
     }
 
     template <typename Owner>
-    inline constexpr auto string::into_owner() -> Owner
+    inline constexpr auto string::clone_as() -> Owner
     requires requires (char* data, usize length) { Owner{data, length}; }
     {
         return Owner{this->data, this->length};
@@ -274,7 +274,7 @@ namespace hegem::tool::literal
 {
     inline constexpr auto operator ""_s (char const* data, usize length) -> string
     {
-        return string::from((char*) data, length);
+        return string::borrow((char*) data, length);
     }
 }
 
