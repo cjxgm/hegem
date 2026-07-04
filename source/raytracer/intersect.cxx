@@ -105,7 +105,7 @@ namespace hegem::raytracer
 
         shape_hit_type intersect(ray_type const& ray, shape_type const& shape, optional_mesh_bvh_type const& opt_bvh)
         {
-            counter.ix++;
+            counter.ix.fetch_add(1, std::memory_order::relaxed);
             return shape.match([&] (auto& shape) {
                 return intersect_shape(ray, shape, opt_bvh);
             });

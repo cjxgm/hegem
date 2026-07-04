@@ -20,7 +20,7 @@ namespace hegem::app
             j() << "scanning scenes\n";
             tool::thunk_invoke(
                 &tool::search_folder,
-                tool::string::from_owner(&opts.scene_basedir),
+                tool::string::borrow_owner(&opts.scene_basedir),
                 [&] (tool::string filename, tool::file_kind kind) -> bool {
                     if (kind == tool::file_kind::plain) {
                         auto path = opts.scene_basedir;  // Copy intentionally.

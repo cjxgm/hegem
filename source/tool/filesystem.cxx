@@ -44,7 +44,7 @@ namespace hegem::tool
                 auto real_path_guard = tool::defer(&::free, real_path);
                 auto kind = do_probe_file_kind(real_path);
                 if (kind != file_kind::missing && kind != file_kind::link) {
-                    return find_file(context, tool::string::from_sentinel(real_path), kind);
+                    return find_file(context, tool::string::borrow_sentinel(real_path), kind);
                 } else {
                     // Inconsistent result, assume failure.
                     return false;
@@ -81,7 +81,7 @@ namespace hegem::tool
                 auto walker_guard = tool::defer(tool::canonical_drop<&::fts_close>, walker);
                 while (auto entry = ::fts_read(walker)) {
                     if (entry->fts_level == 1 && is_good_fts_entry(entry->fts_info)) {
-                        auto path = tool::string::from(entry->fts_name, (usize) entry->fts_namelen);
+                        auto path = tool::string::borrow(entry->fts_name, (usize) entry->fts_namelen);
                         auto kind = file_kind_from_st_mode(entry->fts_statp->st_mode);
                         if (find_file(context, path, kind)) {
                             return true;
@@ -98,7 +98,7 @@ namespace hegem::tool
     auto probe_file_kind(tool::string maybe_path) -> file_kind
     {
         if (auto path = maybe_path) {
-            auto path0 = path.into_owner<std::string>();
+            auto path0 = path.clone_as<std::string>();
             return do_probe_file_kind(path0.data());
         } else {
             return file_kind::missing;
@@ -108,7 +108,7 @@ namespace hegem::tool
     auto probe_real_path(tool::string maybe_path, find_file_callback* find_file, void* context) -> bool
     {
         if (auto path = maybe_path) {
-            auto path0 = path.into_owner<std::string>();
+            auto path0 = path.clone_as<std::string>();
             return do_probe_real_path(path0.data(), find_file, context);
         } else {
             return false;
@@ -118,7 +118,7 @@ namespace hegem::tool
     auto search_folder(tool::string maybe_folder, find_file_callback* find_file, void* context) -> bool
     {
         if (auto folder = maybe_folder) {
-            auto folder0 = folder.into_owner<std::string>();
+            auto folder0 = folder.clone_as<std::string>();
             return do_search_folder(folder0.data(), find_file, context);
         } else {
             return false;

@@ -100,7 +100,7 @@ namespace hegem::raytracer::raytracer_details
                 ray_type const& ray,
                 int remaining_bounces)
             {
-                counter.ray++;
+                counter.ray.fetch_add(1, std::memory_order::relaxed);
                 if (remaining_bounces < 0)
                     return spp.push(hits::missed{ ray });
                 remaining_bounces--;
@@ -127,7 +127,7 @@ namespace hegem::raytracer::raytracer_details
                                 dir_sample,
                             }, shape_info_for_biasing);
 
-                            counter.ray_refl++;
+                            counter.ray_refl.fetch_add(1, std::memory_order::relaxed);
                             reflection = trace_ray(refl, remaining_bounces);
                         }
                         if (refractive(mat)) {
@@ -147,7 +147,7 @@ namespace hegem::raytracer::raytracer_details
                                     dir_sample,
                                 }, shape_info_for_biasing);
 
-                                counter.ray_refr++;
+                                counter.ray_refr.fetch_add(1, std::memory_order::relaxed);
                                 refraction = trace_ray(refr, remaining_bounces);
                             }
                         }
@@ -220,21 +220,29 @@ namespace hegem::raytracer::raytracer_details
         }
     }
 
-    raytracing_result_type raytrace(
-            scene_type const& scene,
-            view_type const& view,
-            tool::tile const& tile)
+    auto raytrace(
+        shared_canceled_type shared_canceled,
+        scene_type const& scene,
+        view_type const& view,
+        tool::tile const& tile
+    ) -> raytracing_result_type
     {
         raytracer_impl impl{scene};
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
 
-        const int max_samples = view.samples > 0 ? view.samples : 1;
+        auto result = raytracing_result_type{
+            image_type{{tile.w, tile.h}},
+            hit_buffer_type{{tile.w, tile.h}},
+        };
+        auto& [img, buf] = result;
+        const auto max_samples = int(view.samples > 0 ? view.samples : 1);
 
         image::image<std::vector<int>> shading_point_roots{{tile.w, tile.h}};
         shading_point_roots.each([&] (auto& sp_ids, auto pos) {
             for (int i=0; i<max_samples; i++) {
-                counter.pixel++;
+                if (shared_canceled->load()) return;  // Tracing only one sample on one pixel is slow enough to justify the cancelation check.
+                counter.pixel.fetch_add(1, std::memory_order::relaxed);
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
                 screen_pos.x += impl.nsamp();
                 screen_pos.y += impl.nsamp();
@@ -244,24 +252,25 @@ namespace hegem::raytracer::raytracer_details
                 sp_ids.emplace_back(sp_id);
             }
         });
+        if (shared_canceled->load()) return result;
 
         auto radiances = shade(impl.spp, scene, impl.nsamp);
+        if (shared_canceled->load()) return result;
 
-        image_type img{{tile.w, tile.h}};
-        hit_buffer_type buf{{tile.w, tile.h}};
         shading_point_roots.each([&] (auto& sp_ids, auto pos) {
+            if (shared_canceled->load()) return;
             buf[pos] = impl.spp[sp_ids[0]].hit;
             color_type sum{};
             for (auto sp_id: sp_ids) sum += radiances[sp_id];
             img[pos] = sum / float(sp_ids.size());
         });
 
-        return { img, buf };
+        return result;
     }
 
-    ray_visualizations raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos)
+    auto raytrace(scene_type const& scene, view_type const& view, glm::vec2 screen_pos) -> ray_visualizations
     {
-        counter.pixel++;
+        counter.pixel.fetch_add(1, std::memory_order::relaxed);
         auto& cam = view.camera;
         auto s2cp = view.screen_space_to_camera_plane_space();
         auto p = s2cp * glm::vec3{screen_pos, 1.0f};

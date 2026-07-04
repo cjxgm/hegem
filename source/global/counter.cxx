@@ -6,18 +6,20 @@ namespace hegem::global::counter_details
 
     auto aggregation_type::reset() -> void
     {
-        pixel = 0;
-        ray = 0;
-        ray_refl = 0;
-        ray_refr = 0;
-        ray_shadow = 0;
-        ray_bvh_incoming = 0;
-        ix = 0;
-        ix_bvh = 0;
-        ix_bvh_bound = 0;
-        ix_bvh_face = 0;
-        ix_grid = 0;
-        ix_grid_face = 0;
+        pixel.store(0, std::memory_order::relaxed);
+        ray.store(0, std::memory_order::relaxed);
+        ray_refl.store(0, std::memory_order::relaxed);
+        ray_refr.store(0, std::memory_order::relaxed);
+        ray_shadow.store(0, std::memory_order::relaxed);
+        ray_bvh_incoming.store(0, std::memory_order::relaxed);
+        ix.store(0, std::memory_order::relaxed);
+        ix_bvh.store(0, std::memory_order::relaxed);
+        ix_bvh_bound.store(0, std::memory_order::relaxed);
+        ix_bvh_face.store(0, std::memory_order::relaxed);
+        ix_grid.store(0, std::memory_order::relaxed);
+        ix_grid_face.store(0, std::memory_order::relaxed);
+        task_started.store(0, std::memory_order::relaxed);
+        task_stopped.store(0, std::memory_order::relaxed);
     }
 }
 

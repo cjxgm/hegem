@@ -23,10 +23,9 @@ namespace hegem::app::view
         auto ray_count = counter.ray.load();
 
         auto row = [pixel_count, ray_count] (char const* name, auto& atomic_count, char const* tip={}) {
-            auto count = atomic_count.load();
+            auto count = atomic_count.load(std::memory_order::relaxed);
             if (count < 0) {
                 count = 0;
-                atomic_count = 0;
             }
 
             ImGui::PushID(name);
@@ -62,6 +61,8 @@ namespace hegem::app::view
         row("Ix BVH Faces", counter.ix_bvh_face, "Number of intersection tests against faces performed on BVH leaf nodes");
         row("Ix Grid", counter.ix_grid, "Number of intersection tests performed on grid");
         row("Ix Grid Faces", counter.ix_grid_face, "Number of intersection tests against faces performed on grid");
+        row("Task Started", counter.task_started, "Number of tasks started");
+        row("Task Stopped", counter.task_stopped, "Number of tasks stopped, no matter due to success or failure");
     }
 }
 

@@ -113,8 +113,8 @@ namespace hegem::raytracer::shading_details
                 hit.shape_info.hit_point,
             };
 
-            counter.ray++;
-            counter.ray_shadow++;
+            counter.ray.fetch_add(1, std::memory_order::relaxed);
+            counter.ray_shadow.fetch_add(1, std::memory_order::relaxed);
             auto shadow_ray = biased_ray(ulamp.towards_lamp, hit.shape_info);
             auto shadowed = is_intersected_within(scene.cache, shadow_ray, ulamp.distance_to_lamp);
             if (shadowed) continue;

@@ -1,6 +1,7 @@
 #include "../lib/std/optional.hxx"
 #include "../lib/glm/vec2.hxx"
 #include "../lib/glm/vec3.hxx"
+#include "../global/counter.hxx"
 #include "../math/sampler.hxx"
 #include "../raytracer/intersect.hxx"
 #include "../raytracer/ray.hxx"
@@ -27,8 +28,7 @@ namespace hegem::pathtracer::pathtracer_details
                 color_type filter{1.0f};
 
                 while (remaining_bounces-- > 0 && viewing) {
-                    counter.ray++;
-
+                    counter.ray.fetch_add(1, std::memory_order::relaxed);
                     auto hit = raytracer::intersect(scene.cache, *viewing);
                     auto shading_point = shade(scene, hit, canonical_sampler);
 
@@ -44,7 +44,7 @@ namespace hegem::pathtracer::pathtracer_details
         };
     }
 
-    auto pathtrace(scene_type const& scene, view_type const& view, tool::tile const& tile, update_fn update) -> image_type
+    auto pathtrace(shared_canceled_type shared_canceled, scene_type const& scene, view_type const& view, tool::tile const& tile, update_fn update) -> image_type
     {
         math::normal_sampler pixel_jitter{0, 0.2};
         pathtracer_impl impl{scene};
@@ -53,10 +53,11 @@ namespace hegem::pathtracer::pathtracer_details
 
         image_type img{{tile.w, tile.h}};
         image_type img_per_sample{{tile.w, tile.h}};
+        const auto max_samples = int(view.samples > 0 ? view.samples : 1);
 
-        const int max_samples = view.samples > 0 ? view.samples : 1;
         for (int sample=0; sample<max_samples; sample++) {
             img.each([&] (auto& color, auto pos) {
+                counter.pixel.fetch_add(1, std::memory_order::relaxed);
                 auto screen_pos = glm::vec2{pos + glm::ivec2{tile.x, tile.y}};
                 screen_pos.x += pixel_jitter();
                 screen_pos.y += pixel_jitter();
@@ -69,6 +70,7 @@ namespace hegem::pathtracer::pathtracer_details
                 color += sample_color;
                 color /= float(sample + 1);
             });
+            if (shared_canceled->load()) break;
 
             if (update) update(img_per_sample);
         }

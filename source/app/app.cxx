@@ -1,4 +1,5 @@
 #include "../lib/imgui.hxx"
+#include "../global/counter.hxx"
 #include "../scene/parser.hxx"
 #include "../scene/view.hxx"
 #include "../image/image.hxx"
@@ -36,6 +37,7 @@ namespace hegem::app
 {
     inline namespace
     {
+        using global::counter;
         using tool::journal;
         using image::image_rgb;
         using image::color::linear_rgb;
@@ -52,7 +54,10 @@ namespace hegem::app
 
         struct context
         {
+            using self = context;
+
             std::deque<hdr_texture> images;
+            std::deque<tool::task_io> images_io;
             std::list<visualization> visualizations;
             tool::receiver<gl_job> rx_gl;
             tool::task_manager<tool::pool_scheduler> tman{tool::pool_scheduler{(int) std::max(4u, std::thread::hardware_concurrency())}};
@@ -73,30 +78,55 @@ namespace hegem::app
             static constexpr auto skein_file_dialog_open_serial = (tool::u64) 0;
             static constexpr auto skein_file_dialog_save_serial = (tool::u64) 1;
 
-            static context& instance()
+            static auto try_instance() -> self*&
             {
-                static context ctx;
-                return ctx;
+                static auto active_instance = (self*) nullptr;
+                return active_instance;
+            }
+
+            static auto instance() -> self&
+            {
+                if (auto active_instance = try_instance()) {
+                    return active_instance[0];
+                } else {
+                    j() << "no context\n";
+                    HEGEM_UNREACHABLE();
+                }
             }
 
             ~context()
             {
                 j() << "context: (dtor)\n";
-                j() << "canceling raytracing and swrast process...\n";
+                try_instance() = {};
+
+                j() << "context: canceling raytracing and swrast process...\n";
+                for (auto& io: images_io) {
+                    io.cancel();
+                }
+                images_io.clear();
                 for (auto& vi: visualizations) {
                     vi.reset_raytracing_task_io();
                     vi.reset_swrast_task_io();
                 }
 
-                j() << "closing desktop subsystem...\n";
+                j() << "context: closing desktop subsystem...\n";
                 tool::defer_close_desktop_subsystem(&desktop);
                 while (tool::poll_desktop_subsystem(&desktop)) {}
+
+                j() << "context: waiting tasks to complete...\n";
+                // Implicitly by dtor of task_manager.
             }
 
-        private:
             context()
             {
                 j() << "context: (ctor)\n";
+
+                if (auto& active_instance = try_instance()) {
+                    j() << "context: too many instance\n";
+                    HEGEM_UNREACHABLE();
+                } else {
+                    active_instance = this;
+                }
                 tool::open_desktop_subsystem(&desktop);
             }
         };
@@ -133,11 +163,12 @@ namespace hegem::app
             };
         }
 
-        tool::task_io render_view(scene_type const& scene, view_type view)
+        auto render_view(scene_type const& scene, view_type view) -> void
         {
             using task_type = tool::task_type<gl_job>;
             auto& ctx = context::instance();
             auto& images = ctx.images;
+            auto& images_io = ctx.images_io;
             auto& tman = ctx.tman;
             auto name = "[" + std::to_string(view.bounces) + "] " + scene.name + ": " + view.name;
 
@@ -169,16 +200,16 @@ namespace hegem::app
                     send_job(job::mark_as_working_tile{ hdr_depth, tile });
                     send_job(job::mark_as_working_tile{ hdr_normal, tile });
 
-                    auto result = raytracer::raytrace(scene, view, tile);
-                    auto& image = std::get<0>(result);
-                    auto& buf = std::get<1>(result);
-
+                    auto [image, buf] = raytracer::raytrace(shared_canceled, scene, view, tile);
+                    if (shared_canceled->load()) return;
                     send_job(job::upload{ hdr_combined, std::move(image), tile });
 
                     auto depth = raytracer::shade_depth(buf, view);
+                    if (shared_canceled->load()) return;
                     send_job(job::upload{ hdr_depth, std::move(depth), tile });
 
                     auto normal = raytracer::shade_normal(buf, view);
+                    if (shared_canceled->load()) return;
                     send_job(job::upload{ hdr_normal, std::move(normal), tile });
                 };
             };
@@ -189,7 +220,7 @@ namespace hegem::app
                 tasks.emplace_back(make_task(view, tile));
             }
 
-            return tman.group(ctx.rx_gl.tx(), std::move(tasks));
+            images_io.emplace_back(tman.group(ctx.rx_gl.tx(), std::move(tasks)));
         }
 
         tool::task_io raytrace_combined_view_progressively(scene_type scene, view_type view, hdr_texture& hdr)
@@ -210,7 +241,7 @@ namespace hegem::app
                         });
                     }
 
-                    auto [image, _] = raytracer::raytrace(*shared_scene, view, tile);
+                    auto [image, _] = raytracer::raytrace(shared_canceled, *shared_scene, view, tile);
                     (void) _;
 
                     tx.send(gl_job{
@@ -285,6 +316,7 @@ namespace hegem::app
                     });
 
                     pathtracer::pathtrace(
+                        shared_canceled,
                         *shared_scene,
                         view,
                         tile,
@@ -298,7 +330,8 @@ namespace hegem::app
                                 shared_canceled,
                                 job::mark_as_working_tile{ hdr, tile },
                             });
-                        });
+                        }
+                    );
 
                     tx.send(gl_job{
                         shared_canceled,
@@ -603,8 +636,9 @@ namespace hegem::app
                 if (first_time) {
                     first_time = false;
                     ImGui::SetColumnWidth(0, 300);
-                    ImGui::SetColumnWidth(3, 100);
-                    ImGui::SetColumnWidth(4, 100);
+                    ImGui::SetColumnWidth(2, 130);
+                    ImGui::SetColumnWidth(3, 80);
+                    ImGui::SetColumnWidth(4, 80);
                 }
                 ImGui::Text("Scene"); ImGui::NextColumn();
                 ImGui::Text("View"); ImGui::NextColumn();
@@ -649,15 +683,21 @@ namespace hegem::app
                             ImGui::PopItemWidth();
                             ImGui::NextColumn();
 
-                            if (ImGui::Button("Render")) {
+                            if (ImGui::Button("Raytrace Channels")) {
                                 render_view(loaded_scene, view);
                                 render_invoked = true;
                             }
-                            ImGui::SameLine();
-                            if (ImGui::Button("Visualize")) {
+                            ImGui::SameLine(0.0f, 16.0f);
+                            ImGui::TextUnformatted("Interactive");
+                            ImGui::SameLine(0.0f, 4.0f);
+                            if (ImGui::Button("Show")) {
                                 vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, false);
                             }
-                            ImGui::SameLine();
+                            ImGui::SameLine(0.0f, 2.0f);
+                            if (ImGui::Button("Raytrace")) {
+                                vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
+                            }
+                            ImGui::SameLine(0.0f, 2.0f);
                             if (ImGui::Button("Pathtrace")) {
                                 auto& vi = vis.emplace_back(loaded_scene.name + ": " + view.name, loaded_scene, view, true);
                                 vi.trace_path = true;
@@ -857,6 +897,18 @@ namespace hegem::app
                 ctx.silo_editor();
                 ImGui::End();
 
+                // Busy status.
+                {
+                    auto task_started = counter.task_started.load(std::memory_order::relaxed);
+                    auto task_stopped = counter.task_stopped.load(std::memory_order::relaxed);
+                    if (task_started > task_stopped) {  // Don't compare by !=, as they are loaded relaxed and we cannot be sure who will be bigger.
+                        ImGui::SetNextWindowPos(ImVec2{10.0f, ImGui::GetIO().DisplaySize.y - 10.0f}, ImGuiCond_Always, ImVec2{0.0f, 1.0f});
+                        ImGui::BeginTooltip();
+                        ImGui::Text("Busy on %ld tasks...", task_started - task_stopped);
+                        ImGui::EndTooltip();
+                    }
+                }
+
                 process_pending_jobs();
             }
         }
@@ -868,12 +920,15 @@ namespace hegem::app
         glfw::init_once("Hegem");
         glu::init_all_resource_pools_once();
 
+        auto ctx = context{};
+
         glfw::mainloop_once([&] () {
             glu::states_manager::instance().enable_only({});
             gl::clear_bufferfv(gl::color, 0, background);
             gui::main(opts.scenes);
             glu::resource_recycler::instance().try_recycle();
         });
+        j() << "exiting...\n";
     }
 
     auto schedule_tasks(task_group_type tasks) -> tool::task_io
